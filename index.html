@@ -1,0 +1,786 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fabrik — Registro de Carga</title>
+<style>
+:root{
+  --bg:#f4f3f1; --surface:#ffffff; --ink:#141312; --muted:#5f5d59;
+  --line:#e3e1dc; --line2:#c9c6c0;
+  --info:#a45248; --info-bg:#f5e9e6;
+  --warn:#a45248; --warn-bg:#f5e9e6;
+  --hot:#a45248; --hot-bg:#f5e9e6;
+  --danger:#a45248; --danger-bg:#f5e9e6;
+  --ok:#33312f; --ok-bg:#eceae6;
+  --graf:#33312f; --graf-bg:#eceae6;
+  --radius:12px;
+}
+*{box-sizing:border-box}
+body{
+  font-family:'Segoe UI',system-ui,-apple-system,sans-serif;
+  background:var(--bg); color:var(--ink); margin:0; padding:18px;
+  font-size:17px; line-height:1.5; font-variant-numeric:tabular-nums;
+}
+.wrap{max-width:1040px; margin:0 auto}
+h1{font-size:22px; font-weight:600; margin:0 0 2px}
+.sub{color:var(--muted); font-size:14px; margin:0 0 16px}
+.views{display:flex; gap:8px; margin:0 0 16px}
+.viewbtn{font-size:15px; padding:9px 18px; border:1px solid var(--line2); border-radius:10px; background:var(--surface); cursor:pointer; font-weight:600}
+.viewbtn.on{background:var(--info-bg); border-color:var(--info); color:var(--info)}
+.bar{
+  display:flex; gap:10px; flex-wrap:wrap; align-items:flex-end;
+  background:var(--surface); border:1px solid var(--line); border-radius:var(--radius);
+  padding:14px; margin-bottom:14px;
+}
+.fld{display:flex; flex-direction:column; gap:4px}
+.fld label{font-size:12px; color:var(--muted); font-weight:600; text-transform:uppercase; letter-spacing:.03em}
+select,input{font:inherit; padding:9px 11px; border:1px solid var(--line2); border-radius:8px; background:var(--surface); color:var(--ink)}
+select:focus,input:focus{outline:none; border-color:var(--info); box-shadow:0 0 0 3px var(--info-bg)}
+input::placeholder{color:#a8a69d}
+button{font:inherit; font-weight:600; padding:9px 14px; border:1px solid var(--line2); border-radius:8px; background:var(--surface); color:var(--ink); cursor:pointer}
+button:hover{background:var(--bg)}
+button:active{transform:scale(.985)}
+.btn-primary{background:var(--info); color:#fff; border-color:var(--info)}
+.btn-primary:hover{background:#8c4139}
+.week{display:flex; align-items:center; gap:12px; flex:1 1 100%; border-radius:10px; padding:12px 14px; margin-top:4px}
+.week .wk{font-size:15px; font-weight:700}
+.week .rule{font-size:14px}
+.blocks{display:flex; gap:8px; flex-wrap:wrap; margin:0 0 8px}
+.bchip{font-size:15px; padding:10px 16px; border:1px solid var(--line2); border-radius:10px; background:var(--surface); cursor:pointer; font-weight:600}
+.bchip small{font-weight:500; color:var(--muted); display:block; font-size:12px; margin-top:1px}
+.bchip.on{background:var(--info-bg); border-color:var(--info); color:var(--info)}
+.bchip.on small{color:var(--info)}
+.search{position:relative; margin:6px 0 16px; max-width:340px}
+.search i{position:absolute; left:12px; top:11px; color:var(--muted); font-style:normal}
+.search input{width:100%; padding-left:34px}
+.scard{background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); padding:12px 16px; margin-bottom:12px}
+.shead{display:flex; align-items:center; gap:10px; margin-bottom:8px}
+.avatar{width:34px;height:34px;border-radius:50%;background:var(--info-bg);color:var(--info);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px}
+.shead .nm{font-size:17px;font-weight:600}
+.exline{border-top:1px solid var(--line); padding:10px 0}
+.exline:first-of-type{border-top:none}
+.exhead{display:flex; align-items:baseline; gap:10px; margin-bottom:7px; flex-wrap:wrap}
+.exhead .ex{font-size:16px; font-weight:600}
+.exhead .meta{font-size:13px; color:var(--muted)}
+.exhead .prev{color:#9c7269}
+.row{display:flex; flex-wrap:wrap; gap:12px; align-items:center}
+.row .grp{display:flex; align-items:center; gap:6px}
+.row .grp span{font-size:12px; color:var(--muted); font-weight:600}
+.row input.kg{width:84px; font-size:19px; font-weight:700; text-align:center}
+.row input.sm{width:60px; font-size:17px; text-align:center}
+.row input.parc{width:210px; font-size:14px}
+.cbox{display:flex; flex-wrap:wrap; gap:10px; align-items:center}
+.unit{display:flex}
+.mtog{display:flex; margin-right:2px}
+.mbtn{font:inherit; font-weight:700; padding:7px 11px; border:1px solid var(--line2); background:var(--surface); cursor:pointer; color:var(--muted)}
+.mbtn:first-child{border-radius:7px 0 0 7px}
+.mbtn:last-child{border-radius:0 7px 7px 0; border-left:none}
+.mbtn.on{background:var(--info-bg); border-color:var(--info); color:var(--info)}
+.qbtn,.ubtn{font:inherit; font-weight:700; padding:7px 11px; border:1px solid var(--line2); background:var(--surface); cursor:pointer; color:var(--muted)}
+.qbtn{border-radius:7px; min-width:36px}
+.qbtn+.qbtn{margin-left:4px}
+.ubtn{border-radius:0}
+.unit .ubtn:first-child{border-radius:7px 0 0 7px}
+.unit .ubtn:last-child{border-radius:0 7px 7px 0; border-left:none}
+.qbtn.on,.ubtn.on{background:var(--info-bg); border-color:var(--info); color:var(--info)}
+.cin{width:74px; font-size:18px; font-weight:700; text-align:center}
+.cin.barra{width:58px; font-size:16px; font-weight:600}
+.cbox small{font-size:12px; color:var(--muted)}
+.x2{font-weight:700; color:var(--muted)}
+.ctot{font-size:15px; color:var(--muted); white-space:nowrap}
+.ctot .ctotal{font-size:20px; color:var(--ink); font-weight:700}
+.icbtn{padding:7px 11px; font-size:13px}
+.tags{display:flex; flex-wrap:wrap; gap:7px; margin-top:9px}
+.tag{font-size:13px; font-weight:600; padding:4px 10px; border-radius:8px}
+.tag.dor{color:#fff; background:var(--info)}
+.tag.troca{color:var(--muted); background:var(--graf-bg)}
+.hist{margin-top:10px; border-top:1px dashed var(--line2); padding-top:8px; display:flex; flex-direction:column; gap:5px}
+.hist .hlbl{font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:.05em; font-weight:700}
+.histline{font-size:13px; display:flex; flex-wrap:wrap; gap:8px; align-items:baseline}
+.histline .hd{color:var(--muted); font-weight:700; min-width:40px}
+.histline .hc{font-weight:600; color:var(--ink)}
+.hflag{font-size:12px; padding:2px 8px; border-radius:6px; font-weight:600}
+.hflag.dor{color:#fff; background:var(--info)}
+.hflag.troca,.hflag.obs{color:var(--muted); background:var(--graf-bg)}
+.troca-edit,.obs-edit,.dor-edit{margin-top:9px; display:none}
+.troca-edit input,.obs-edit input,.dor-edit input{width:100%}
+.muted{color:var(--muted); font-size:13px}
+.addbox{background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); padding:14px 16px; margin-bottom:16px}
+.addbox .rowf{display:flex; gap:10px; flex-wrap:wrap; align-items:center}
+.addbox input{flex:1 1 280px}
+.dup{margin-top:10px; font-size:13px; display:flex; flex-wrap:wrap; gap:7px; align-items:center}
+.dup .okx{color:var(--ok); font-weight:600}
+.dup .warnx{color:var(--warn); font-weight:700}
+.dup .dupname{background:var(--warn-bg); color:var(--warn); padding:3px 9px; border-radius:6px; font-weight:600}
+.mrow{background:var(--surface); border:1px solid var(--line); border-radius:10px; padding:10px 14px; margin-bottom:8px}
+.mtop{display:flex; align-items:center; gap:8px}
+.mnome{font-size:16px; font-weight:600; flex:1}
+.hint{font-size:12px; color:var(--muted); margin:2px 0 6px}
+.hchips{display:flex; flex-wrap:wrap; gap:5px; margin-top:8px}
+.hchip{font-size:12px; padding:5px 10px; border:1px solid var(--line2); border-radius:6px; cursor:pointer; color:var(--muted); font-weight:600}
+.hchip.on{background:var(--info-bg); border-color:var(--info); color:var(--info)}
+.syncbadge{font-size:12px; font-weight:700; padding:5px 10px; border-radius:8px; background:var(--graf-bg); color:var(--muted)}
+.syncbadge.ok{background:var(--ok-bg); color:var(--ok)}
+.syncbadge.info{background:var(--info-bg); color:var(--info)}
+.syncbadge.warn{background:#efd9d3; color:#8c4139}
+.repkpis{display:flex; gap:12px; flex-wrap:wrap; margin:6px 0 14px}
+.kpi{background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); padding:12px 16px; min-width:150px}
+.kpi .kl{font-size:12px; color:var(--muted); text-transform:uppercase; letter-spacing:.03em; font-weight:700}
+.kpi .kv{font-size:26px; font-weight:700; margin-top:2px}
+.kpi .kv small{font-size:14px; font-weight:600; color:var(--muted)}
+.reptab{width:100%; border-collapse:collapse; background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); overflow:hidden}
+.reptab th,.reptab td{text-align:left; padding:9px 12px; border-bottom:1px solid var(--line); font-size:14px}
+.reptab th{font-size:12px; text-transform:uppercase; letter-spacing:.03em; color:var(--muted); background:var(--bg)}
+.reptab tr:last-child td{border-bottom:none}
+.reptab td.num{font-weight:700; font-variant-numeric:tabular-nums}
+#loginOverlay{display:none; position:fixed; inset:0; background:rgba(20,19,18,.55); z-index:50; align-items:center; justify-content:center}
+#loginOverlay.on{display:flex}
+.loginbox{background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:22px; width:330px; max-width:90vw}
+.loginbox h2{font-size:18px; margin:0 0 2px}
+.loginbox .fld{margin:12px 0}
+.loginbox input{width:100%}
+.loginbox .btn-primary{width:100%; margin-top:6px}
+#loginErro{color:var(--info); font-size:13px; font-weight:600; min-height:16px; margin:10px 0 0}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Fabrik — Registro de Carga</h1>
+  <p class="sub">Cadastro geral de alunos + registro por bloco na aula. Exporta CSV pro Fabrik Performance.</p>
+
+  <div class="views">
+    <button class="viewbtn on" data-v="registro">Registro</button>
+    <button class="viewbtn" data-v="alunos">Alunos</button>
+    <button class="viewbtn" data-v="relatorio">Relatório</button>
+    <span id="syncWrap" style="margin-left:auto;display:none;align-items:center;gap:8px">
+      <span id="syncBadge" class="syncbadge">local</span>
+      <button id="btnSync" class="icbtn">↻ sincronizar</button>
+      <button id="btnSair" class="icbtn">sair</button>
+    </span>
+  </div>
+
+  <div id="viewRegistro">
+    <div class="bar">
+      <div class="fld"><label>Turma</label><select id="turma"></select></div>
+      <div class="fld"><label>Treino</label>
+        <select id="treino">
+          <option value="1">Treino 1 — potência / força</option>
+          <option value="2" selected>Treino 2 — força / hipertrofia</option>
+          <option value="3">Treino 3 — hipertrofia / metcon</option>
+        </select>
+      </div>
+      <div class="fld"><label>Semana</label>
+        <select id="semana">
+          <option value="1">Semana 1</option>
+          <option value="2" selected>Semana 2</option>
+          <option value="3">Semana 3</option>
+          <option value="4">Semana 4</option>
+        </select>
+      </div>
+      <div class="fld"><label>Data</label><input type="date" id="data"></div>
+      <div class="fld" style="margin-left:auto"><label>&nbsp;</label><button id="exportar">⭳ Exportar CSV</button></div>
+      <div id="weekBanner" class="week"></div>
+    </div>
+    <div class="blocks" id="blocks"></div>
+    <div class="search"><i>⌕</i><input id="busca" placeholder="filtrar aluno na turma…" autocomplete="off"></div>
+    <div id="panel"></div>
+  </div>
+
+  <div id="viewAlunos" style="display:none">
+    <div class="addbox">
+      <div class="rowf">
+        <input id="novoNome" placeholder="nome do novo aluno…" autocomplete="off">
+        <button class="btn-primary" id="addBtn">adicionar</button>
+      </div>
+      <div class="dup" id="dupWarn"></div>
+    </div>
+    <p class="hint">Toque nos horários de cada aluno pra incluí-lo na turma. Excluir tira de todas as turmas, mas o histórico de cargas continua salvo.</p>
+    <div class="search"><i>⌕</i><input id="filtroMaster" placeholder="buscar no cadastro…" autocomplete="off"></div>
+    <p class="muted" id="masterCount"></p>
+    <div id="masterList"></div>
+  </div>
+
+  <div id="viewRelatorio" style="display:none">
+    <div class="bar">
+      <div class="fld"><label>Aluno</label><select id="repAluno"></select></div>
+      <div class="fld"><label>Exercício</label><select id="repExercicio"></select></div>
+      <div class="fld"><label>De</label><input type="date" id="repDe"></div>
+      <div class="fld"><label>Até</label><input type="date" id="repAte"></div>
+      <div class="fld" style="margin-left:auto"><label>&nbsp;</label><button id="repExport">⭳ CSV do filtro</button></div>
+    </div>
+    <p class="hint">Visão provisória de evolução de carga. O relatório "de verdade" é no Fabrik Performance.</p>
+    <div id="repKpis" class="repkpis"></div>
+    <div id="repTabela"></div>
+  </div>
+
+  <p class="muted" id="status"></p>
+</div>
+
+<div id="loginOverlay">
+  <div class="loginbox">
+    <h2>Entrar</h2>
+    <p class="muted">Login do treinador (Fabrik) para sincronizar os dados.</p>
+    <div class="fld"><label>E-mail</label><input id="loginEmail" type="email" autocomplete="username"></div>
+    <div class="fld"><label>Senha</label><input id="loginSenha" type="password" autocomplete="current-password"></div>
+    <button class="btn-primary" id="loginBtn">entrar</button>
+    <p id="loginErro"></p>
+  </div>
+</div>
+
+<script src="vendor/supabase.js"></script>
+<script>
+// ── Config Supabase ───────────────────────────────────────────────
+// VAZIO = modo LOCAL (idêntico ao original, só localStorage).
+// Preencha url + anonKey para ligar o modo Supabase (multi-laptop + sync offline).
+// A anon key é PÚBLICA por design (vai pro browser); a segurança vem da RLS no banco.
+const SUPABASE_CONFIG = {
+  url:"https://xmyqwniiaicflfcvjiyj.supabase.co",
+  anonKey:"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhteXF3bmlpYWljZmxmY3ZqaXlqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEwNTU3MDQsImV4cCI6MjA5NjYzMTcwNH0.bDlxgkZEZa7I_lpqzmjgLH0HT2d5MV8nwz_Grz5hj7M"
+};
+
+const TURMAS = ["06:00","07:00","08:00","09:00","10:00","11:00","12:30","16:30","17:30","18:30"];
+
+const RULES = {
+  "1":{txt:"Deload — reduz carga e volume, recupera.", cls:"ok"},
+  "2":{txt:"Sobe carga e volume.", cls:"info"},
+  "3":{txt:"Choque — intensidade alta.", cls:"warn"},
+  "4":{txt:"Choque — pico antes de virar o ciclo.", cls:"hot"}
+};
+const WCOLOR = { ok:["#eceae6","#33312f"], info:["#f5e9e6","#a45248"], warn:["#efd9d3","#8c4139"], hot:["#a45248","#ffffff"] };
+
+const TREINOS = {
+  "1":[
+    {id:"t1_thruster",nome:"Thruster unilateral c/ rotação DB",tipo:"carga",carga:"impl",un:"kg",qtd:1,metodo:"SUPERSET",alvo:"3-4RR",bloco:1},
+    {id:"t1_rdl",nome:"RDL base assimétrica 2KB",tipo:"carga",carga:"impl",un:"kg",qtd:2,metodo:"SUPERSET",alvo:"1-2RR",bloco:2},
+    {id:"t1_barrafixa",nome:"Barra fixa supinada EXC (4-5s)",tipo:"pc",metodo:"SUPERSET",alvo:"1-2RR",bloco:2},
+    {id:"t1_taca",nome:"Agachamento taça c/ pausa (3s)",tipo:"carga",carga:"impl",un:"kg",qtd:1,metodo:"SUPERSET",alvo:"1-2RR",bloco:3},
+    {id:"t1_supino",nome:"Supino reto BB",tipo:"carga",carga:"barra",un:"lb",bar:10,metodo:"SUPERSET",alvo:"1-2RR",bloco:3}
+  ],
+  "2":[
+    {id:"t2_bulgaro",nome:"Agachamento búlgaro",tipo:"carga",carga:"impl",un:"kg",qtd:1,metodo:"SUPERSET",alvo:"1-2RR",bloco:1},
+    {id:"t2_remada",nome:"Remada curvada landmine",tipo:"carga",carga:"landmine",un:"lb",bar:10,metodo:"SUPERSET",alvo:"1-2RR",bloco:1},
+    {id:"t2_supinoinc",nome:"Supino inclinado DB",tipo:"carga",carga:"impl",un:"kg",qtd:2,metodo:"TRISET",alvo:"1-2RR",bloco:2},
+    {id:"t2_flexao",nome:"Flexão joelhos slide",tipo:"pc",metodo:"TRISET",alvo:"1-2RR",bloco:2},
+    {id:"t2_abd",nome:"ABD inversa no solo",tipo:"pc",metodo:"TRISET",alvo:"1-2RR",bloco:2}
+  ],
+  "3":[
+    {id:"t3_extensao",nome:"Extensão de tronco na caixa alta",tipo:"carga",carga:"impl",un:"kg",qtd:1,metodo:"SUPERSET",alvo:"1-2RR",bloco:1},
+    {id:"t3_argolas",nome:"Remada aberta nas argolas",tipo:"pc",metodo:"SUPERSET",alvo:"1-2RR",bloco:1},
+    {id:"t3_airbike",nome:"Air bike",tipo:"tempo",metodo:"CIRCUITO",alvo:"85-90%",bloco:2},
+    {id:"t3_corda",nome:"Slam + sprawl corda naval",tipo:"tempo",metodo:"CIRCUITO",alvo:"85-90%",bloco:2},
+    {id:"t3_remo",nome:"Remo",tipo:"tempo",metodo:"CIRCUITO",alvo:"85-90%",bloco:2},
+    {id:"t3_farmer",nome:"Farmer carry 2KB/DB",tipo:"carga",carga:"impl",un:"kg",qtd:2,metodo:"CIRCUITO",alvo:"80%",bloco:2}
+  ]
+};
+
+function load(k,d){ try{ const v=JSON.parse(localStorage.getItem(k)); return v===null?d:v }catch(e){ return d } }
+function save(k,v){ localStorage.setItem(k, JSON.stringify(v)) }
+function slug(s){ return s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9]+/g,"_").replace(/^_|_$/g,"") }
+function norm(s){ return s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/\s+/g," ").trim() }
+
+function parseKg(str){
+  if(!str) return null;
+  const s=str.toLowerCase().replace(/,/g,".");
+  if(!/\d/.test(s)) return null;
+  let total=0, ok=false;
+  s.split("+").forEach(seg=>{
+    seg=seg.trim(); if(!seg) return;
+    const perSide=/(cada|por)\s*lado|\/\s*lado|cd\s*lado/.test(seg)?2:1;
+    const isLb=/lb|libra/.test(seg);
+    let val=null;
+    const mult=seg.match(/(\d+(?:\.\d+)?)\s*[x×]\s*(\d+(?:\.\d+)?)/);
+    if(mult){ val=parseFloat(mult[1])*parseFloat(mult[2]); }
+    else { const n=seg.match(/(\d+(?:\.\d+)?)/); if(n) val=parseFloat(n[1]); }
+    if(val==null||isNaN(val)) return;
+    if(isLb) val*=0.45359237;
+    val*=perSide;
+    total+=val; ok=true;
+  });
+  if(!ok) return null;
+  return Math.round(total*10)/10;
+}
+
+// ── DataStore: única porta de persistência ────────────────────────
+// Modo LOCAL (SUPABASE_CONFIG vazio): cada método só grava no localStorage,
+//   comportamento idêntico ao original.
+// Modo SUPABASE: além do cache local, enfileira mutações e sincroniza
+//   (offline-first: salva local na hora, empurra pro banco quando dá).
+function numOrNull(v){ if(v===""||v==null) return null; const n=parseFloat(String(v).replace(",",".")); return isNaN(n)?null:n; }
+function recToRow(r){ return {
+  aluno_id:r.alunoId, aluno_nome:r.alunoNome, turma_id:r.turma,
+  treino:Number(r.treino), bloco:Number(r.bloco), semana:Number(r.semana), data:r.data,
+  exercicio_id:r.exercicioId, exercicio_nome:r.exercicioNome, metodo:r.metodo,
+  montagem:r.montagem||null, qtd:(r.qtd!==""&&r.qtd!=null)?Number(r.qtd):null,
+  peso:numOrNull(r.peso), un:r.un||null, peso2:numOrNull(r.peso2), un2:r.un2||null, bar:numOrNull(r.bar),
+  carga_parcial:r.cargaParcial||null, carga_total:numOrNull(r.cargaTotal),
+  reps:r.reps||null, rr:r.rr||null, troca:r.troca||null,
+  dor:!!r.dor, dor_nota:r.dorNota||null, obs:r.obs||null,
+  client_updated_at:r.client_updated_at||DataStore.nowISO(), source_device_id:r.source_device_id||DataStore.deviceId
+}; }
+function rowToRec(x){ return {
+  alunoId:x.aluno_id, alunoNome:x.aluno_nome, turma:x.turma_id,
+  treino:String(x.treino), bloco:Number(x.bloco), semana:String(x.semana), data:x.data,
+  exercicioId:x.exercicio_id, exercicioNome:x.exercicio_nome, metodo:x.metodo,
+  montagem:x.montagem||"", qtd:x.qtd!=null?String(x.qtd):"",
+  peso:x.peso!=null?String(x.peso):"", un:x.un||"", peso2:x.peso2!=null?String(x.peso2):"", un2:x.un2||"", bar:x.bar!=null?String(x.bar):"",
+  cargaParcial:x.carga_parcial||"", cargaTotal:x.carga_total!=null?String(x.carga_total):"",
+  reps:x.reps||"", rr:x.rr||"", troca:x.troca||"", dor:!!x.dor, dorNota:x.dor_nota||"", obs:x.obs||"",
+  client_updated_at:x.client_updated_at, source_device_id:x.source_device_id
+}; }
+
+const DataStore = {
+  on: !!(SUPABASE_CONFIG.url && SUPABASE_CONFIG.anonKey),
+  sb: null, _flushP:null, _dev:null,
+  // lazy: no modo local nunca é acessado, então não cria a chave fabrik_device
+  get deviceId(){ if(!this._dev){ let d=load("fabrik_device",null); if(!d){ d="dev_"+Math.random().toString(36).slice(2,10); save("fabrik_device",d);} this._dev=d; } return this._dev; },
+  QKEY:"fabrik_syncqueue",
+  queue: load("fabrik_syncqueue", []),
+  nowISO(){ return new Date().toISOString(); },
+  _saveQueue(){ save(this.QKEY, this.queue); },
+  enqueue(m){
+    if(!this.on) return;
+    const lk = m.key||m.entityId;
+    this.queue = this.queue.filter(x => !(x.kind===m.kind && (x.key||x.entityId)===lk)); // compacta
+    this.queue.push(m); this._saveQueue(); this.flush();
+  },
+
+  // ---- mutações (chamadas pela UI) ----
+  // No modo LOCAL (on=false) cada método só faz save(...) — idêntico ao original.
+  putRegistro(r){
+    if(this.on){ r.client_updated_at=this.nowISO(); r.source_device_id=this.deviceId;
+      this.enqueue({ kind:"registro", key:recKey(r.alunoId,r.exercicioId,r.data,r.treino), data:recToRow(r) }); }
+    save("fabrik_cargas", records);
+  },
+  putAluno(a){
+    save("fabrik_alunos", alunos);
+    if(this.on) this.enqueue({ kind:"aluno", entityId:a.id, data:{ id:a.id, nome:a.nome, nome_normalizado:norm(a.nome), ativo:true, client_updated_at:this.nowISO(), source_device_id:this.deviceId }, turmas:a.turmas.slice() });
+  },
+  delAluno(id){
+    save("fabrik_alunos", alunos);
+    if(this.on) this.enqueue({ kind:"aluno_del", entityId:id });
+  },
+  touchRegistrosDoAluno(id){ // rename: propaga aluno_nome aos registros remotos
+    if(!this.on) return;
+    records.filter(r=>r.alunoId===id).forEach(r=>{
+      r.client_updated_at=this.nowISO();
+      this.enqueue({ kind:"registro", key:recKey(r.alunoId,r.exercicioId,r.data,r.treino), data:recToRow(r) });
+    });
+  },
+
+  // ---- sync ----
+  async session(){ const { data } = await this.sb.auth.getSession(); return data.session; },
+  flush(){
+    if(!this.on || !this.sb || !navigator.onLine) return Promise.resolve();
+    // promise compartilhada: chamadas concorrentes aguardam o MESMO dreno
+    // (sem isso, o syncNow do login retornava cedo e pulava o pull)
+    if(this._flushP) return this._flushP;
+    this._flushP = (async()=>{
+      try{
+        if(!(await this.session())) return;
+        while(this.queue.length){ await this._apply(this.queue[0]); this.queue.shift(); this._saveQueue(); }
+        setSync("sincronizado","ok");
+      }catch(e){ setSync("pendente — sem conexão","warn"); }
+      finally{ this._flushP=null; }
+    })();
+    return this._flushP;
+  },
+  async _apply(m){
+    const sb=this.sb;
+    if(m.kind==="registro"){
+      const { error } = await sb.from("registros").upsert(m.data,{ onConflict:"aluno_id,exercicio_id,data,treino" });
+      if(error) throw error;
+    } else if(m.kind==="aluno"){
+      let { error } = await sb.from("alunos").upsert(m.data,{ onConflict:"id" }); if(error) throw error;
+      ({ error } = await sb.from("aluno_turmas").delete().eq("aluno_id",m.data.id)); if(error) throw error;
+      if(m.turmas&&m.turmas.length){ ({ error } = await sb.from("aluno_turmas").insert(m.turmas.map(t=>({aluno_id:m.data.id,turma_id:t})))); if(error) throw error; }
+    } else if(m.kind==="aluno_del"){ // soft-delete: preserva histórico
+      let { error } = await sb.from("alunos").update({ ativo:false, client_updated_at:this.nowISO() }).eq("id",m.entityId); if(error) throw error;
+      ({ error } = await sb.from("aluno_turmas").delete().eq("aluno_id",m.entityId)); if(error) throw error;
+    }
+  },
+  async pull(){
+    if(!this.on || !this.sb || !(await this.session())) return;
+    const { data:al, error:e1 } = await this.sb.from("alunos").select("id,nome").eq("ativo",true); if(e1) throw e1;
+    const { data:at, error:e2 } = await this.sb.from("aluno_turmas").select("aluno_id,turma_id"); if(e2) throw e2;
+    const byId={}; al.forEach(a=>byId[a.id]={id:a.id,nome:a.nome,turmas:[]});
+    at.forEach(x=>{ if(byId[x.aluno_id]) byId[x.aluno_id].turmas.push(x.turma_id); });
+    alunos = Object.values(byId); save("fabrik_alunos", alunos);
+    const { data:rg, error:e3 } = await this.sb.from("registros").select("*"); if(e3) throw e3;
+    records = rg.map(rowToRec); save("fabrik_cargas", records);
+  },
+  // Migração one-time: enfileira TUDO que já existe no localStorage deste laptop
+  // ANTES do primeiro pull, senão o pull (banco vazio) apagaria o histórico local.
+  migrateLocalToQueue(){
+    const ativos=new Set(alunos.map(a=>a.id));
+    alunos.forEach(a=> this.enqueue({ kind:"aluno", entityId:a.id, data:{ id:a.id, nome:a.nome, nome_normalizado:norm(a.nome), ativo:true, client_updated_at:this.nowISO(), source_device_id:this.deviceId }, turmas:a.turmas.slice() }));
+    // alunos excluídos localmente mas com histórico → "tombstone" (ativo=false),
+    // senão o upsert dos registros furaria a FK registros.aluno_id → alunos.id
+    const orfaos=new Set(); records.forEach(r=>{ if(!ativos.has(r.alunoId)) orfaos.add(r.alunoId); });
+    orfaos.forEach(id=>{ const nome=(records.find(r=>r.alunoId===id)||{}).alunoNome||id;
+      this.enqueue({ kind:"aluno", entityId:id, data:{ id, nome, nome_normalizado:norm(nome), ativo:false, client_updated_at:this.nowISO(), source_device_id:this.deviceId }, turmas:[] }); });
+    records.forEach(r=>{ if(!r.client_updated_at) r.client_updated_at=this.nowISO(); this.enqueue({ kind:"registro", key:recKey(r.alunoId,r.exercicioId,r.data,r.treino), data:recToRow(r) }); });
+  },
+  async syncNow(){
+    try{
+      setSync("sincronizando…","info");
+      if(!load("fabrik_sb_migrated", false)){ this.migrateLocalToQueue(); save("fabrik_sb_migrated", true); }
+      await this.flush();
+      // só puxa do banco quando a fila drenou — senão o pull sobrescreveria
+      // o cache local com um estado remoto incompleto (perda de dado).
+      if(this.queue.length===0){ await this.pull(); afterChange(); }
+      setSync(this.queue.length?"pendente — cache local":"sincronizado", this.queue.length?"warn":"ok");
+    }catch(e){ setSync("offline — cache local","warn"); }
+  },
+  async bootstrap(){
+    if(!this.on){ return; }
+    if(!window.supabase){ setSync("lib supabase não carregou","warn"); return; }
+    this.sb = window.supabase.createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.anonKey, { auth:{ persistSession:true, autoRefreshToken:true } });
+    if(!(await this.session())){ showLogin(); return; }
+    await this.syncNow();
+    window.addEventListener("online", ()=>this.flush());
+  }
+};
+
+let alunos = load("fabrik_alunos", null);
+if(alunos===null){
+  alunos=[];
+  const roster=load("fabrik_roster", null);
+  if(roster){
+    Object.keys(roster).forEach(t=>{ (roster[t]||[]).forEach(a=>{
+      let m=alunos.find(x=>x.id===a.id);
+      if(!m){ m={id:a.id,nome:a.nome,turmas:[]}; alunos.push(m); }
+      if(!m.turmas.includes(t)) m.turmas.push(t);
+    }); });
+  }
+  // sem seed demo: instalação nova começa vazia (no modo Supabase o cadastro
+  // real chega do banco no primeiro sync; no modo local, cadastra na aba Alunos)
+  save("fabrik_alunos",alunos);
+}
+let records = load("fabrik_cargas", []);
+let selBloco=1, view="registro";
+
+const $ = id => document.getElementById(id);
+$("data").value = new Date().toISOString().slice(0,10);
+
+function ctx(){ return { turma:$("turma").value, treino:$("treino").value, semana:$("semana").value, data:$("data").value }; }
+function blocosDe(t){ return [...new Set(TREINOS[t].map(e=>e.bloco))]; }
+function exsDoBloco(t,b){ return TREINOS[t].filter(e=>e.bloco===b); }
+function initials(n){ return n.split(" ").map(w=>w[0]).slice(0,2).join("").toUpperCase(); }
+function alunosDaTurma(t){ return alunos.filter(a=>a.turmas.includes(t)).sort((x,y)=>x.nome.localeCompare(y.nome,"pt")); }
+function uniqueId(nome){ let base=slug(nome)||"aluno", id=base, i=2; while(alunos.some(a=>a.id===id)){ id=base+"_"+i; i++; } return id; }
+function afterChange(){ view==="alunos"?renderMaster():(view==="relatorio"?renderRelatorio():renderPanel()); }
+
+function setView(v){
+  view=v;
+  $("viewRegistro").style.display  = v==="registro" ?"block":"none";
+  $("viewAlunos").style.display    = v==="alunos"   ?"block":"none";
+  $("viewRelatorio").style.display = v==="relatorio"?"block":"none";
+  document.querySelectorAll(".viewbtn").forEach(b=>b.classList.toggle("on", b.dataset.v===v));
+  if(v==="alunos") renderMaster();
+  else if(v==="relatorio") renderRelatorio();
+  else renderPanel();
+}
+
+function fillTurmas(){ $("turma").innerHTML = TURMAS.map(t=>`<option ${t==="09:00"?"selected":""}>${t}</option>`).join(""); }
+function renderWeek(){
+  const r=RULES[$("semana").value]; const [bg,fg]=WCOLOR[r.cls];
+  $("weekBanner").style.background=bg; $("weekBanner").style.color=fg;
+  $("weekBanner").innerHTML=`<span class="wk">Semana ${$("semana").value}</span><span class="rule">${r.txt}</span>`;
+}
+function renderBlocks(){
+  const tr=$("treino").value, bs=blocosDe(tr);
+  if(!bs.includes(selBloco)) selBloco=bs[0];
+  $("blocks").innerHTML = bs.map(b=>{ const exs=exsDoBloco(tr,b); return `<div class="bchip ${b===selBloco?'on':''}" data-b="${b}">Bloco ${b}<small>${exs[0].metodo.toLowerCase()} · ${exs.length} ex</small></div>`; }).join("");
+  $("blocks").querySelectorAll(".bchip").forEach(c=>c.onclick=()=>{ selBloco=Number(c.dataset.b); renderBlocks(); renderPanel(); });
+}
+
+function recKey(a,e,d,t){ return [a,e,d,t].join("|"); }
+function getRec(c,aId,eId){ return records.find(r=>recKey(r.alunoId,r.exercicioId,r.data,r.treino)===recKey(aId,eId,c.data,c.treino)); }
+function prevWeek(aId,eId,before){ const h=records.filter(r=>r.alunoId===aId&&r.exercicioId===eId&&r.data<before); if(!h.length)return null; h.sort((a,b)=>b.data.localeCompare(a.data)); return h[0]; }
+function he(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function fmtD(iso){ const p=iso.split("-"); return p[2]+"/"+p[1]; }
+function hist(aId,eId,before,n){ return records.filter(r=>r.alunoId===aId&&r.exercicioId===eId&&r.data<before).sort((a,b)=>b.data.localeCompare(a.data)).slice(0,n); }
+function calcCarga(montagem,qtd,peso,un,peso2,un2,bar){
+  const cv=(v,u)=> u==='lb'? v*0.45359237 : v;
+  const p=parseFloat(String(peso).replace(",","."))||0;
+  const p2=parseFloat(String(peso2).replace(",","."))||0;
+  const b=parseFloat(String(bar).replace(",","."))||0;
+  let total=0, parcial="";
+  if(montagem==='impl'){ const q=Number(qtd)||1; total=q*cv(p,un); parcial=(q>1?q+" × ":"")+p+" "+un; }
+  else if(montagem==='barra'){ const side=p+" "+un+(p2?" + "+p2+" "+(un2||'kg'):""); total=(cv(p,un)+cv(p2,un2||'kg'))*2+b; parcial=side+"/lado + barra "+b+" kg"; }
+  else { total=cv(p,un)+b; parcial=p+" "+un+" + barra "+b+" kg"; }
+  total=Math.round(total*10)/10;
+  return p? {total:String(total), parcial} : {total:"", parcial:""};
+}
+function histBlock(aId,eId,before){
+  const h=hist(aId,eId,before,3);
+  if(!h.length) return `<div class="hist"><span class="hlbl">sem histórico</span></div>`;
+  const lines=h.map(r=>{
+    const carga = r.cargaTotal? he(r.cargaTotal)+" kg" : (r.cargaParcial?he(r.cargaParcial):"");
+    const det=[carga, r.reps?he(r.reps)+" reps":"", r.rr?"RR "+he(r.rr):""].filter(Boolean).join(" · ");
+    let flags="";
+    if(r.dor||r.dorNota) flags+=`<span class="hflag dor">⚠ ${he(r.dorNota||"dor")}</span>`;
+    if(r.troca) flags+=`<span class="hflag troca">↻ ${he(r.troca)}</span>`;
+    if(r.obs) flags+=`<span class="hflag obs">${he(r.obs)}</span>`;
+    return `<div class="histline"><span class="hd">${fmtD(r.data)}</span><span class="hc">${det||"—"}</span>${flags}</div>`;
+  }).join("");
+  return `<div class="hist"><span class="hlbl">histórico</span>${lines}</div>`;
+}
+function upsert(c,aluno,ex,patch){
+  let r=getRec(c,aluno.id,ex.id);
+  if(!r){ r={alunoId:aluno.id,alunoNome:aluno.nome,turma:c.turma,treino:c.treino,semana:c.semana,data:c.data,exercicioId:ex.id,exercicioNome:ex.nome,metodo:ex.metodo,bloco:ex.bloco,montagem:"",qtd:"",peso:"",un:"",peso2:"",un2:"",bar:"",cargaParcial:"",cargaTotal:"",reps:"",rr:"",troca:"",dor:false,dorNota:"",obs:""}; records.push(r); }
+  Object.assign(r,patch,{semana:c.semana});
+  DataStore.putRegistro(r);
+  $("status").textContent="Salvo "+new Date().toLocaleTimeString("pt-BR",{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+}
+
+function renderPanel(){
+  const c=ctx(); const q=norm($("busca").value);
+  const lista=alunosDaTurma(c.turma).filter(a=>norm(a.nome).includes(q));
+  const exs=exsDoBloco(c.treino,selBloco);
+  if(!lista.length){ $("panel").innerHTML=`<p class="muted">Nenhum aluno na turma ${c.turma}. Vá na aba <b>Alunos</b> e marque o horário ${c.turma} pros alunos dela.</p>`; return; }
+  $("panel").innerHTML = lista.map(a=>{
+    const lines=exs.map(ex=>{
+      const r=getRec(c,a.id,ex.id)||{};
+      const isCarga=ex.tipo==="carga";
+      const montagem = ex.carga==='landmine' ? 'landmine' : (r.montagem||ex.carga);
+      const un=r.un||ex.un||"kg", un2=r.un2||"kg", qtd=Number(r.qtd||ex.qtd||1);
+      const bar=(r.bar!==undefined&&r.bar!=="")?r.bar:(ex.bar!==undefined?ex.bar:10);
+      const peso=(r.peso!==undefined&&r.peso!==null)?r.peso:"";
+      const peso2=(r.peso2!==undefined&&r.peso2!==null)?r.peso2:"";
+      const disp = isCarga ? (calcCarga(montagem,qtd,peso,un,peso2,un2,bar).total||'—') : '';
+      const unTog=(dc,cur)=>`<div class="unit"><button class="ubtn ${cur==='kg'?'on':''}" data-c="${dc}" data-v="kg">kg</button><button class="ubtn ${cur==='lb'?'on':''}" data-c="${dc}" data-v="lb">lb</button></div>`;
+      let cargaBox;
+      if(!isCarga){
+        cargaBox=`<div class="grp"><span>Carga</span><input class="kg" disabled value="${ex.tipo==='pc'?'PC':'tempo'}" style="color:var(--muted);font-size:15px;font-weight:600"></div>`;
+      } else {
+        const mtog = ex.carga==='landmine' ? "" : `<div class="mtog"><button class="mbtn ${montagem==='impl'?'on':''}" data-v="impl">Halteres</button><button class="mbtn ${montagem==='barra'?'on':''}" data-v="barra">Barra</button></div>`;
+        const totT=`<div class="ctot">= <b class="ctotal">${disp}</b> kg</div>`;
+        if(montagem==='impl'){
+          cargaBox=`<div class="cbox" data-tipo="impl">${mtog}<div class="grp"><span>Impl.</span><button class="qbtn ${qtd===1?'on':''}" data-c="qtd" data-v="1">1</button><button class="qbtn ${qtd===2?'on':''}" data-c="qtd" data-v="2">2</button></div><div class="grp"><span>Peso</span><input class="cin" data-c="peso" inputmode="decimal" placeholder="0" value="${peso}"></div>${unTog('un',un)}${totT}</div>`;
+        } else if(montagem==='barra'){
+          cargaBox=`<div class="cbox" data-tipo="barra">${mtog}<div class="grp"><span>Por lado</span><input class="cin" data-c="peso" inputmode="decimal" placeholder="0" value="${peso}"></div>${unTog('un',un)}<div class="grp anilha2" style="${peso2?'':'display:none'}"><span>+</span><input class="cin" data-c="peso2" inputmode="decimal" placeholder="0" value="${peso2}">${unTog('un2',un2)}</div><button class="icbtn addAnilha" style="${peso2?'display:none':''}">+ anilha</button><span class="x2">×2</span><div class="grp"><span>+ barra</span><input class="cin barra" data-c="bar" inputmode="decimal" value="${bar}"><small>kg</small></div>${totT}</div>`;
+        } else {
+          cargaBox=`<div class="cbox" data-tipo="landmine"><div class="grp"><span>Peso</span><input class="cin" data-c="peso" inputmode="decimal" placeholder="0" value="${peso}"></div>${unTog('un',un)}<div class="grp"><span>+ barra</span><input class="cin barra" data-c="bar" inputmode="decimal" value="${bar}"><small>kg</small></div>${totT}</div>`;
+        }
+      }
+      return `<div class="exline" data-aluno="${a.id}" data-ex="${ex.id}">
+        <div class="exhead"><span class="ex">${ex.nome}</span><span class="meta">alvo ${ex.alvo}</span></div>
+        <div class="row">
+          ${cargaBox}
+          <div class="grp"><span>Reps</span><input class="sm" data-f="reps" inputmode="numeric" placeholder="—" value="${r.reps||""}"></div>
+          <div class="grp"><span>RR</span><input class="sm" data-f="rr" placeholder="—" value="${r.rr||""}"></div>
+          <button class="icbtn btn-troca" style="margin-left:auto">↻ trocar</button>
+          <button class="icbtn btn-dor">⚠ dor</button>
+          <button class="icbtn btn-obs">✎ obs</button>
+        </div>
+        <div class="troca-edit"><input data-f="troca" placeholder="trocou por qual exercício? (histórico fica no original)" value="${(r.troca||"").replace(/"/g,'&quot;')}"></div>
+        <div class="dor-edit"><input data-f="dorNota" placeholder="o que foi? (ex: joelho D, amplitude parcial)" value="${(r.dorNota||"").replace(/"/g,'&quot;')}"></div>
+        <div class="obs-edit"><input data-f="obs" placeholder="observação (cansaço, técnica, etc.)" value="${(r.obs||"").replace(/"/g,'&quot;')}"></div>
+        <div class="tags"></div>
+        ${histBlock(a.id,ex.id,c.data)}
+      </div>`;
+    }).join("");
+    return `<div class="scard"><div class="shead"><div class="avatar">${initials(a.nome)}</div><div class="nm">${he(a.nome)}</div><button class="icbtn btn-rename" data-aluno="${a.id}" style="margin-left:auto">✎ nome</button></div>${lines}</div>`;
+  }).join("");
+  wirePanel(c);
+}
+
+function wirePanel(c){
+  $("panel").querySelectorAll(".exline").forEach(line=>{
+    const aId=line.dataset.aluno, exId=line.dataset.ex;
+    const aluno=alunos.find(a=>a.id===aId);
+    const ex=TREINOS[c.treino].find(e=>e.id===exId);
+    const tags=()=>{ const r=getRec(c,aId,exId)||{}; let t=""; if(r.dor||r.dorNota)t+=`<span class="tag dor">⚠ ${he(r.dorNota||"dor")}</span>`; if(r.troca)t+=`<span class="tag troca">↻ ${he(r.troca)}</span>`; line.querySelector(".tags").innerHTML=t; };
+    tags();
+    line.querySelectorAll("input[data-f]").forEach(inp=>inp.addEventListener("change",()=>{
+      const p={}; p[inp.dataset.f]=inp.value;
+      if(inp.dataset.f==="dorNota") p.dor=!!inp.value;
+      upsert(c,aluno,ex,p); tags();
+    }));
+    if(ex.tipo==="carga"){
+      const gv=sel=>{const e=line.querySelector(sel);return e?e.value:"";};
+      const recompCarga=()=>{
+        const box=line.querySelector(".cbox"); if(!box) return;
+        const montagem=box.dataset.tipo;
+        const ub=line.querySelector('[data-c="un"].on'); const un=ub?ub.dataset.v:'kg';
+        const ub2=line.querySelector('[data-c="un2"].on'); const un2=ub2?ub2.dataset.v:'kg';
+        const qb=line.querySelector('.qbtn.on'); const qtd=qb?qb.dataset.v:1;
+        const peso=gv('[data-c="peso"]'), peso2=gv('[data-c="peso2"]'), bar=gv('[data-c="bar"]');
+        const out=calcCarga(montagem,qtd,peso,un,peso2,un2,bar);
+        line.querySelector('.ctotal').textContent=out.total||'—';
+        upsert(c,aluno,ex,{montagem,qtd:String(qtd),peso:String(peso||""),un,peso2:String(peso2||""),un2,bar:String(bar),cargaParcial:out.parcial,cargaTotal:out.total});
+      };
+      line.querySelectorAll("[data-c]").forEach(el=>{
+        if(el.tagName==="BUTTON"){ el.onclick=()=>{ line.querySelectorAll(`[data-c="${el.dataset.c}"]`).forEach(b=>b.classList.toggle("on", b===el)); recompCarga(); }; }
+        else { el.addEventListener("change",recompCarga); }
+      });
+      const aA=line.querySelector('.addAnilha');
+      if(aA) aA.onclick=()=>{ const g=line.querySelector('.anilha2'); g.style.display=''; aA.style.display='none'; const i=g.querySelector('input'); if(i)i.focus(); };
+      line.querySelectorAll(".mbtn").forEach(b=>b.onclick=()=>{
+        upsert(c,aluno,ex,{montagem:b.dataset.v});
+        const rr=getRec(c,aluno.id,ex.id);
+        const out=calcCarga(b.dataset.v, rr.qtd||ex.qtd||1, rr.peso, rr.un||ex.un||'kg', rr.peso2, rr.un2||'kg', (rr.bar!==""&&rr.bar!=null)?rr.bar:(ex.bar!=null?ex.bar:10));
+        upsert(c,aluno,ex,{cargaTotal:out.total,cargaParcial:out.parcial});
+        renderPanel();
+      });
+    }
+    line.querySelector(".btn-troca").onclick=()=>tog(line,".troca-edit");
+    line.querySelector(".btn-dor").onclick=()=>tog(line,".dor-edit");
+    line.querySelector(".btn-obs").onclick=()=>tog(line,".obs-edit");
+  });
+  $("panel").querySelectorAll(".btn-rename").forEach(b=>b.onclick=()=>renameAluno(b.dataset.aluno));
+}
+function tog(line,sel){ const el=line.querySelector(sel); const open=el.style.display==="block"; el.style.display=open?"none":"block"; const i=el.querySelector("input"); if(i&&!open)i.focus(); }
+
+function renameAluno(id){
+  const a=alunos.find(x=>x.id===id); if(!a)return;
+  const n=prompt("Editar nome do aluno:",a.nome); if(!n||!n.trim())return;
+  a.nome=n.trim(); records.forEach(r=>{ if(r.alunoId===id) r.alunoNome=a.nome; });
+  DataStore.putAluno(a); save("fabrik_cargas",records); DataStore.touchRegistrosDoAluno(id); afterChange();
+}
+function deleteAluno(id){
+  const a=alunos.find(x=>x.id===id); if(!a)return;
+  if(!confirm("Excluir "+a.nome+" do cadastro geral?\n\nSai de todas as turmas. O histórico de cargas continua salvo e sai no CSV."))return;
+  alunos=alunos.filter(x=>x.id!==id); DataStore.delAluno(id); afterChange();
+}
+function toggleTurma(id,t){
+  const a=alunos.find(x=>x.id===id); if(!a)return;
+  a.turmas = a.turmas.includes(t) ? a.turmas.filter(x=>x!==t) : [...a.turmas,t];
+  DataStore.putAluno(a); renderMaster();
+}
+
+function renderDup(){
+  const q=norm($("novoNome").value);
+  if(!q){ $("dupWarn").innerHTML=""; return; }
+  const m=alunos.filter(a=>norm(a.nome).includes(q)).slice(0,8);
+  const exact=alunos.some(a=>norm(a.nome)===q);
+  if(!m.length){ $("dupWarn").innerHTML=`<span class="okx">nome novo — ninguém parecido</span>`; return; }
+  $("dupWarn").innerHTML = (exact?`<span class="warnx">⚠ já existe exatamente este nome:</span>`:`<span class="warnx">já tem parecido:</span>`) + " " + m.map(a=>`<span class="dupname">${he(a.nome)}</span>`).join("");
+}
+function addAluno(){
+  const nome=$("novoNome").value.trim(); if(!nome)return;
+  if(alunos.some(a=>norm(a.nome)===norm(nome)) && !confirm("Já existe um aluno com esse nome. Cadastrar outro mesmo assim?"))return;
+  const novo={id:uniqueId(nome),nome,turmas:[]}; alunos.push(novo);
+  DataStore.putAluno(novo);
+  $("novoNome").value=""; $("dupWarn").innerHTML=""; $("novoNome").focus();
+  renderMaster();
+}
+
+function renderMaster(){
+  const q=norm($("filtroMaster").value);
+  const list=alunos.filter(a=>norm(a.nome).includes(q)).sort((x,y)=>x.nome.localeCompare(y.nome,"pt"));
+  $("masterCount").textContent=alunos.length+" alunos no cadastro";
+  $("masterList").innerHTML = list.length ? list.map(a=>`
+    <div class="mrow">
+      <div class="mtop"><span class="mnome">${he(a.nome)}</span>
+        <button class="icbtn" data-act="ren" data-id="${a.id}">✎ nome</button>
+        <button class="icbtn" data-act="del" data-id="${a.id}">✕ excluir</button>
+      </div>
+      <div class="hchips">${TURMAS.map(t=>`<span class="hchip ${a.turmas.includes(t)?'on':''}" data-id="${a.id}" data-t="${t}">${t}</span>`).join("")}</div>
+    </div>`).join("") : `<p class="muted">Nenhum aluno encontrado.</p>`;
+  $("masterList").querySelectorAll(".icbtn").forEach(b=>b.onclick=()=> b.dataset.act==="ren"?renameAluno(b.dataset.id):deleteAluno(b.dataset.id));
+  $("masterList").querySelectorAll(".hchip").forEach(c=>c.onclick=()=>toggleTurma(c.dataset.id,c.dataset.t));
+}
+
+function exportCSV(rows, fname){
+  rows = rows || records;
+  if(!rows.length){ alert("Nada pra exportar ainda."); return; }
+  const cols=["data","turma","treino","bloco","semana","alunoNome","exercicioNome","metodo","cargaParcial","cargaTotal","reps","rr","troca","dorNota","obs"];
+  const head=["Data","Turma","Treino","Bloco","Semana","Aluno","Exercício","Método","Carga parcial","Carga (kg)","Reps","RR","Trocado por","Dor","Obs"];
+  const esc=v=>`"${String(v??"").replace(/"/g,'""')}"`;
+  const lines=[head.map(esc).join(",")].concat(rows.map(r=>cols.map(k=>esc(r[k])).join(",")));
+  const blob=new Blob(["\uFEFF"+lines.join("\n")],{type:"text/csv;charset=utf-8"});
+  const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download=(fname||"fabrik_cargas_"+new Date().toISOString().slice(0,10))+".csv"; a.click();
+}
+
+// ── status de sync (visível só no modo Supabase) ──────────────────
+function setSync(txt, cls){ const b=$("syncBadge"); if(!b) return; b.textContent=txt; b.className="syncbadge"+(cls?" "+cls:""); }
+
+// ── login (modo Supabase) ─────────────────────────────────────────
+function showLogin(){ $("loginOverlay").classList.add("on"); $("loginEmail").focus(); }
+function hideLogin(){ $("loginOverlay").classList.remove("on"); }
+async function doLogin(){
+  const email=$("loginEmail").value.trim(), pw=$("loginSenha").value;
+  if(!email||!pw){ $("loginErro").textContent="Preencha e-mail e senha."; return; }
+  $("loginErro").textContent="entrando…";
+  try{
+    const { error } = await DataStore.sb.auth.signInWithPassword({ email, password:pw });
+    if(error) throw error;
+    $("loginSenha").value=""; $("loginErro").textContent=""; hideLogin();
+    await DataStore.syncNow();
+    window.addEventListener("online", ()=>DataStore.flush());
+  }catch(e){ $("loginErro").textContent = e.message || "Falha no login."; }
+}
+
+// ── Relatório provisório (evolução de carga por aluno/exercício) ──
+const EXALL = (function(){ const m={}; Object.values(TREINOS).flat().forEach(e=>{ m[e.id]=e.nome; }); return m; })();
+function repFiltrados(){
+  const aId=$("repAluno").value, eId=$("repExercicio").value, de=$("repDe").value, ate=$("repAte").value;
+  return records.filter(r=>
+    (!aId || r.alunoId===aId) && (!eId || r.exercicioId===eId) &&
+    (!de || r.data>=de) && (!ate || r.data<=ate)
+  ).sort((a,b)=>b.data.localeCompare(a.data));
+}
+function renderRelatorio(){
+  const aSel=$("repAluno"), eSel=$("repExercicio"); const curA=aSel.value, curE=eSel.value;
+  const alunosOrd=[...alunos].sort((x,y)=>x.nome.localeCompare(y.nome,"pt"));
+  aSel.innerHTML = `<option value="">todos os alunos</option>` + alunosOrd.map(a=>`<option value="${a.id}">${he(a.nome)}</option>`).join("");
+  eSel.innerHTML = `<option value="">todos os exercícios</option>` + Object.keys(EXALL).map(id=>`<option value="${id}">${he(EXALL[id])}</option>`).join("");
+  aSel.value=curA; eSel.value=curE;
+
+  const rows=repFiltrados();
+  const comCarga=rows.filter(r=>r.cargaTotal!=="" && r.cargaTotal!=null).map(r=>({d:r.data, v:parseFloat(r.cargaTotal)})).filter(x=>!isNaN(x.v));
+  let kpis="";
+  if(aSel.value && eSel.value && comCarga.length){
+    const porData=[...comCarga].sort((a,b)=>a.d.localeCompare(b.d));
+    const ultima=porData[porData.length-1].v;
+    const anterior=porData.length>1?porData[porData.length-2].v:null;
+    const melhor=Math.max(...comCarga.map(x=>x.v));
+    const delta=anterior!=null?Math.round((ultima-anterior)*10)/10:null;
+    kpis=`
+      <div class="kpi"><div class="kl">Última carga</div><div class="kv">${ultima}<small> kg</small></div></div>
+      <div class="kpi"><div class="kl">Melhor carga</div><div class="kv">${melhor}<small> kg</small></div></div>
+      <div class="kpi"><div class="kl">Δ vs. sessão anterior</div><div class="kv">${delta!=null?(delta>0?"+":"")+delta:"—"}<small>${delta!=null?" kg":""}</small></div></div>`;
+  }
+  $("repKpis").innerHTML=kpis;
+
+  if(!rows.length){ $("repTabela").innerHTML=`<p class="muted">Sem registros para esse filtro.</p>`; return; }
+  const trs=rows.map(r=>{
+    const carga = (r.cargaTotal!==""&&r.cargaTotal!=null) ? he(r.cargaTotal)+" kg" : (r.cargaParcial?he(r.cargaParcial):"—");
+    const flags=[ (r.dor||r.dorNota)?"⚠ "+he(r.dorNota||"dor"):"", r.troca?"↻ "+he(r.troca):"", r.obs?he(r.obs):"" ].filter(Boolean).join(" · ");
+    return `<tr>
+      <td>${fmtD(r.data)}</td><td>T${he(r.treino)} · B${he(r.bloco)}</td>
+      <td>${he(r.alunoNome)}</td><td>${he(r.exercicioNome)}</td>
+      <td class="num">${carga}</td><td>${he(r.reps||"—")}</td><td>${he(r.rr||"—")}</td>
+      <td>${flags||""}</td></tr>`;
+  }).join("");
+  $("repTabela").innerHTML=`<table class="reptab"><thead><tr>
+    <th>Data</th><th>Treino</th><th>Aluno</th><th>Exercício</th><th>Carga</th><th>Reps</th><th>RR</th><th>Dor / troca / obs</th>
+  </tr></thead><tbody>${trs}</tbody></table>`;
+}
+
+document.querySelectorAll(".viewbtn").forEach(b=>b.onclick=()=>setView(b.dataset.v));
+["treino","turma","semana","data"].forEach(id=>$(id).addEventListener("change",()=>{ renderWeek(); renderBlocks(); renderPanel(); }));
+$("busca").addEventListener("keyup",renderPanel);
+$("exportar").onclick=()=>exportCSV();
+$("novoNome").addEventListener("input",renderDup);
+$("novoNome").addEventListener("keydown",e=>{ if(e.key==="Enter") addAluno(); });
+$("addBtn").onclick=addAluno;
+$("filtroMaster").addEventListener("keyup",renderMaster);
+["repAluno","repExercicio","repDe","repAte"].forEach(id=>$(id).addEventListener("change",renderRelatorio));
+$("repExport").onclick=()=>exportCSV(repFiltrados(), "fabrik_relatorio_"+new Date().toISOString().slice(0,10));
+$("loginBtn").onclick=doLogin;
+$("loginSenha").addEventListener("keydown",e=>{ if(e.key==="Enter") doLogin(); });
+$("btnSync").onclick=()=>DataStore.syncNow();
+$("btnSair").onclick=async()=>{ if(DataStore.sb) await DataStore.sb.auth.signOut(); location.reload(); };
+
+// modo Supabase: mostra os controles de sync
+if(DataStore.on){ $("syncWrap").style.display="flex"; setSync("conectando…","info"); }
+
+fillTurmas(); renderWeek(); renderBlocks(); renderPanel();
+DataStore.bootstrap();
+</script>
+</body>
+</html>
