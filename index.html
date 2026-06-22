@@ -154,7 +154,8 @@ button:active{transform:scale(.985)}
 .chartmeta b{color:var(--ink)}
 svg.chart{width:100%; height:auto; display:block}
 svg.chart .cax{font-size:10px; fill:var(--muted)}
-svg.chart .clast{font-size:12px; font-weight:700; fill:var(--info)}
+svg.chart .cval{font-size:11px; font-weight:700; fill:var(--info)}
+svg.chart .creps{font-size:10px; font-weight:600; fill:var(--muted)}
 svg.chart .grid{stroke:var(--line); stroke-width:1}
 /* impressão / Salvar como PDF (relatório de um aluno) */
 #printArea{display:none}
@@ -809,37 +810,42 @@ function tabelaHTML(rows){
   </tr></thead><tbody>${trs}</tbody></table>`;
 }
 
-// série de carga (kg) de um aluno+exercício, respeitando o filtro de datas, ordenada por data
+// série de carga (kg) + reps de um aluno+exercício, no filtro de datas, ordenada por data
 function serieCarga(aId, exId){
   const de=$("repDe").value, ate=$("repAte").value;
   return records.filter(r=> r.alunoId===aId && r.exercicioId===exId
       && r.cargaTotal!=="" && r.cargaTotal!=null && !isNaN(parseFloat(r.cargaTotal))
       && (!de||r.data>=de) && (!ate||r.data<=ate))
-    .map(r=>({d:r.data, v:parseFloat(r.cargaTotal)}))
+    .map(r=>({d:r.data, v:parseFloat(r.cargaTotal), reps:(r.reps||"").toString().trim()}))
     .sort((a,b)=>a.d.localeCompare(b.d));
 }
 
 // gráfico de linha em SVG puro (sem libs) — evolução de carga
 function chartSVG(pts, opt){
-  opt=opt||{}; const w=opt.w||300, h=opt.h||130, pad={l:34,r:12,t:14,b:22};
+  opt=opt||{}; const w=opt.w||300, h=opt.h||140, pad={l:32,r:14,t:20,b:34};
   if(!pts.length) return `<div class="muted" style="padding:10px 0">sem carga registrada</div>`;
   const vs=pts.map(p=>p.v), vmin=Math.min(...vs), vmax=Math.max(...vs), span=(vmax-vmin)||1;
   const iw=w-pad.l-pad.r, ih=h-pad.t-pad.b;
   const X=i=> pad.l + (pts.length===1? iw/2 : iw*i/(pts.length-1));
   const Y=v=> pad.t + ih - ih*(v-vmin)/span;
+  const baseY=pad.t+ih;
   const d=pts.map((p,i)=>`${i?'L':'M'}${X(i).toFixed(1)},${Y(p.v).toFixed(1)}`).join(" ");
-  const dots=pts.map((p,i)=>`<circle cx="${X(i).toFixed(1)}" cy="${Y(p.v).toFixed(1)}" r="3" fill="var(--info)"/>`).join("");
-  const last=pts[pts.length-1];
+  // por ponto: carga ACIMA do ponto (linha/terracota) e reps ABAIXO, na base (cinza) — amarra carga↔reps
+  const marks=pts.map((p,i)=>{
+    const x=X(i).toFixed(1), y=Y(p.v).toFixed(1);
+    const carga=`<text x="${x}" y="${(Y(p.v)-7).toFixed(1)}" text-anchor="middle" class="cval">${p.v}</text>`;
+    const reps = p.reps ? `<text x="${x}" y="${(baseY+13).toFixed(1)}" text-anchor="middle" class="creps">${he(p.reps)}</text>` : "";
+    return `<circle cx="${x}" cy="${y}" r="3" fill="var(--info)"/>${carga}${reps}`;
+  }).join("");
   return `<svg viewBox="0 0 ${w} ${h}" class="chart" preserveAspectRatio="xMidYMid meet" role="img">
-    <line class="grid" x1="${pad.l}" y1="${pad.t}" x2="${pad.l}" y2="${(pad.t+ih).toFixed(1)}"/>
-    <line class="grid" x1="${pad.l}" y1="${(pad.t+ih).toFixed(1)}" x2="${w-pad.r}" y2="${(pad.t+ih).toFixed(1)}"/>
-    <text x="2" y="${(pad.t+8).toFixed(1)}" class="cax">${vmax}</text>
-    <text x="2" y="${(pad.t+ih).toFixed(1)}" class="cax">${vmin}</text>
-    <text x="${pad.l}" y="${h-6}" class="cax">${fmtD(pts[0].d)}</text>
-    <text x="${w-pad.r}" y="${h-6}" class="cax" text-anchor="end">${fmtD(last.d)}</text>
+    <line class="grid" x1="${pad.l}" y1="${pad.t}" x2="${pad.l}" y2="${baseY.toFixed(1)}"/>
+    <line class="grid" x1="${pad.l}" y1="${baseY.toFixed(1)}" x2="${w-pad.r}" y2="${baseY.toFixed(1)}"/>
+    <text x="${pad.l}" y="${(baseY+25).toFixed(1)}" class="cax">${fmtD(pts[0].d)}</text>
+    <text x="${w-pad.r}" y="${(baseY+25).toFixed(1)}" class="cax" text-anchor="end">${fmtD(pts[pts.length-1].d)}</text>
+    <text x="2" y="10" class="cax">kg</text>
+    <text x="2" y="${(baseY+13).toFixed(1)}" class="creps">reps</text>
     <path d="${d}" fill="none" stroke="var(--info)" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
-    ${dots}
-    <text x="${X(pts.length-1).toFixed(1)}" y="${(Y(last.v)-7).toFixed(1)}" text-anchor="end" class="clast">${last.v}kg</text>
+    ${marks}
   </svg>`;
 }
 
