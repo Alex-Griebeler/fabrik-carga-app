@@ -476,13 +476,27 @@ const DataStore = {
       setSync(this.queue.length?"pendente — cache local":"sincronizado", this.queue.length?"warn":"ok");
     }catch(e){ setSync("offline — cache local","warn"); }
   },
+  // (re)carrega a lib do supabase se o <script> inicial falhou (rede instável/cache ruim).
+  // Resolve mesmo em erro — quem decide é o window.supabase logo depois.
+  loadLib(){
+    if(window.supabase) return Promise.resolve();
+    if(this._libP) return this._libP;
+    this._libP = new Promise(res=>{
+      const s=document.createElement("script");
+      s.src="vendor/supabase.js?r="+Date.now();   // cache-bust: ignora cópia ruim no cache
+      s.onload=()=>{ this._libP=null; res(); };
+      s.onerror=()=>{ this._libP=null; res(); };
+      document.head.appendChild(s);
+    });
+    return this._libP;
+  },
   async bootstrap(){
     if(!this.on){ return; }
-    if(!window.supabase){ setSync("lib supabase não carregou","warn"); return; }
-    this.sb = window.supabase.createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.anonKey, { auth:{ persistSession:true, autoRefreshToken:true } });
+    if(!window.supabase){ setSync("carregando biblioteca…","info"); await this.loadLib(); }
+    if(!window.supabase){ setSync("lib supabase não carregou","warn"); return; } // banner "tentar de novo" re-chama bootstrap
+    this.sb = this.sb || window.supabase.createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.anonKey, { auth:{ persistSession:true, autoRefreshToken:true } });
     if(!(await this.session())){ showLogin(); return; }
     await this.syncNow();
-    window.addEventListener("online", ()=>this.flush());
   }
 };
 
@@ -547,6 +561,8 @@ function he(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').repl
 function attrEsc(s){ return String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;'); }
 function today(){ const d=new Date(); return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"); } // data LOCAL (não UTC)
 function loginNeeded(){ setSync("entrar de novo","warn"); if(!$("loginOverlay").classList.contains("on")) showLogin(); }
+// recupera de qualquer estado: se o cliente não existe (lib não carregou) re-bootstrap; senão só sincroniza
+function reconectar(){ if(DataStore.on){ DataStore.sb ? DataStore.syncNow() : DataStore.bootstrap(); } }
 function fmtD(iso){ const p=iso.split("-"); return p[2]+"/"+p[1]; }
 function hist(aId,eId,before,n){ return records.filter(r=>r.alunoId===aId&&r.exercicioId===eId&&r.data<before).sort((a,b)=>b.data.localeCompare(a.data)).slice(0,n); }
 function calcCarga(montagem,qtd,peso,un,peso2,un2,bar){
@@ -760,7 +776,7 @@ function setSync(txt, cls){
   if(cls==="warn"){ // não-sincronizado: faixa visível + reassurance + tentar de novo
     ban.innerHTML = `⚠ ${he(txt)} · seus lançamentos estão salvos no aparelho <button class="icbtn" id="banSync">↻ tentar sincronizar</button>`;
     ban.style.display="flex";
-    const bs=$("banSync"); if(bs) bs.onclick=()=>DataStore.syncNow();
+    const bs=$("banSync"); if(bs) bs.onclick=reconectar;
   } else { ban.style.display="none"; ban.innerHTML=""; }
 }
 
@@ -776,7 +792,6 @@ async function doLogin(){
     if(error) throw error;
     $("loginSenha").value=""; $("loginErro").textContent=""; hideLogin();
     await DataStore.syncNow();
-    window.addEventListener("online", ()=>DataStore.flush());
   }catch(e){ $("loginErro").textContent = e.message || "Falha no login."; }
 }
 
@@ -926,7 +941,7 @@ $("btnSync").onclick=()=>DataStore.syncNow();
 $("btnSair").onclick=async()=>{ if(DataStore.sb) await DataStore.sb.auth.signOut(); location.reload(); };
 
 // modo Supabase: mostra os controles de sync
-if(DataStore.on){ $("syncWrap").style.display="flex"; setSync("conectando…","info"); }
+if(DataStore.on){ $("syncWrap").style.display="flex"; setSync("conectando…","info"); window.addEventListener("online", reconectar); }
 
 fillTurmas(); renderWeek(); renderBlocks(); renderPanel();
 DataStore.bootstrap();
