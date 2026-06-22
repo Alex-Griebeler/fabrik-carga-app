@@ -130,7 +130,8 @@ button:active{transform:scale(.985)}
 .kpi .kl{font-size:12px; color:var(--muted); text-transform:uppercase; letter-spacing:.03em; font-weight:700}
 .kpi .kv{font-size:26px; font-weight:700; margin-top:2px}
 .kpi .kv small{font-size:14px; font-weight:600; color:var(--muted)}
-.reptab{width:100%; border-collapse:collapse; background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); overflow:hidden}
+#repTabela{overflow-x:auto}
+.reptab{width:100%; min-width:680px; border-collapse:collapse; background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); overflow:hidden}
 .reptab th,.reptab td{text-align:left; padding:9px 12px; border-bottom:1px solid var(--line); font-size:14px}
 .reptab th{font-size:12px; text-transform:uppercase; letter-spacing:.03em; color:var(--muted); background:var(--bg)}
 .reptab tr:last-child td{border-bottom:none}
@@ -280,27 +281,6 @@ function save(k,v){ localStorage.setItem(k, JSON.stringify(v)) }
 function slug(s){ return s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9]+/g,"_").replace(/^_|_$/g,"") }
 function norm(s){ return s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/\s+/g," ").trim() }
 
-function parseKg(str){
-  if(!str) return null;
-  const s=str.toLowerCase().replace(/,/g,".");
-  if(!/\d/.test(s)) return null;
-  let total=0, ok=false;
-  s.split("+").forEach(seg=>{
-    seg=seg.trim(); if(!seg) return;
-    const perSide=/(cada|por)\s*lado|\/\s*lado|cd\s*lado/.test(seg)?2:1;
-    const isLb=/lb|libra/.test(seg);
-    let val=null;
-    const mult=seg.match(/(\d+(?:\.\d+)?)\s*[x×]\s*(\d+(?:\.\d+)?)/);
-    if(mult){ val=parseFloat(mult[1])*parseFloat(mult[2]); }
-    else { const n=seg.match(/(\d+(?:\.\d+)?)/); if(n) val=parseFloat(n[1]); }
-    if(val==null||isNaN(val)) return;
-    if(isLb) val*=0.45359237;
-    val*=perSide;
-    total+=val; ok=true;
-  });
-  if(!ok) return null;
-  return Math.round(total*10)/10;
-}
 
 // ── DataStore: única porta de persistência ────────────────────────
 // Modo LOCAL (SUPABASE_CONFIG vazio): cada método só grava no localStorage,
@@ -378,9 +358,23 @@ const DataStore = {
     if(this._flushP) return this._flushP;
     this._flushP = (async()=>{
       try{
-        if(!(await this.session())) return;
-        while(this.queue.length){ await this._apply(this.queue[0]); this.queue.shift(); this._saveQueue(); }
-        setSync("sincronizado","ok");
+        if(!(await this.session())){ loginNeeded(); return; }
+        while(this.queue.length){
+          const m=this.queue[0];
+          try{ await this._apply(m); }
+          catch(e){
+            if(e && e.code){ // erro de dado/constraint (ex: data vazia) → isola, NÃO trava a fila
+              const i=this.queue.indexOf(m); if(i>-1) this.queue.splice(i,1);
+              const bad=load("fabrik_sync_falhou",[]); bad.push({err:String(e.message||e.code), item:m}); save("fabrik_sync_falhou",bad);
+              this._saveQueue(); console.warn("[sync] item isolado por erro de dado:", e, m); continue;
+            }
+            throw e; // rede/transitório → para e reenvia no próximo flush
+          }
+          // remove POR IDENTIDADE (não shift cego): se enqueue compactou esse item
+          // enquanto estava em voo, o item novo permanece e é aplicado na sequência
+          const i=this.queue.indexOf(m); if(i>-1){ this.queue.splice(i,1); this._saveQueue(); }
+        }
+        setSync(this.queue.length?"pendente":"sincronizado", this.queue.length?"warn":"ok");
       }catch(e){ setSync("pendente — sem conexão","warn"); }
       finally{ this._flushP=null; }
     })();
@@ -407,7 +401,14 @@ const DataStore = {
     const byId={}; al.forEach(a=>byId[a.id]={id:a.id,nome:a.nome,turmas:[]});
     at.forEach(x=>{ if(byId[x.aluno_id]) byId[x.aluno_id].turmas.push(x.turma_id); });
     alunos = Object.values(byId); save("fabrik_alunos", alunos);
-    const { data:rg, error:e3 } = await this.sb.from("registros").select("*"); if(e3) throw e3;
+    // pagina os registros: a Data API tem teto de linhas por resposta; sem isto,
+    // acima de ~1000 registros o pull truncaria em silêncio (cache local incompleto)
+    let rg=[], from=0; const PAGE=1000;
+    for(;;){
+      const { data, error:e3 } = await this.sb.from("registros").select("*").order("data",{ascending:true}).range(from, from+PAGE-1);
+      if(e3) throw e3;
+      rg=rg.concat(data); if(!data || data.length<PAGE) break; from+=PAGE;
+    }
     records = rg.map(rowToRec); save("fabrik_cargas", records);
   },
   // Migração one-time: enfileira TUDO que já existe no localStorage deste laptop
@@ -425,6 +426,7 @@ const DataStore = {
   async syncNow(){
     try{
       setSync("sincronizando…","info");
+      if(!(await this.session())){ loginNeeded(); return; }   // sem sessão: pede login, não finge sincronizado
       if(!load("fabrik_sb_migrated", false)){ this.migrateLocalToQueue(); save("fabrik_sb_migrated", true); }
       await this.flush();
       // só puxa do banco quando a fila drenou — senão o pull sobrescreveria
@@ -462,7 +464,7 @@ let records = load("fabrik_cargas", []);
 let selBloco=1, view="registro";
 
 const $ = id => document.getElementById(id);
-$("data").value = new Date().toISOString().slice(0,10);
+$("data").value = today();
 
 function ctx(){ return { turma:$("turma").value, treino:$("treino").value, semana:$("semana").value, data:$("data").value }; }
 function blocosDe(t){ return [...new Set(TREINOS[t].map(e=>e.bloco))]; }
@@ -498,8 +500,10 @@ function renderBlocks(){
 
 function recKey(a,e,d,t){ return [a,e,d,t].join("|"); }
 function getRec(c,aId,eId){ return records.find(r=>recKey(r.alunoId,r.exercicioId,r.data,r.treino)===recKey(aId,eId,c.data,c.treino)); }
-function prevWeek(aId,eId,before){ const h=records.filter(r=>r.alunoId===aId&&r.exercicioId===eId&&r.data<before); if(!h.length)return null; h.sort((a,b)=>b.data.localeCompare(a.data)); return h[0]; }
 function he(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function attrEsc(s){ return String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;'); }
+function today(){ const d=new Date(); return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"); } // data LOCAL (não UTC)
+function loginNeeded(){ setSync("entrar de novo","warn"); if(!$("loginOverlay").classList.contains("on")) showLogin(); }
 function fmtD(iso){ const p=iso.split("-"); return p[2]+"/"+p[1]; }
 function hist(aId,eId,before,n){ return records.filter(r=>r.alunoId===aId&&r.exercicioId===eId&&r.data<before).sort((a,b)=>b.data.localeCompare(a.data)).slice(0,n); }
 function calcCarga(montagem,qtd,peso,un,peso2,un2,bar){
@@ -532,6 +536,7 @@ function histBlock(aId,eId,before){
   return `<div class="hist"><span class="hlbl">histórico</span>${lines}</div>`;
 }
 function upsert(c,aluno,ex,patch){
+  if(!c.data || !/^\d{4}-\d{2}-\d{2}$/.test(c.data)){ $("status").textContent="⚠ Defina a data antes de registrar"; return; }
   let r=getRec(c,aluno.id,ex.id);
   if(!r){ r={alunoId:aluno.id,alunoNome:aluno.nome,turma:c.turma,treino:c.treino,semana:c.semana,data:c.data,exercicioId:ex.id,exercicioNome:ex.nome,metodo:ex.metodo,bloco:ex.bloco,montagem:"",qtd:"",peso:"",un:"",peso2:"",un2:"",bar:"",cargaParcial:"",cargaTotal:"",reps:"",rr:"",troca:"",dor:false,dorNota:"",obs:""}; records.push(r); }
   Object.assign(r,patch,{semana:c.semana});
@@ -562,26 +567,26 @@ function renderPanel(){
         const mtog = ex.carga==='landmine' ? "" : `<div class="mtog"><button class="mbtn ${montagem==='impl'?'on':''}" data-v="impl">Halteres</button><button class="mbtn ${montagem==='barra'?'on':''}" data-v="barra">Barra</button></div>`;
         const totT=`<div class="ctot">= <b class="ctotal">${disp}</b> kg</div>`;
         if(montagem==='impl'){
-          cargaBox=`<div class="cbox" data-tipo="impl">${mtog}<div class="grp"><span>Impl.</span><button class="qbtn ${qtd===1?'on':''}" data-c="qtd" data-v="1">1</button><button class="qbtn ${qtd===2?'on':''}" data-c="qtd" data-v="2">2</button></div><div class="grp"><span>Peso</span><input class="cin" data-c="peso" inputmode="decimal" placeholder="0" value="${peso}"></div>${unTog('un',un)}${totT}</div>`;
+          cargaBox=`<div class="cbox" data-tipo="impl">${mtog}<div class="grp"><span>Impl.</span><button class="qbtn ${qtd===1?'on':''}" data-c="qtd" data-v="1">1</button><button class="qbtn ${qtd===2?'on':''}" data-c="qtd" data-v="2">2</button></div><div class="grp"><span>Peso</span><input class="cin" data-c="peso" inputmode="decimal" placeholder="0" value="${attrEsc(peso)}"></div>${unTog('un',un)}${totT}</div>`;
         } else if(montagem==='barra'){
-          cargaBox=`<div class="cbox" data-tipo="barra">${mtog}<div class="grp"><span>Por lado</span><input class="cin" data-c="peso" inputmode="decimal" placeholder="0" value="${peso}"></div>${unTog('un',un)}<div class="grp anilha2" style="${peso2?'':'display:none'}"><span>+</span><input class="cin" data-c="peso2" inputmode="decimal" placeholder="0" value="${peso2}">${unTog('un2',un2)}</div><button class="icbtn addAnilha" style="${peso2?'display:none':''}">+ anilha</button><span class="x2">×2</span><div class="grp"><span>+ barra</span><input class="cin barra" data-c="bar" inputmode="decimal" value="${bar}"><small>kg</small></div>${totT}</div>`;
+          cargaBox=`<div class="cbox" data-tipo="barra">${mtog}<div class="grp"><span>Por lado</span><input class="cin" data-c="peso" inputmode="decimal" placeholder="0" value="${attrEsc(peso)}"></div>${unTog('un',un)}<div class="grp anilha2" style="${peso2?'':'display:none'}"><span>+</span><input class="cin" data-c="peso2" inputmode="decimal" placeholder="0" value="${attrEsc(peso2)}">${unTog('un2',un2)}</div><button class="icbtn addAnilha" style="${peso2?'display:none':''}">+ anilha</button><span class="x2">×2</span><div class="grp"><span>+ barra</span><input class="cin barra" data-c="bar" inputmode="decimal" value="${attrEsc(bar)}"><small>kg</small></div>${totT}</div>`;
         } else {
-          cargaBox=`<div class="cbox" data-tipo="landmine"><div class="grp"><span>Peso</span><input class="cin" data-c="peso" inputmode="decimal" placeholder="0" value="${peso}"></div>${unTog('un',un)}<div class="grp"><span>+ barra</span><input class="cin barra" data-c="bar" inputmode="decimal" value="${bar}"><small>kg</small></div>${totT}</div>`;
+          cargaBox=`<div class="cbox" data-tipo="landmine"><div class="grp"><span>Peso</span><input class="cin" data-c="peso" inputmode="decimal" placeholder="0" value="${attrEsc(peso)}"></div>${unTog('un',un)}<div class="grp"><span>+ barra</span><input class="cin barra" data-c="bar" inputmode="decimal" value="${attrEsc(bar)}"><small>kg</small></div>${totT}</div>`;
         }
       }
       return `<div class="exline" data-aluno="${a.id}" data-ex="${ex.id}">
         <div class="exhead"><span class="ex">${ex.nome}</span><span class="meta">alvo ${ex.alvo}</span></div>
         <div class="row">
           ${cargaBox}
-          <div class="grp"><span>Reps</span><input class="sm" data-f="reps" inputmode="numeric" placeholder="—" value="${r.reps||""}"></div>
-          <div class="grp"><span>RR</span><input class="sm" data-f="rr" placeholder="—" value="${r.rr||""}"></div>
+          <div class="grp"><span>Reps</span><input class="sm" data-f="reps" inputmode="numeric" placeholder="—" value="${attrEsc(r.reps||"")}"></div>
+          <div class="grp"><span>RR</span><input class="sm" data-f="rr" placeholder="—" value="${attrEsc(r.rr||"")}"></div>
           <button class="icbtn btn-troca" style="margin-left:auto">↻ trocar</button>
           <button class="icbtn btn-dor">⚠ dor</button>
           <button class="icbtn btn-obs">✎ obs</button>
         </div>
-        <div class="troca-edit"><input data-f="troca" placeholder="trocou por qual exercício? (histórico fica no original)" value="${(r.troca||"").replace(/"/g,'&quot;')}"></div>
-        <div class="dor-edit"><input data-f="dorNota" placeholder="o que foi? (ex: joelho D, amplitude parcial)" value="${(r.dorNota||"").replace(/"/g,'&quot;')}"></div>
-        <div class="obs-edit"><input data-f="obs" placeholder="observação (cansaço, técnica, etc.)" value="${(r.obs||"").replace(/"/g,'&quot;')}"></div>
+        <div class="troca-edit"><input data-f="troca" placeholder="trocou por qual exercício? (histórico fica no original)" value="${attrEsc(r.troca||"")}"></div>
+        <div class="dor-edit"><input data-f="dorNota" placeholder="o que foi? (ex: joelho D, amplitude parcial)" value="${attrEsc(r.dorNota||"")}"></div>
+        <div class="obs-edit"><input data-f="obs" placeholder="observação (cansaço, técnica, etc.)" value="${attrEsc(r.obs||"")}"></div>
         <div class="tags"></div>
         ${histBlock(a.id,ex.id,c.data)}
       </div>`;
@@ -696,7 +701,7 @@ function exportCSV(rows, fname){
   const esc=v=>`"${String(v??"").replace(/"/g,'""')}"`;
   const lines=[head.map(esc).join(",")].concat(rows.map(r=>cols.map(k=>esc(r[k])).join(",")));
   const blob=new Blob(["\uFEFF"+lines.join("\n")],{type:"text/csv;charset=utf-8"});
-  const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download=(fname||"fabrik_cargas_"+new Date().toISOString().slice(0,10))+".csv"; a.click();
+  const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download=(fname||"fabrik_cargas_"+today())+".csv"; a.click();
 }
 
 // ── status de sync (visível só no modo Supabase) ──────────────────
@@ -775,7 +780,7 @@ $("novoNome").addEventListener("keydown",e=>{ if(e.key==="Enter") addAluno(); })
 $("addBtn").onclick=addAluno;
 $("filtroMaster").addEventListener("keyup",renderMaster);
 ["repAluno","repExercicio","repDe","repAte"].forEach(id=>$(id).addEventListener("change",renderRelatorio));
-$("repExport").onclick=()=>exportCSV(repFiltrados(), "fabrik_relatorio_"+new Date().toISOString().slice(0,10));
+$("repExport").onclick=()=>exportCSV(repFiltrados(), "fabrik_relatorio_"+today());
 $("loginBtn").onclick=doLogin;
 $("loginSenha").addEventListener("keydown",e=>{ if(e.key==="Enter") doLogin(); });
 $("btnSync").onclick=()=>DataStore.syncNow();
