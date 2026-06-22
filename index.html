@@ -100,6 +100,7 @@ button:active{transform:scale(.985)}
 .histline{font-size:13px; display:flex; flex-wrap:wrap; gap:8px; align-items:baseline}
 .histline .hd{color:var(--muted); font-weight:700; min-width:40px}
 .histline .hc{font-weight:600; color:var(--ink)}
+.histline .hmont{font-weight:600; color:var(--info)}
 .hflag{font-size:12px; padding:2px 8px; border-radius:6px; font-weight:600}
 .hflag.dor{color:#fff; background:var(--info)}
 .hflag.troca,.hflag.obs{color:var(--muted); background:var(--graf-bg)}
@@ -517,7 +518,10 @@ function histBlock(aId,eId,before){
   const h=hist(aId,eId,before,3);
   if(!h.length) return `<div class="hist"><span class="hlbl">sem histórico</span></div>`;
   const lines=h.map(r=>{
-    const carga = r.cargaTotal? he(r.cargaTotal)+" kg" : (r.cargaParcial?he(r.cargaParcial):"");
+    const total = r.cargaTotal? he(r.cargaTotal)+" kg" : "";
+    const parcial = r.cargaParcial? he(r.cargaParcial) : "";
+    // total + montagem parcial (ajuda a remontar a barra) — sugestão do Diego
+    const carga = (total && parcial) ? total+` <span class="hmont">(${parcial})</span>` : (total || parcial);
     const det=[carga, r.reps?he(r.reps)+" reps":"", r.rr?"RR "+he(r.rr):""].filter(Boolean).join(" · ");
     let flags="";
     if(r.dor||r.dorNota) flags+=`<span class="hflag dor">⚠ ${he(r.dorNota||"dor")}</span>`;
@@ -749,15 +753,16 @@ function renderRelatorio(){
   if(!rows.length){ $("repTabela").innerHTML=`<p class="muted">Sem registros para esse filtro.</p>`; return; }
   const trs=rows.map(r=>{
     const carga = (r.cargaTotal!==""&&r.cargaTotal!=null) ? he(r.cargaTotal)+" kg" : (r.cargaParcial?he(r.cargaParcial):"—");
+    const montagem = r.cargaParcial? he(r.cargaParcial) : "—";
     const flags=[ (r.dor||r.dorNota)?"⚠ "+he(r.dorNota||"dor"):"", r.troca?"↻ "+he(r.troca):"", r.obs?he(r.obs):"" ].filter(Boolean).join(" · ");
     return `<tr>
       <td>${fmtD(r.data)}</td><td>T${he(r.treino)} · B${he(r.bloco)}</td>
       <td>${he(r.alunoNome)}</td><td>${he(r.exercicioNome)}</td>
-      <td class="num">${carga}</td><td>${he(r.reps||"—")}</td><td>${he(r.rr||"—")}</td>
+      <td class="num">${carga}</td><td>${montagem}</td><td>${he(r.reps||"—")}</td><td>${he(r.rr||"—")}</td>
       <td>${flags||""}</td></tr>`;
   }).join("");
   $("repTabela").innerHTML=`<table class="reptab"><thead><tr>
-    <th>Data</th><th>Treino</th><th>Aluno</th><th>Exercício</th><th>Carga</th><th>Reps</th><th>RR</th><th>Dor / troca / obs</th>
+    <th>Data</th><th>Treino</th><th>Aluno</th><th>Exercício</th><th>Carga</th><th>Montagem</th><th>Reps</th><th>RR</th><th>Dor / troca / obs</th>
   </tr></thead><tbody>${trs}</tbody></table>`;
 }
 
