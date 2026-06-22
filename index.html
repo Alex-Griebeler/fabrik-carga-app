@@ -144,6 +144,34 @@ button:active{transform:scale(.985)}
 .loginbox input{width:100%}
 .loginbox .btn-primary{width:100%; margin-top:6px}
 #loginErro{color:var(--info); font-size:13px; font-weight:600; min-height:16px; margin:10px 0 0}
+/* gráficos de evolução de carga */
+#repCharts{margin:4px 0 14px}
+.charts{display:grid; grid-template-columns:repeat(auto-fill,minmax(290px,1fr)); gap:12px}
+.charts.one{grid-template-columns:1fr; max-width:620px}
+.chartcard{background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); padding:10px 12px}
+.chartt{font-size:14px; font-weight:600}
+.chartmeta{font-size:12px; color:var(--muted); margin:1px 0 6px}
+.chartmeta b{color:var(--ink)}
+svg.chart{width:100%; height:auto; display:block}
+svg.chart .cax{font-size:10px; fill:var(--muted)}
+svg.chart .clast{font-size:12px; font-weight:700; fill:var(--info)}
+svg.chart .grid{stroke:var(--line); stroke-width:1}
+/* impressão / Salvar como PDF (relatório de um aluno) */
+#printArea{display:none}
+@media print{
+  body{background:#fff; padding:0}
+  .wrap, #loginOverlay{display:none !important}
+  #printArea{display:block !important}
+  .charts{grid-template-columns:1fr 1fr}
+  .chartcard{break-inside:avoid; border-color:#ccc}
+  .pdfhead{border-bottom:2px solid var(--info); padding-bottom:8px; margin-bottom:14px}
+  .pdfbrand{font-size:20px; font-weight:700; color:var(--info)}
+  .pdfsub{font-size:13px; color:#444; margin-top:2px}
+  .pdfh{font-size:14px; margin:16px 0 6px}
+  .pdffoot{margin-top:14px; font-size:11px; color:#888; text-align:center}
+  .reptab{min-width:0; font-size:11px} .reptab th,.reptab td{padding:4px 6px}
+  #repCharts{margin:0 0 10px}
+}
 </style>
 </head>
 <body>
@@ -209,10 +237,12 @@ button:active{transform:scale(.985)}
       <div class="fld"><label>Exercício</label><select id="repExercicio"></select></div>
       <div class="fld"><label>De</label><input type="date" id="repDe"></div>
       <div class="fld"><label>Até</label><input type="date" id="repAte"></div>
-      <div class="fld" style="margin-left:auto"><label>&nbsp;</label><button id="repExport">⭳ CSV do filtro</button></div>
+      <div class="fld" style="margin-left:auto"><label>&nbsp;</label><button id="repPdf" class="btn-primary">⭳ PDF do aluno</button></div>
+      <div class="fld"><label>&nbsp;</label><button id="repExport">⭳ CSV do filtro</button></div>
     </div>
     <p class="hint">Visão provisória de evolução de carga. O relatório "de verdade" é no Fabrik Performance.</p>
     <div id="repKpis" class="repkpis"></div>
+    <div id="repCharts"></div>
     <div id="repTabela"></div>
   </div>
 
@@ -229,6 +259,9 @@ button:active{transform:scale(.985)}
     <p id="loginErro"></p>
   </div>
 </div>
+
+<!-- camada usada só na impressão (Salvar como PDF) do relatório de um aluno -->
+<div id="printArea"></div>
 
 <script src="vendor/supabase.js"></script>
 <script>
@@ -754,8 +787,13 @@ function renderRelatorio(){
       <div class="kpi"><div class="kl">Δ vs. sessão anterior</div><div class="kv">${delta!=null?(delta>0?"+":"")+delta:"—"}<small>${delta!=null?" kg":""}</small></div></div>`;
   }
   $("repKpis").innerHTML=kpis;
+  $("repCharts").innerHTML=chartsBlock();
+  $("repTabela").innerHTML=tabelaHTML(rows);
+}
 
-  if(!rows.length){ $("repTabela").innerHTML=`<p class="muted">Sem registros para esse filtro.</p>`; return; }
+// tabela cronológica do relatório (reusada na tela e no PDF)
+function tabelaHTML(rows){
+  if(!rows.length) return `<p class="muted">Sem registros para esse filtro.</p>`;
   const trs=rows.map(r=>{
     const carga = (r.cargaTotal!==""&&r.cargaTotal!=null) ? he(r.cargaTotal)+" kg" : (r.cargaParcial?he(r.cargaParcial):"—");
     const montagem = r.cargaParcial? he(r.cargaParcial) : "—";
@@ -766,9 +804,80 @@ function renderRelatorio(){
       <td class="num">${carga}</td><td>${montagem}</td><td>${he(r.reps||"—")}</td><td>${he(r.rr||"—")}</td>
       <td>${flags||""}</td></tr>`;
   }).join("");
-  $("repTabela").innerHTML=`<table class="reptab"><thead><tr>
+  return `<table class="reptab"><thead><tr>
     <th>Data</th><th>Treino</th><th>Aluno</th><th>Exercício</th><th>Carga</th><th>Montagem</th><th>Reps</th><th>RR</th><th>Dor / troca / obs</th>
   </tr></thead><tbody>${trs}</tbody></table>`;
+}
+
+// série de carga (kg) de um aluno+exercício, respeitando o filtro de datas, ordenada por data
+function serieCarga(aId, exId){
+  const de=$("repDe").value, ate=$("repAte").value;
+  return records.filter(r=> r.alunoId===aId && r.exercicioId===exId
+      && r.cargaTotal!=="" && r.cargaTotal!=null && !isNaN(parseFloat(r.cargaTotal))
+      && (!de||r.data>=de) && (!ate||r.data<=ate))
+    .map(r=>({d:r.data, v:parseFloat(r.cargaTotal)}))
+    .sort((a,b)=>a.d.localeCompare(b.d));
+}
+
+// gráfico de linha em SVG puro (sem libs) — evolução de carga
+function chartSVG(pts, opt){
+  opt=opt||{}; const w=opt.w||300, h=opt.h||130, pad={l:34,r:12,t:14,b:22};
+  if(!pts.length) return `<div class="muted" style="padding:10px 0">sem carga registrada</div>`;
+  const vs=pts.map(p=>p.v), vmin=Math.min(...vs), vmax=Math.max(...vs), span=(vmax-vmin)||1;
+  const iw=w-pad.l-pad.r, ih=h-pad.t-pad.b;
+  const X=i=> pad.l + (pts.length===1? iw/2 : iw*i/(pts.length-1));
+  const Y=v=> pad.t + ih - ih*(v-vmin)/span;
+  const d=pts.map((p,i)=>`${i?'L':'M'}${X(i).toFixed(1)},${Y(p.v).toFixed(1)}`).join(" ");
+  const dots=pts.map((p,i)=>`<circle cx="${X(i).toFixed(1)}" cy="${Y(p.v).toFixed(1)}" r="3" fill="var(--info)"/>`).join("");
+  const last=pts[pts.length-1];
+  return `<svg viewBox="0 0 ${w} ${h}" class="chart" preserveAspectRatio="xMidYMid meet" role="img">
+    <line class="grid" x1="${pad.l}" y1="${pad.t}" x2="${pad.l}" y2="${(pad.t+ih).toFixed(1)}"/>
+    <line class="grid" x1="${pad.l}" y1="${(pad.t+ih).toFixed(1)}" x2="${w-pad.r}" y2="${(pad.t+ih).toFixed(1)}"/>
+    <text x="2" y="${(pad.t+8).toFixed(1)}" class="cax">${vmax}</text>
+    <text x="2" y="${(pad.t+ih).toFixed(1)}" class="cax">${vmin}</text>
+    <text x="${pad.l}" y="${h-6}" class="cax">${fmtD(pts[0].d)}</text>
+    <text x="${w-pad.r}" y="${h-6}" class="cax" text-anchor="end">${fmtD(last.d)}</text>
+    <path d="${d}" fill="none" stroke="var(--info)" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
+    ${dots}
+    <text x="${X(pts.length-1).toFixed(1)}" y="${(Y(last.v)-7).toFixed(1)}" text-anchor="end" class="clast">${last.v}kg</text>
+  </svg>`;
+}
+
+// bloco de gráficos do aluno selecionado (1 grande se exercício escolhido; senão small-multiples)
+function chartsBlock(){
+  const aId=$("repAluno").value, eId=$("repExercicio").value;
+  if(!aId) return `<p class="muted">Selecione um aluno para ver os gráficos de evolução de carga.</p>`;
+  const exIds = eId ? [eId] : Object.keys(EXALL).filter(x=> serieCarga(aId,x).length);
+  if(!exIds.length) return `<p class="muted">Sem carga registrada para esse aluno no período (exercícios de peso corporal/tempo não têm gráfico).</p>`;
+  const big=!!eId;
+  return `<div class="charts ${big?'one':''}">` + exIds.map(ex=>{
+    const s=serieCarga(aId,ex); const last=s[s.length-1].v, best=Math.max(...s.map(p=>p.v));
+    return `<div class="chartcard">
+      <div class="chartt">${he(EXALL[ex])}</div>
+      <div class="chartmeta">última <b>${last}kg</b> · melhor <b>${best}kg</b> · ${s.length} ${s.length===1?'sessão':'sessões'}</div>
+      ${chartSVG(s,{w:big?560:300,h:big?230:130})}
+    </div>`;
+  }).join("") + `</div>`;
+}
+
+// gera o PDF (via impressão) do aluno selecionado, pra enviar individual
+function gerarPDF(){
+  const aId=$("repAluno").value;
+  if(!aId){ alert("Selecione um aluno no filtro para gerar o PDF."); return; }
+  const aluno=alunos.find(a=>a.id===aId)||{nome:aId};
+  const rows=repFiltrados();
+  const ds=rows.map(r=>r.data).sort();
+  const periodo = ds.length? `${fmtD(ds[0])} a ${fmtD(ds[ds.length-1])}` : "sem registros";
+  $("printArea").innerHTML = `
+    <div class="pdfhead">
+      <div class="pdfbrand">Fabrik — Evolução de Carga</div>
+      <div class="pdfsub">${he(aluno.nome)} · período ${periodo} · gerado em ${fmtD(today())}</div>
+    </div>
+    ${chartsBlock()}
+    <h3 class="pdfh">Histórico</h3>
+    ${tabelaHTML(rows)}
+    <div class="pdffoot">Registro de Carga · visão provisória · Fabrik Studio</div>`;
+  window.print();
 }
 
 document.querySelectorAll(".viewbtn").forEach(b=>b.onclick=()=>setView(b.dataset.v));
@@ -781,6 +890,7 @@ $("addBtn").onclick=addAluno;
 $("filtroMaster").addEventListener("keyup",renderMaster);
 ["repAluno","repExercicio","repDe","repAte"].forEach(id=>$(id).addEventListener("change",renderRelatorio));
 $("repExport").onclick=()=>exportCSV(repFiltrados(), "fabrik_relatorio_"+today());
+$("repPdf").onclick=gerarPDF;
 $("loginBtn").onclick=doLogin;
 $("loginSenha").addEventListener("keydown",e=>{ if(e.key==="Enter") doLogin(); });
 $("btnSync").onclick=()=>DataStore.syncNow();
