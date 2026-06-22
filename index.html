@@ -422,6 +422,8 @@ const DataStore = {
   async _apply(m){
     const sb=this.sb;
     if(m.kind==="registro"){
+      // conflito: o upsert sobrescreve a linha — vence a ÚLTIMA escrita que chega ao
+      // servidor. client_updated_at/source_device_id são gravados mas NÃO comparados (#14).
       const { error } = await sb.from("registros").upsert(m.data,{ onConflict:"aluno_id,exercicio_id,data,treino" });
       if(error) throw error;
     } else if(m.kind==="aluno"){
@@ -510,6 +512,8 @@ function blocosDe(t){ return [...new Set(TREINOS[t].map(e=>e.bloco))]; }
 function exsDoBloco(t,b){ return TREINOS[t].filter(e=>e.bloco===b); }
 function initials(n){ return n.split(" ").map(w=>w[0]).slice(0,2).join("").toUpperCase(); }
 function alunosDaTurma(t){ return alunos.filter(a=>a.turmas.includes(t)).sort((x,y)=>x.nome.localeCompare(y.nome,"pt")); }
+// id vem do nome (slug); o sufixo _N só desambigua contra a lista LOCAL. Dois laptops
+// offline cadastrando o mesmo nome colidem no mesmo id (#9) — cadastrar num lugar só/online.
 function uniqueId(nome){ let base=slug(nome)||"aluno", id=base, i=2; while(alunos.some(a=>a.id===id)){ id=base+"_"+i; i++; } return id; }
 function afterChange(){ view==="alunos"?renderMaster():(view==="relatorio"?renderRelatorio():renderPanel()); }
 
