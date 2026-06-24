@@ -190,6 +190,7 @@ svg.chart .grid{stroke:var(--line); stroke-width:1}
     <span id="syncWrap" style="margin-left:auto;display:none;align-items:center;gap:8px">
       <span id="syncBadge" class="syncbadge">local</span>
       <button id="btnSync" class="icbtn">↻ sincronizar</button>
+      <button id="btnPend" class="icbtn" title="Baixa os lançamentos guardados neste computador que ainda não subiram pra nuvem">⤓ backup local</button>
       <button id="btnSair" class="icbtn">sair</button>
     </span>
   </div>
@@ -938,7 +939,26 @@ $("repPdf").onclick=gerarPDF;
 $("loginBtn").onclick=doLogin;
 $("loginSenha").addEventListener("keydown",e=>{ if(e.key==="Enter") doLogin(); });
 $("btnSync").onclick=()=>DataStore.syncNow();
+$("btnPend").onclick=exportarPendencias;
 $("btnSair").onclick=async()=>{ if(DataStore.sb) await DataStore.sb.auth.signOut(); location.reload(); };
+
+// exporta TUDO que está guardado neste navegador (inclui o que não subiu) — recuperação de dado
+function exportarPendencias(){
+  const dump = {
+    exportadoEm: new Date().toISOString(),
+    device: load("fabrik_device", null),
+    cargas: load("fabrik_cargas", []),
+    fila: load("fabrik_syncqueue", []),
+    falhou: load("fabrik_sync_falhou", [])
+  };
+  const blob=new Blob([JSON.stringify(dump)],{type:"application/json"});
+  const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download="fabrik_pendencias_"+today()+".json"; a.click();
+  const datas={}; dump.cargas.forEach(r=>{ datas[r.data]=(datas[r.data]||0)+1; });
+  alert("Backup local baixado.\n\nRegistros locais: "+dump.cargas.length+
+        "\nNa fila (não subiram): "+dump.fila.length+
+        "\nIsolados por erro: "+dump.falhou.length+
+        "\n\nEnvie o arquivo fabrik_pendencias_*.json pro suporte.");
+}
 
 // modo Supabase: mostra os controles de sync
 if(DataStore.on){ $("syncWrap").style.display="flex"; setSync("conectando…","info"); window.addEventListener("online", reconectar); }
