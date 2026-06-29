@@ -200,6 +200,7 @@ svg.chart .grid{stroke:var(--line); stroke-width:1}
   <div id="viewRegistro">
     <div class="bar">
       <div class="fld"><label>Turma</label><select id="turma"></select></div>
+      <div class="fld"><label>Mês</label><select id="mes"></select></div>
       <div class="fld"><label>Treino</label>
         <select id="treino">
           <option value="1">Treino 1 — potência / força</option>
@@ -291,29 +292,59 @@ const RULES = {
 };
 const WCOLOR = { ok:["#eceae6","#33312f"], info:["#f5e9e6","#a45248"], warn:["#efd9d3","#8c4139"], hot:["#a45248","#ffffff"] };
 
-const TREINOS = {
-  "1":[
-    {id:"t1_thruster",nome:"Thruster unilateral c/ rotação DB",tipo:"carga",carga:"impl",un:"kg",qtd:1,metodo:"SUPERSET",alvo:"3-4RR",bloco:1},
-    {id:"t1_rdl",nome:"RDL base assimétrica 2KB",tipo:"carga",carga:"impl",un:"kg",qtd:2,metodo:"SUPERSET",alvo:"1-2RR",bloco:2},
-    {id:"t1_barrafixa",nome:"Barra fixa supinada EXC (4-5s)",tipo:"pc",metodo:"SUPERSET",alvo:"1-2RR",bloco:2},
-    {id:"t1_taca",nome:"Agachamento taça c/ pausa (3s)",tipo:"carga",carga:"impl",un:"kg",qtd:1,metodo:"SUPERSET",alvo:"1-2RR",bloco:3},
-    {id:"t1_supino",nome:"Supino reto BB",tipo:"carga",carga:"barra",un:"lb",bar:10,metodo:"SUPERSET",alvo:"1-2RR",bloco:3}
-  ],
-  "2":[
-    {id:"t2_bulgaro",nome:"Agachamento búlgaro",tipo:"carga",carga:"impl",un:"kg",qtd:1,metodo:"SUPERSET",alvo:"1-2RR",bloco:1},
-    {id:"t2_remada",nome:"Remada curvada landmine",tipo:"carga",carga:"landmine",un:"lb",bar:10,metodo:"SUPERSET",alvo:"1-2RR",bloco:1},
-    {id:"t2_supinoinc",nome:"Supino inclinado DB",tipo:"carga",carga:"impl",un:"kg",qtd:2,metodo:"TRISET",alvo:"1-2RR",bloco:2},
-    {id:"t2_flexao",nome:"Flexão joelhos slide",tipo:"pc",metodo:"TRISET",alvo:"1-2RR",bloco:2},
-    {id:"t2_abd",nome:"ABD inversa no solo",tipo:"pc",metodo:"TRISET",alvo:"1-2RR",bloco:2}
-  ],
-  "3":[
-    {id:"t3_extensao",nome:"Extensão de tronco na caixa alta",tipo:"carga",carga:"impl",un:"kg",qtd:1,metodo:"SUPERSET",alvo:"1-2RR",bloco:1},
-    {id:"t3_argolas",nome:"Remada aberta nas argolas",tipo:"pc",metodo:"SUPERSET",alvo:"1-2RR",bloco:1},
-    {id:"t3_airbike",nome:"Air bike",tipo:"tempo",metodo:"CIRCUITO",alvo:"85-90%",bloco:2},
-    {id:"t3_corda",nome:"Slam + sprawl corda naval",tipo:"tempo",metodo:"CIRCUITO",alvo:"85-90%",bloco:2},
-    {id:"t3_remo",nome:"Remo",tipo:"tempo",metodo:"CIRCUITO",alvo:"85-90%",bloco:2},
-    {id:"t3_farmer",nome:"Farmer carry 2KB/DB",tipo:"carga",carga:"impl",un:"kg",qtd:2,metodo:"CIRCUITO",alvo:"80%",bloco:2}
-  ]
+const MESES = {
+  "Jun 26": {
+    "1":[
+      {id:"t1_thruster",nome:"Thruster unilateral c/ rotação DB",tipo:"carga",carga:"impl",un:"kg",qtd:1,metodo:"SUPERSET",alvo:"3-4RR",bloco:1},
+      {id:"t1_rdl",nome:"RDL base assimétrica 2KB",tipo:"carga",carga:"impl",un:"kg",qtd:2,metodo:"SUPERSET",alvo:"1-2RR",bloco:2},
+      {id:"t1_barrafixa",nome:"Barra fixa supinada EXC (4-5s)",tipo:"pc",metodo:"SUPERSET",alvo:"1-2RR",bloco:2},
+      {id:"t1_taca",nome:"Agachamento taça c/ pausa (3s)",tipo:"carga",carga:"impl",un:"kg",qtd:1,metodo:"SUPERSET",alvo:"1-2RR",bloco:3},
+      {id:"t1_supino",nome:"Supino reto BB",tipo:"carga",carga:"barra",un:"lb",bar:10,metodo:"SUPERSET",alvo:"1-2RR",bloco:3}
+    ],
+    "2":[
+      {id:"t2_bulgaro",nome:"Agachamento búlgaro",tipo:"carga",carga:"impl",un:"kg",qtd:1,metodo:"SUPERSET",alvo:"1-2RR",bloco:1},
+      {id:"t2_remada",nome:"Remada curvada landmine",tipo:"carga",carga:"landmine",un:"lb",bar:10,metodo:"SUPERSET",alvo:"1-2RR",bloco:1},
+      {id:"t2_supinoinc",nome:"Supino inclinado DB",tipo:"carga",carga:"impl",un:"kg",qtd:2,metodo:"TRISET",alvo:"1-2RR",bloco:2},
+      {id:"t2_flexao",nome:"Flexão joelhos slide",tipo:"pc",metodo:"TRISET",alvo:"1-2RR",bloco:2},
+      {id:"t2_abd",nome:"ABD inversa no solo",tipo:"pc",metodo:"TRISET",alvo:"1-2RR",bloco:2}
+    ],
+    "3":[
+      {id:"t3_extensao",nome:"Extensão de tronco na caixa alta",tipo:"carga",carga:"impl",un:"kg",qtd:1,metodo:"SUPERSET",alvo:"1-2RR",bloco:1},
+      {id:"t3_argolas",nome:"Remada aberta nas argolas",tipo:"pc",metodo:"SUPERSET",alvo:"1-2RR",bloco:1},
+      {id:"t3_airbike",nome:"Air bike",tipo:"tempo",metodo:"CIRCUITO",alvo:"85-90%",bloco:2},
+      {id:"t3_corda",nome:"Slam + sprawl corda naval",tipo:"tempo",metodo:"CIRCUITO",alvo:"85-90%",bloco:2},
+      {id:"t3_remo",nome:"Remo",tipo:"tempo",metodo:"CIRCUITO",alvo:"85-90%",bloco:2},
+      {id:"t3_farmer",nome:"Farmer carry 2KB/DB",tipo:"carga",carga:"impl",un:"kg",qtd:2,metodo:"CIRCUITO",alvo:"80%",bloco:2}
+    ]
+  },
+  "Jul 26": {
+    "1":[
+      {id:"jul26_t1_afundo",nome:"Afundo pliométrico c/ argolas",tipo:"pc",metodo:"SUPERSET",alvo:"3-4RR",bloco:1},
+      {id:"jul26_t1_kbpull",nome:"KB high pull",tipo:"carga",carga:"impl",un:"kg",qtd:1,metodo:"SUPERSET",alvo:"3-4RR",bloco:1},
+      {id:"jul26_t1_agachbb",nome:"Agachamento BB (caixa de referência)",tipo:"carga",carga:"barra",un:"lb",bar:10,metodo:"SUPERSET",alvo:"1-2RR",bloco:2},
+      {id:"jul26_t1_remadaarg",nome:"Remada fechada nas argolas (PE)",tipo:"pc",metodo:"SUPERSET",alvo:"1-2RR",bloco:2},
+      {id:"jul26_t1_flexjoelho",nome:"Flexão do joelho UNL nas argolas",tipo:"pc",metodo:"SUPERSET",alvo:"1-2RR",bloco:3},
+      {id:"jul26_t1_pressvert",nome:"Press vertical UNL (PFE)",tipo:"carga",carga:"impl",un:"kg",qtd:1,metodo:"SUPERSET",alvo:"1-2RR",bloco:3}
+    ],
+    "2":[
+      {id:"jul26_t2_deadlift",nome:"Deadlift sumô BB",tipo:"carga",carga:"barra",un:"lb",bar:10,metodo:"SUPERSET",alvo:"1-2RR",bloco:1},
+      {id:"jul26_t2_puxadaarg",nome:"Puxada vertical nas argolas",tipo:"pc",metodo:"SUPERSET",alvo:"1-2RR",bloco:1},
+      {id:"jul26_t2_curtsy",nome:"Curtsy lunge taça",tipo:"carga",carga:"impl",un:"kg",qtd:1,metodo:"SUPERSET",alvo:"1-2RR",bloco:2},
+      {id:"jul26_t2_flexbr",nome:"Flexão de braços",tipo:"pc",metodo:"SUPERSET",alvo:"1-2RR",bloco:2},
+      {id:"jul26_t2_facepull",nome:"Face pull c/ SB",tipo:"pc",metodo:"TRISET",alvo:"1-2RR",bloco:3},
+      {id:"jul26_t2_rosca",nome:"Rosca bíceps martelo",tipo:"carga",carga:"impl",un:"kg",qtd:2,metodo:"TRISET",alvo:"1-2RR",bloco:3},
+      {id:"jul26_t2_triceps",nome:"Tríceps testa em pé c/ SB",tipo:"pc",metodo:"TRISET",alvo:"1-2RR",bloco:3}
+    ],
+    "3":[
+      {id:"jul26_t3_pressdiag",nome:"Press diagonal landmine",tipo:"carga",carga:"landmine",un:"lb",bar:10,metodo:"TRISET",alvo:"1-2RR",bloco:1},
+      {id:"jul26_t3_lungeslide",nome:"Lunge reverso taça slide",tipo:"carga",carga:"impl",un:"kg",qtd:1,metodo:"TRISET",alvo:"1-2RR",bloco:1},
+      {id:"jul26_t3_pullthr",nome:"Pull through c/ SB",tipo:"pc",metodo:"TRISET",alvo:"1-2RR",bloco:1},
+      {id:"jul26_t3_pranchaball",nome:"Prancha dinâmica bola suíça",tipo:"pc",metodo:"CIRCUITO",alvo:"30s",bloco:2},
+      {id:"jul26_t3_pranchamao",nome:"Prancha alta mãos no ombro",tipo:"pc",metodo:"CIRCUITO",alvo:"30s",bloco:2},
+      {id:"jul26_t3_ohddir",nome:"Carregamento overhead UNL (dir)",tipo:"carga",carga:"impl",un:"kg",qtd:1,metodo:"CIRCUITO",alvo:"mod",bloco:2},
+      {id:"jul26_t3_ohdesq",nome:"Carregamento overhead UNL (esq)",tipo:"carga",carga:"impl",un:"kg",qtd:1,metodo:"CIRCUITO",alvo:"mod",bloco:2}
+    ]
+  }
 };
 
 function load(k,d){ try{ const v=JSON.parse(localStorage.getItem(k)); return v===null?d:v }catch(e){ return d } }
@@ -522,9 +553,10 @@ let selBloco=1, view="registro";
 const $ = id => document.getElementById(id);
 $("data").value = today();
 
-function ctx(){ return { turma:$("turma").value, treino:$("treino").value, semana:$("semana").value, data:$("data").value }; }
-function blocosDe(t){ return [...new Set(TREINOS[t].map(e=>e.bloco))]; }
-function exsDoBloco(t,b){ return TREINOS[t].filter(e=>e.bloco===b); }
+function ctx(){ return { mes:$("mes").value, turma:$("turma").value, treino:$("treino").value, semana:$("semana").value, data:$("data").value }; }
+function treinosDo(mes){ return MESES[mes] || MESES[Object.keys(MESES)[0]]; }
+function blocosDe(t){ return [...new Set(treinosDo($("mes").value)[t].map(e=>e.bloco))]; }
+function exsDoBloco(t,b){ return treinosDo($("mes").value)[t].filter(e=>e.bloco===b); }
 function initials(n){ return n.split(" ").map(w=>w[0]).slice(0,2).join("").toUpperCase(); }
 function alunosDaTurma(t){ return alunos.filter(a=>a.turmas.includes(t)).sort((x,y)=>x.nome.localeCompare(y.nome,"pt")); }
 // id vem do nome (slug); o sufixo _N só desambigua contra a lista LOCAL. Dois laptops
@@ -543,6 +575,7 @@ function setView(v){
   else renderPanel();
 }
 
+function fillMes(){ const keys=Object.keys(MESES); $("mes").innerHTML = keys.map((m,i)=>`<option${i===keys.length-1?" selected":""}>${m}</option>`).join(""); }
 function fillTurmas(){ $("turma").innerHTML = TURMAS.map(t=>`<option ${t==="09:00"?"selected":""}>${t}</option>`).join(""); }
 function renderWeek(){
   const r=RULES[$("semana").value]; const [bg,fg]=WCOLOR[r.cls];
@@ -659,7 +692,7 @@ function wirePanel(c){
   $("panel").querySelectorAll(".exline").forEach(line=>{
     const aId=line.dataset.aluno, exId=line.dataset.ex;
     const aluno=alunos.find(a=>a.id===aId);
-    const ex=TREINOS[c.treino].find(e=>e.id===exId);
+    const ex=treinosDo(c.mes)[c.treino].find(e=>e.id===exId);
     const tags=()=>{ const r=getRec(c,aId,exId)||{}; let t=""; if(r.dor||r.dorNota)t+=`<span class="tag dor">⚠ ${he(r.dorNota||"dor")}</span>`; if(r.troca)t+=`<span class="tag troca">↻ ${he(r.troca)}</span>`; line.querySelector(".tags").innerHTML=t; };
     tags();
     // #1: sinaliza carga lançada sem reps (pré-requisito do cálculo de trabalho no FP)
@@ -797,7 +830,7 @@ async function doLogin(){
 }
 
 // ── Relatório provisório (evolução de carga por aluno/exercício) ──
-const EXALL = (function(){ const m={}; Object.values(TREINOS).flat().forEach(e=>{ m[e.id]=e.nome; }); return m; })();
+const EXALL = (function(){ const m={}; Object.values(MESES).forEach(mes=>Object.values(mes).flat().forEach(e=>{ m[e.id]=e.nome; })); return m; })();
 function repFiltrados(){
   const aId=$("repAluno").value, eId=$("repExercicio").value, de=$("repDe").value, ate=$("repAte").value;
   return records.filter(r=>
@@ -926,7 +959,7 @@ function gerarPDF(){
 }
 
 document.querySelectorAll(".viewbtn").forEach(b=>b.onclick=()=>setView(b.dataset.v));
-["treino","turma","semana","data"].forEach(id=>$(id).addEventListener("change",()=>{ renderWeek(); renderBlocks(); renderPanel(); }));
+["mes","treino","turma","semana","data"].forEach(id=>$(id).addEventListener("change",()=>{ renderWeek(); renderBlocks(); renderPanel(); }));
 $("busca").addEventListener("keyup",renderPanel);
 $("exportar").onclick=()=>exportCSV();
 $("novoNome").addEventListener("input",renderDup);
@@ -963,7 +996,7 @@ function exportarPendencias(){
 // modo Supabase: mostra os controles de sync
 if(DataStore.on){ $("syncWrap").style.display="flex"; setSync("conectando…","info"); window.addEventListener("online", reconectar); }
 
-fillTurmas(); renderWeek(); renderBlocks(); renderPanel();
+fillMes(); fillTurmas(); renderWeek(); renderBlocks(); renderPanel();
 DataStore.bootstrap();
 </script>
 </body>
