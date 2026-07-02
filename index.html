@@ -121,6 +121,15 @@ button:active{transform:scale(.985)}
 .hchips{display:flex; flex-wrap:wrap; gap:5px; margin-top:8px}
 .hchip{font-size:12px; padding:5px 10px; border:1px solid var(--line2); border-radius:6px; cursor:pointer; color:var(--muted); font-weight:600}
 .hchip.on{background:var(--info-bg); border-color:var(--info); color:var(--info)}
+.chamada{background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); padding:10px 14px; margin:0 0 12px}
+.chamada .chtop{display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:8px}
+.chamada .chlbl{font-size:12px; color:var(--muted); text-transform:uppercase; letter-spacing:.03em; font-weight:700}
+.chamada .chcount{font-size:13px; color:var(--muted); font-weight:600}
+.chamada .chtoggle{margin-left:auto; font-size:13px; padding:6px 12px}
+.chnames{display:flex; flex-wrap:wrap; gap:6px}
+.chname{font-size:14px; padding:7px 12px; border:1px solid var(--line2); border-radius:8px; cursor:pointer; color:var(--muted); font-weight:600; background:var(--surface)}
+.chname.on{background:var(--info-bg); border-color:var(--info); color:var(--info)}
+.chname.on::before{content:"✓ "; font-weight:700}
 .syncbadge{font-size:12px; font-weight:700; padding:5px 10px; border-radius:8px; background:var(--graf-bg); color:var(--muted)}
 #syncBanner{display:none; align-items:center; gap:10px; flex-wrap:wrap; background:#f5e9e6; border:1px solid var(--info); color:#8c4139; border-radius:10px; padding:10px 14px; margin:0 0 14px; font-size:14px; font-weight:600}
 #syncBanner button{font-size:13px}
@@ -221,6 +230,7 @@ svg.chart .grid{stroke:var(--line); stroke-width:1}
       <div id="weekBanner" class="week"></div>
     </div>
     <div class="blocks" id="blocks"></div>
+    <div id="chamada" class="chamada"></div>
     <div class="search"><i>⌕</i><input id="busca" placeholder="filtrar aluno na turma…" autocomplete="off"></div>
     <div id="panel"></div>
   </div>
@@ -548,7 +558,7 @@ if(alunos===null){
   save("fabrik_alunos",alunos);
 }
 let records = load("fabrik_cargas", []);
-let selBloco=1, view="registro";
+let selBloco=1, view="registro", mostrarTodos=false;
 
 const $ = id => document.getElementById(id);
 $("data").value = today();
@@ -559,6 +569,22 @@ function blocosDe(t){ return [...new Set(treinosDo($("mes").value)[t].map(e=>e.b
 function exsDoBloco(t,b){ return treinosDo($("mes").value)[t].filter(e=>e.bloco===b); }
 function initials(n){ return n.split(" ").map(w=>w[0]).slice(0,2).join("").toUpperCase(); }
 function alunosDaTurma(t){ return alunos.filter(a=>a.turmas.includes(t)).sort((x,y)=>x.nome.localeCompare(y.nome,"pt")); }
+// ── chamada / presença (só filtro de UI; localStorage por turma+data, sem sync) ──
+function presKey(c){ return (c.turma||"")+"|"+(c.data||""); }
+function getPresentes(c){ const m=load("fabrik_presenca",{}); return m[presKey(c)]||null; } // null = ninguém marcado ainda
+// presentes que AINDA pertencem à turma (ignora IDs fantasma de aluno removido/desmarcado)
+function presentesValidos(c){
+  const pres=getPresentes(c); if(!pres) return null;
+  const naTurma=new Set(alunosDaTurma(c.turma).map(a=>a.id));
+  const v=pres.filter(id=>naTurma.has(id));
+  return v.length?v:null;
+}
+function togglePresente(c,id){
+  const m=load("fabrik_presenca",{}); const k=presKey(c); const cur=new Set(m[k]||[]);
+  cur.has(id)?cur.delete(id):cur.add(id);
+  if(cur.size) m[k]=[...cur]; else delete m[k];
+  save("fabrik_presenca",m);
+}
 // id vem do nome (slug); o sufixo _N só desambigua contra a lista LOCAL. Dois laptops
 // offline cadastrando o mesmo nome colidem no mesmo id (#9) — cadastrar num lugar só/online.
 function uniqueId(nome){ let base=slug(nome)||"aluno", id=base, i=2; while(alunos.some(a=>a.id===id)){ id=base+"_"+i; i++; } return id; }
@@ -636,11 +662,36 @@ function upsert(c,aluno,ex,patch){
   $("status").textContent="Salvo "+new Date().toLocaleTimeString("pt-BR",{hour:'2-digit',minute:'2-digit',second:'2-digit'});
 }
 
+// faixa de chamada: marca quem veio hoje; a lista de registro passa a mostrar só os presentes
+function renderChamada(){
+  const c=ctx(); const turma=alunosDaTurma(c.turma);
+  const el=$("chamada"); if(!el) return;
+  if(!turma.length){ el.style.display="none"; el.innerHTML=""; return; }
+  el.style.display="block";
+  const pres=presentesValidos(c); const set=new Set(pres||[]);
+  if(!pres) mostrarTodos=false; // sem presentes válidos: volta pro modo "todos" (evita ficar preso)
+  const nP=set.size;
+  const chips=turma.map(a=>`<span class="chname ${set.has(a.id)?'on':''}" data-id="${a.id}">${he(a.nome)}</span>`).join("");
+  const toggle = pres ? `<button class="icbtn chtoggle" id="chToggle">${mostrarTodos?'só presentes':'mostrar todos'}</button>` : "";
+  el.innerHTML = `<div class="chtop"><span class="chlbl">Chamada</span>`+
+    `<span class="chcount">${nP} presente${nP===1?'':'s'} · ${turma.length} na turma</span>${toggle}</div>`+
+    `<div class="chnames">${chips}</div>`;
+  el.querySelectorAll(".chname").forEach(ch=>ch.onclick=()=>{ togglePresente(c,ch.dataset.id); renderChamada(); renderPanel(); });
+  const bt=$("chToggle"); if(bt) bt.onclick=()=>{ mostrarTodos=!mostrarTodos; renderChamada(); renderPanel(); };
+}
 function renderPanel(){
+  renderChamada();
   const c=ctx(); const q=norm($("busca").value);
-  const lista=alunosDaTurma(c.turma).filter(a=>norm(a.nome).includes(q));
+  const pres=presentesValidos(c);
+  // se há chamada feita no dia e não estamos em "mostrar todos", filtra pelos presentes
+  const usarPresenca = pres && !mostrarTodos;
+  const presSet = usarPresenca ? new Set(pres) : null;
+  const lista=alunosDaTurma(c.turma)
+    .filter(a=>!presSet || presSet.has(a.id))
+    .filter(a=>norm(a.nome).includes(q));
   const exs=exsDoBloco(c.treino,selBloco);
-  if(!lista.length){ $("panel").innerHTML=`<p class="muted">Nenhum aluno na turma ${c.turma}. Vá na aba <b>Alunos</b> e marque o horário ${c.turma} pros alunos dela.</p>`; return; }
+  if(!alunosDaTurma(c.turma).length){ $("panel").innerHTML=`<p class="muted">Nenhum aluno na turma ${c.turma}. Vá na aba <b>Alunos</b> e marque o horário ${c.turma} pros alunos dela.</p>`; return; }
+  if(!lista.length){ $("panel").innerHTML=`<p class="muted">${usarPresenca?'Nenhum presente marcado na chamada bate com a busca. Marque presentes acima ou use <b>mostrar todos</b>.':'Nenhum aluno encontrado com esse filtro.'}</p>`; return; }
   $("panel").innerHTML = lista.map(a=>{
     const lines=exs.map(ex=>{
       const r=getRec(c,a.id,ex.id)||{};
@@ -959,7 +1010,10 @@ function gerarPDF(){
 }
 
 document.querySelectorAll(".viewbtn").forEach(b=>b.onclick=()=>setView(b.dataset.v));
-["mes","treino","turma","semana","data"].forEach(id=>$(id).addEventListener("change",()=>{ renderWeek(); renderBlocks(); renderPanel(); }));
+["mes","treino","turma","semana","data"].forEach(id=>$(id).addEventListener("change",()=>{
+  if(id==="turma"||id==="data") mostrarTodos=false; // novo contexto de chamada começa nos presentes
+  renderWeek(); renderBlocks(); renderPanel();
+}));
 $("busca").addEventListener("keyup",renderPanel);
 $("exportar").onclick=()=>exportCSV();
 $("novoNome").addEventListener("input",renderDup);
