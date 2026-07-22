@@ -656,7 +656,7 @@ function calcCarga(montagem,qtd,peso,un,peso2,un2,bar){
   let total=0, parcial="";
   if(montagem==='impl'||montagem==='kb'){ const q=Number(qtd)||1; total=q*cv(p,un); const suf=montagem==='kb'?" KB":""; parcial=(q>1?q+" × ":"")+p+" "+un+suf; }
   else if(montagem==='barra'){ const side=p+" "+un+(p2?" + "+p2+" "+(un2||'kg'):""); total=(cv(p,un)+cv(p2,un2||'kg'))*2+b; parcial=side+"/lado + barra "+b+" kg"; }
-  else { total=cv(p,un)+b; parcial=p+" "+un+" + barra "+b+" kg"; }
+  else { total=cv(p,un)+cv(p2,un2||'kg')+b; parcial=p+" "+un+(p2?" + "+p2+" "+(un2||'kg'):"")+" + barra "+b+" kg"; }
   total=Math.round(total*10)/10;
   return p? {total:String(total), parcial} : {total:"", parcial:""};
 }
@@ -744,7 +744,7 @@ function renderPanel(){
         } else if(montagem==='barra'){
           cargaBox=`<div class="cbox" data-tipo="barra">${mtog}<div class="grp"><span>Por lado</span><input class="cin" data-c="peso" inputmode="decimal" placeholder="0" value="${attrEsc(peso)}"></div>${unTog('un',un)}<div class="grp anilha2" style="${peso2?'':'display:none'}"><span>+</span><input class="cin" data-c="peso2" inputmode="decimal" placeholder="0" value="${attrEsc(peso2)}">${unTog('un2',un2)}</div><button class="icbtn addAnilha" style="${peso2?'display:none':''}">+ anilha</button><span class="x2">×2</span><div class="grp"><span>+ barra</span><input class="cin barra" data-c="bar" inputmode="decimal" value="${attrEsc(bar)}"><small>kg</small></div>${totT}</div>`;
         } else {
-          cargaBox=`<div class="cbox" data-tipo="landmine"><div class="grp"><span>Peso</span><input class="cin" data-c="peso" inputmode="decimal" placeholder="0" value="${attrEsc(peso)}"></div>${unTog('un',un)}<div class="grp"><span>+ barra</span><input class="cin barra" data-c="bar" inputmode="decimal" value="${attrEsc(bar)}"><small>kg</small></div>${totT}</div>`;
+          cargaBox=`<div class="cbox" data-tipo="landmine"><div class="grp"><span>Peso</span><input class="cin" data-c="peso" inputmode="decimal" placeholder="0" value="${attrEsc(peso)}"></div>${unTog('un',un)}<div class="grp anilha2" style="${peso2?'':'display:none'}"><span>+</span><input class="cin" data-c="peso2" inputmode="decimal" placeholder="0" value="${attrEsc(peso2)}">${unTog('un2',un2)}</div><button class="icbtn addAnilha" style="${peso2?'display:none':''}">+ peso</button><div class="grp"><span>+ barra</span><input class="cin barra" data-c="bar" inputmode="decimal" value="${attrEsc(bar)}"><small>kg</small></div>${totT}</div>`;
         }
       }
       return `<div class="exline" data-aluno="${a.id}" data-ex="${ex.id}">
