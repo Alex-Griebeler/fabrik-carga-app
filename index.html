@@ -121,6 +121,11 @@ button:active{transform:scale(.985)}
 .hchips{display:flex; flex-wrap:wrap; gap:5px; margin-top:8px}
 .hchip{font-size:12px; padding:5px 10px; border:1px solid var(--line2); border-radius:6px; cursor:pointer; color:var(--muted); font-weight:600}
 .hchip.on{background:var(--info-bg); border-color:var(--info); color:var(--info)}
+.cbox.elastico{align-items:center}
+.ellbl{font-size:12px; color:var(--muted); font-weight:600; margin-right:2px}
+.elchips{display:flex; flex-wrap:wrap; gap:6px}
+.elch{font:inherit; font-weight:700; padding:7px 12px; border:1px solid var(--line2); border-radius:7px; background:var(--surface); cursor:pointer; color:var(--muted)}
+.elch.on{background:var(--info-bg); border-color:var(--info); color:var(--info)}
 .chamada{background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); padding:10px 14px; margin:0 0 12px}
 .chamada .chtop{display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:8px}
 .chamada .chlbl{font-size:12px; color:var(--muted); text-transform:uppercase; letter-spacing:.03em; font-weight:700}
@@ -293,6 +298,8 @@ const SUPABASE_CONFIG = {
 };
 
 const TURMAS = ["06:00","07:00","08:00","09:00","10:00","11:00","12:30","16:30","17:30","18:30"];
+// níveis de resistência de elástico (superband/miniband) — ordinal, não é kg
+const NIVEIS_ELASTICO = ["Leve","Média","Forte","Extra"];
 
 const RULES = {
   "1":{txt:"Deload — reduz carga e volume, recupera.", cls:"ok"},
@@ -330,7 +337,7 @@ const MESES = {
   "Jul 26": {
     "1":[
       {id:"jul26_t1_afundo",nome:"Afundo pliométrico c/ argolas",tipo:"pc",metodo:"SUPERSET",alvo:"3-4RR",bloco:1},
-      {id:"jul26_t1_kbpull",nome:"KB high pull",tipo:"carga",carga:"impl",un:"kg",qtd:1,metodo:"SUPERSET",alvo:"3-4RR",bloco:1},
+      {id:"jul26_t1_kbpull",nome:"KB high pull",tipo:"carga",carga:"kb",un:"kg",qtd:1,metodo:"SUPERSET",alvo:"3-4RR",bloco:1},
       {id:"jul26_t1_agachbb",nome:"Agachamento BB (caixa de referência)",tipo:"carga",carga:"barra",un:"lb",bar:10,metodo:"SUPERSET",alvo:"1-2RR",bloco:2},
       {id:"jul26_t1_remadaarg",nome:"Remada fechada nas argolas (PE)",tipo:"pc",metodo:"SUPERSET",alvo:"1-2RR",bloco:2},
       {id:"jul26_t1_flexjoelho",nome:"Flexão do joelho UNL nas argolas",tipo:"pc",metodo:"SUPERSET",alvo:"1-2RR",bloco:3},
@@ -341,14 +348,14 @@ const MESES = {
       {id:"jul26_t2_puxadaarg",nome:"Puxada vertical nas argolas",tipo:"pc",metodo:"SUPERSET",alvo:"1-2RR",bloco:1},
       {id:"jul26_t2_curtsy",nome:"Curtsy lunge taça",tipo:"carga",carga:"impl",un:"kg",qtd:1,metodo:"SUPERSET",alvo:"1-2RR",bloco:2},
       {id:"jul26_t2_flexbr",nome:"Flexão de braços",tipo:"pc",metodo:"SUPERSET",alvo:"1-2RR",bloco:2},
-      {id:"jul26_t2_facepull",nome:"Face pull c/ SB",tipo:"pc",metodo:"TRISET",alvo:"1-2RR",bloco:3},
+      {id:"jul26_t2_facepull",nome:"Face pull c/ SB",tipo:"elastico",metodo:"TRISET",alvo:"1-2RR",bloco:3},
       {id:"jul26_t2_rosca",nome:"Rosca bíceps martelo",tipo:"carga",carga:"impl",un:"kg",qtd:2,metodo:"TRISET",alvo:"1-2RR",bloco:3},
-      {id:"jul26_t2_triceps",nome:"Tríceps testa em pé c/ SB",tipo:"pc",metodo:"TRISET",alvo:"1-2RR",bloco:3}
+      {id:"jul26_t2_triceps",nome:"Tríceps testa em pé c/ SB",tipo:"elastico",metodo:"TRISET",alvo:"1-2RR",bloco:3}
     ],
     "3":[
       {id:"jul26_t3_pressdiag",nome:"Press diagonal landmine",tipo:"carga",carga:"landmine",un:"lb",bar:10,metodo:"TRISET",alvo:"1-2RR",bloco:1},
       {id:"jul26_t3_lungeslide",nome:"Lunge reverso taça slide",tipo:"carga",carga:"impl",un:"kg",qtd:1,metodo:"TRISET",alvo:"1-2RR",bloco:1},
-      {id:"jul26_t3_pullthr",nome:"Pull through c/ SB",tipo:"pc",metodo:"TRISET",alvo:"1-2RR",bloco:1},
+      {id:"jul26_t3_pullthr",nome:"Pull through c/ SB",tipo:"elastico",metodo:"TRISET",alvo:"1-2RR",bloco:1},
       {id:"jul26_t3_pranchaball",nome:"Prancha dinâmica bola suíça",tipo:"pc",metodo:"CIRCUITO",alvo:"30s",bloco:2},
       {id:"jul26_t3_pranchamao",nome:"Prancha alta mãos no ombro",tipo:"pc",metodo:"CIRCUITO",alvo:"30s",bloco:2},
       {id:"jul26_t3_ohddir",nome:"Carregamento overhead UNL (dir)",tipo:"carga",carga:"impl",un:"kg",qtd:1,metodo:"CIRCUITO",alvo:"mod",bloco:2},
@@ -630,7 +637,7 @@ function calcCarga(montagem,qtd,peso,un,peso2,un2,bar){
   const nn=x=>{ const n=parseFloat(String(x).replace(",","."))||0; return n<0?0:n; }; // sem negativo
   const p=nn(peso), p2=nn(peso2), b=nn(bar);
   let total=0, parcial="";
-  if(montagem==='impl'){ const q=Number(qtd)||1; total=q*cv(p,un); parcial=(q>1?q+" × ":"")+p+" "+un; }
+  if(montagem==='impl'||montagem==='kb'){ const q=Number(qtd)||1; total=q*cv(p,un); const suf=montagem==='kb'?" KB":""; parcial=(q>1?q+" × ":"")+p+" "+un+suf; }
   else if(montagem==='barra'){ const side=p+" "+un+(p2?" + "+p2+" "+(un2||'kg'):""); total=(cv(p,un)+cv(p2,un2||'kg'))*2+b; parcial=side+"/lado + barra "+b+" kg"; }
   else { total=cv(p,un)+b; parcial=p+" "+un+" + barra "+b+" kg"; }
   total=Math.round(total*10)/10;
@@ -696,7 +703,9 @@ function renderPanel(){
     const lines=exs.map(ex=>{
       const r=getRec(c,a.id,ex.id)||{};
       const isCarga=ex.tipo==="carga";
+      const isElastico=ex.tipo==="elastico";
       const montagem = ex.carga==='landmine' ? 'landmine' : (r.montagem||ex.carga);
+      const isKbLike = montagem==='impl'||montagem==='kb';
       const un=r.un||ex.un||"kg", un2=r.un2||"kg", qtd=Number(r.qtd||ex.qtd||1);
       const bar=(r.bar!==undefined&&r.bar!=="")?r.bar:(ex.bar!==undefined?ex.bar:10);
       const peso=(r.peso!==undefined&&r.peso!==null)?r.peso:"";
@@ -704,13 +713,17 @@ function renderPanel(){
       const disp = isCarga ? (calcCarga(montagem,qtd,peso,un,peso2,un2,bar).total||'—') : '';
       const unTog=(dc,cur)=>`<div class="unit"><button class="ubtn ${cur==='kg'?'on':''}" data-c="${dc}" data-v="kg">kg</button><button class="ubtn ${cur==='lb'?'on':''}" data-c="${dc}" data-v="lb">lb</button></div>`;
       let cargaBox;
-      if(!isCarga){
+      if(isElastico){
+        const nivel=r.cargaParcial||"";
+        cargaBox=`<div class="cbox elastico" data-tipo="elastico"><span class="ellbl">Elástico</span><div class="elchips">`+
+          NIVEIS_ELASTICO.map(n=>`<button class="elch ${nivel===n?'on':''}" data-nivel="${attrEsc(n)}">${he(n)}</button>`).join("")+`</div></div>`;
+      } else if(!isCarga){
         cargaBox=`<div class="grp"><span>Carga</span><input class="kg" disabled value="${ex.tipo==='pc'?'PC':'tempo'}" style="color:var(--muted);font-size:15px;font-weight:600"></div>`;
       } else {
-        const mtog = ex.carga==='landmine' ? "" : `<div class="mtog"><button class="mbtn ${montagem==='impl'?'on':''}" data-v="impl">Halteres</button><button class="mbtn ${montagem==='barra'?'on':''}" data-v="barra">Barra</button></div>`;
+        const mtog = ex.carga==='landmine' ? "" : `<div class="mtog"><button class="mbtn ${montagem==='impl'?'on':''}" data-v="impl">Halteres</button><button class="mbtn ${montagem==='kb'?'on':''}" data-v="kb">Kettlebell</button><button class="mbtn ${montagem==='barra'?'on':''}" data-v="barra">Barra</button></div>`;
         const totT=`<div class="ctot">= <b class="ctotal">${disp}</b> kg</div>`;
-        if(montagem==='impl'){
-          cargaBox=`<div class="cbox" data-tipo="impl">${mtog}<div class="grp"><span>Impl.</span><button class="qbtn ${qtd===1?'on':''}" data-c="qtd" data-v="1">1</button><button class="qbtn ${qtd===2?'on':''}" data-c="qtd" data-v="2">2</button></div><div class="grp"><span>Peso</span><input class="cin" data-c="peso" inputmode="decimal" placeholder="0" value="${attrEsc(peso)}"></div>${unTog('un',un)}${totT}</div>`;
+        if(isKbLike){
+          cargaBox=`<div class="cbox" data-tipo="${montagem}">${mtog}<div class="grp"><span>Impl.</span><button class="qbtn ${qtd===1?'on':''}" data-c="qtd" data-v="1">1</button><button class="qbtn ${qtd===2?'on':''}" data-c="qtd" data-v="2">2</button></div><div class="grp"><span>Peso</span><input class="cin" data-c="peso" inputmode="decimal" placeholder="0" value="${attrEsc(peso)}"></div>${unTog('un',un)}${totT}</div>`;
         } else if(montagem==='barra'){
           cargaBox=`<div class="cbox" data-tipo="barra">${mtog}<div class="grp"><span>Por lado</span><input class="cin" data-c="peso" inputmode="decimal" placeholder="0" value="${attrEsc(peso)}"></div>${unTog('un',un)}<div class="grp anilha2" style="${peso2?'':'display:none'}"><span>+</span><input class="cin" data-c="peso2" inputmode="decimal" placeholder="0" value="${attrEsc(peso2)}">${unTog('un2',un2)}</div><button class="icbtn addAnilha" style="${peso2?'display:none':''}">+ anilha</button><span class="x2">×2</span><div class="grp"><span>+ barra</span><input class="cin barra" data-c="bar" inputmode="decimal" value="${attrEsc(bar)}"><small>kg</small></div>${totT}</div>`;
         } else {
@@ -783,6 +796,13 @@ function wirePanel(c){
         const out=calcCarga(b.dataset.v, rr.qtd||ex.qtd||1, rr.peso, rr.un||ex.un||'kg', rr.peso2, rr.un2||'kg', (rr.bar!==""&&rr.bar!=null)?rr.bar:(ex.bar!=null?ex.bar:10));
         upsert(c,aluno,ex,{cargaTotal:out.total,cargaParcial:out.parcial});
         renderPanel();
+      });
+    }
+    if(ex.tipo==="elastico"){
+      // nível de resistência (ordinal, não é kg): guarda o nome em cargaParcial, sem cargaTotal
+      line.querySelectorAll(".elch").forEach(b=>b.onclick=()=>{
+        line.querySelectorAll(".elch").forEach(x=>x.classList.toggle("on", x===b));
+        upsert(c,aluno,ex,{montagem:"elastico",cargaParcial:b.dataset.nivel,cargaTotal:""});
       });
     }
     line.querySelector(".btn-troca").onclick=()=>tog(line,".troca-edit");
