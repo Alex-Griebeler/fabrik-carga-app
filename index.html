@@ -139,6 +139,13 @@ button:active{transform:scale(.985)}
 #syncBanner{display:none; align-items:center; gap:10px; flex-wrap:wrap; background:#f5e9e6; border:1px solid var(--info); color:#8c4139; border-radius:10px; padding:10px 14px; margin:0 0 14px; font-size:14px; font-weight:600}
 #syncBanner button{font-size:13px}
 input.sm.semreps{border-color:var(--info); box-shadow:0 0 0 2px var(--info-bg)}
+/* anti-esquecimento: exercício com campo faltando + campo específico realçado */
+.exline.pend{border-left:3px solid var(--info); padding-left:9px; background:#fbf4f2}
+.faltou{border-color:var(--info) !important; box-shadow:0 0 0 2px var(--info-bg)}
+.elchips.faltou{box-shadow:none; border:1px dashed var(--info); border-radius:8px; padding:4px}
+.pendbadge{font-size:12px; font-weight:700; padding:4px 10px; border-radius:8px; background:var(--info-bg); color:var(--info); margin-left:8px}
+.pendbadge.ok{background:var(--ok-bg); color:var(--ok)}
+.pendbadge:empty{display:none}
 .syncbadge.ok{background:var(--ok-bg); color:var(--ok)}
 .syncbadge.info{background:var(--info-bg); color:var(--info)}
 .syncbadge.warn{background:#efd9d3; color:#8c4139}
@@ -632,6 +639,16 @@ function loginNeeded(){ setSync("entrar de novo","warn"); if(!$("loginOverlay").
 function reconectar(){ if(DataStore.on){ DataStore.sb ? DataStore.syncNow() : DataStore.bootstrap(); } }
 function fmtD(iso){ const p=iso.split("-"); return p[2]+"/"+p[1]; }
 function hist(aId,eId,before,n){ return records.filter(r=>r.alunoId===aId&&r.exercicioId===eId&&r.data<before).sort((a,b)=>b.data.localeCompare(a.data)).slice(0,n); }
+// campos ainda não preenchidos deste exercício p/ este aluno (anti-esquecimento).
+// "trocou" zera a cobrança (fez outro exercício); tempo (metcon) não exige campo.
+function faltando(ex,r){
+  r=r||{}; if(r.troca) return [];
+  const f=[]; const temReps=String(r.reps||"").trim()!=="";
+  if(ex.tipo==="carga"){ if(String(r.cargaTotal||"").trim()==="") f.push("carga"); if(!temReps) f.push("reps"); }
+  else if(ex.tipo==="elastico"){ if(String(r.cargaParcial||"").trim()==="") f.push("nivel"); if(!temReps) f.push("reps"); }
+  else if(ex.tipo==="pc"){ if(!temReps) f.push("reps"); }
+  return f; // tempo: nada obrigatório
+}
 function calcCarga(montagem,qtd,peso,un,peso2,un2,bar){
   const cv=(v,u)=> u==='lb'? v*0.45359237 : v;
   const nn=x=>{ const n=parseFloat(String(x).replace(",","."))||0; return n<0?0:n; }; // sem negativo
@@ -747,7 +764,7 @@ function renderPanel(){
         ${histBlock(a.id,ex.id,c.data)}
       </div>`;
     }).join("");
-    return `<div class="scard"><div class="shead"><div class="avatar">${initials(a.nome)}</div><div class="nm">${he(a.nome)}</div><button class="icbtn btn-rename" data-aluno="${a.id}" style="margin-left:auto">✎ nome</button></div>${lines}</div>`;
+    return `<div class="scard"><div class="shead"><div class="avatar">${initials(a.nome)}</div><div class="nm">${he(a.nome)}</div><span class="pendbadge"></span><button class="icbtn btn-rename" data-aluno="${a.id}" style="margin-left:auto">✎ nome</button></div>${lines}</div>`;
   }).join("");
   wirePanel(c);
 }
@@ -759,9 +776,18 @@ function wirePanel(c){
     const ex=treinosDo(c.mes)[c.treino].find(e=>e.id===exId);
     const tags=()=>{ const r=getRec(c,aId,exId)||{}; let t=""; if(r.dor||r.dorNota)t+=`<span class="tag dor">⚠ ${he(r.dorNota||"dor")}</span>`; if(r.troca)t+=`<span class="tag troca">↻ ${he(r.troca)}</span>`; line.querySelector(".tags").innerHTML=t; };
     tags();
-    // #1: sinaliza carga lançada sem reps (pré-requisito do cálculo de trabalho no FP)
+    // realça os campos ainda não preenchidos (anti-esquecimento) + selo de pendências no card
     const repsInp=line.querySelector('input[data-f="reps"]');
-    const flagReps=()=>{ if(ex.tipo!=="carga"||!repsInp) return; const r=getRec(c,aId,exId)||{}; repsInp.classList.toggle("semreps",(r.cargaTotal!==""&&r.cargaTotal!=null)&&!String(r.reps||"").trim()); };
+    const card=line.closest(".scard");
+    const flagReps=()=>{
+      const r=getRec(c,aId,exId)||{}; const falta=faltando(ex,r);
+      line.classList.toggle("pend", falta.length>0);
+      if(repsInp) repsInp.classList.toggle("faltou", falta.includes("reps"));
+      const pesoInp=line.querySelector('.cbox .cin[data-c="peso"]'); if(pesoInp) pesoInp.classList.toggle("faltou", falta.includes("carga"));
+      const chips=line.querySelector('.elchips'); if(chips) chips.classList.toggle("faltou", falta.includes("nivel"));
+      if(card){ const n=card.querySelectorAll(".exline.pend").length; const b=card.querySelector(".pendbadge");
+        if(b){ b.textContent = n? "⚠ "+n+" pendente"+(n>1?"s":"") : "✓ completo"; b.classList.toggle("ok", n===0); } }
+    };
     flagReps();
     line.querySelectorAll("input[data-f]").forEach(inp=>inp.addEventListener("change",()=>{
       const p={}; p[inp.dataset.f]=inp.value;
@@ -803,6 +829,7 @@ function wirePanel(c){
       line.querySelectorAll(".elch").forEach(b=>b.onclick=()=>{
         line.querySelectorAll(".elch").forEach(x=>x.classList.toggle("on", x===b));
         upsert(c,aluno,ex,{montagem:"elastico",cargaParcial:b.dataset.nivel,cargaTotal:""});
+        flagReps();
       });
     }
     line.querySelector(".btn-troca").onclick=()=>tog(line,".troca-edit");
