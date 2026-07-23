@@ -104,6 +104,15 @@ button:active{transform:scale(.985)}
 .hflag{font-size:12px; padding:2px 8px; border-radius:6px; font-weight:600}
 .hflag.dor{color:#fff; background:var(--info)}
 .hflag.troca,.hflag.obs{color:var(--muted); background:var(--graf-bg)}
+.adaptado{font-size:11px; font-weight:700; padding:2px 8px; border-radius:6px; background:var(--info-bg); color:var(--info)}
+.adapt-edit{display:none; margin-top:9px; background:var(--bg); border:1px dashed var(--line2); border-radius:8px; padding:10px}
+.adapt-edit .rowf{display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-bottom:8px}
+.adapt-edit .adapt-nome{flex:1 1 260px}
+.adapt-row{display:flex; gap:14px; flex-wrap:wrap; align-items:center; margin-bottom:8px}
+.alab{font-size:12px; color:var(--muted); font-weight:600}
+.atipo,.aimpl{display:flex; gap:4px; align-items:center}
+.abtn{font:inherit; font-weight:700; padding:6px 11px; border:1px solid var(--line2); border-radius:7px; background:var(--surface); cursor:pointer; color:var(--muted)}
+.abtn.on{background:var(--info-bg); border-color:var(--info); color:var(--info)}
 .troca-edit,.obs-edit,.dor-edit{margin-top:9px; display:none}
 .troca-edit input,.obs-edit input,.dor-edit input{width:100%}
 .muted{color:var(--muted); font-size:13px}
@@ -599,6 +608,46 @@ function togglePresente(c,id){
   if(cur.size) m[k]=[...cur]; else delete m[k];
   save("fabrik_presenca",m);
 }
+// ── adaptação individual do exercício (vira o padrão do aluno; reaparece na próxima semana) ──
+// localStorage por aluno+mês+treino+slot; resiliente a multi-laptop via reconstrução dos registros já sincronizados.
+let adapts = load("fabrik_adapt", {});
+function adaptKey(aId,c,slotId){ return [aId,c.mes,c.treino,slotId].join("|"); }
+function saveAdapt(aId,c,slotId,def){ const k=adaptKey(aId,c,slotId); adapts[k]= def || {reverted:true}; save("fabrik_adapt",adapts); }
+// A adaptação MANTÉM o id do slot (só troca nome/tipo/implemento). Assim nenhum registro fica
+// órfão, não há colisão de id, e o registro passa a guardar o nome adaptado em exercicioNome.
+// reconstrói a adaptação p/ outro laptop: registro mais recente do slot cujo nome ≠ o prescrito.
+function adaptDeRecords(aId,c,slotId){
+  const prescrito=(treinosDo(c.mes)[c.treino].find(e=>e.id===slotId)||{}).nome;
+  const rs=records.filter(r=>r.alunoId===aId && r.exercicioId===slotId && String(r.treino)===String(c.treino)
+                  && r.exercicioNome && r.exercicioNome!==prescrito)
+                  .sort((x,y)=>String(y.data).localeCompare(String(x.data)));
+  if(!rs.length) return null;
+  const r=rs[0]; let tipo="pc", carga, un, qtd, bar;
+  if(r.montagem==="elastico") tipo="elastico";
+  else if(["impl","kb","barra","landmine"].includes(r.montagem)){ tipo="carga"; carga=r.montagem; un=r.un||"kg"; qtd=Number(r.qtd)||1; bar=r.bar; }
+  else if(String(r.cargaTotal||"").trim()!==""){ tipo="carga"; carga="impl"; un=r.un||"kg"; qtd=Number(r.qtd)||1; }
+  return { nome:r.exercicioNome, tipo, carga, un, qtd, bar };
+}
+function getAdapt(aId,c,slotId){
+  const k=adaptKey(aId,c,slotId);
+  if(k in adapts){ const v=adapts[k]; return (v&&v.reverted)?null:v; } // reverted = voltou ao original (bloqueia fallback)
+  return adaptDeRecords(aId,c,slotId);
+}
+// exercício EFETIVO do aluno: o adaptado (se houver) no lugar do prescrito da turma. MESMO id do slot.
+function exEfetivo(ex,aId,c){
+  const ad=getAdapt(aId,c,ex.id); if(!ad) return ex;
+  return { id:ex.id, slotId:ex.id, adaptado:true, origNome:ex.nome,
+    nome:ad.nome, tipo:ad.tipo||"carga", carga:ad.carga, un:ad.un||"kg", qtd:ad.qtd||1, bar:ad.bar,
+    metodo:ex.metodo, alvo:ex.alvo, bloco:ex.bloco };
+}
+// nome de um exercício por id (inclui adaptados, que não estão no MESES/EXALL)
+function nomeEx(id){ return EXALL[id] || (records.find(r=>r.exercicioId===id)||{}).exercicioNome || id; }
+// nome específico do aluno (adaptação usa o mesmo id do slot; pega o registro mais recente dele)
+function nomeExDe(id,aId){
+  const rs=records.filter(r=>r.exercicioId===id && r.alunoId===aId).sort((x,y)=>String(y.data).localeCompare(String(x.data)));
+  return (rs[0]&&rs[0].exercicioNome) || nomeEx(id);
+}
+
 // id vem do nome (slug); o sufixo _N só desambigua contra a lista LOCAL. Dois laptops
 // offline cadastrando o mesmo nome colidem no mesmo id (#9) — cadastrar num lugar só/online.
 function uniqueId(nome){ let base=slug(nome)||"aluno", id=base, i=2; while(alunos.some(a=>a.id===id)){ id=base+"_"+i; i++; } return id; }
@@ -654,9 +703,10 @@ function calcCarga(montagem,qtd,peso,un,peso2,un2,bar){
   const nn=x=>{ const n=parseFloat(String(x).replace(",","."))||0; return n<0?0:n; }; // sem negativo
   const p=nn(peso), p2=nn(peso2), b=nn(bar);
   let total=0, parcial="";
-  if(montagem==='impl'||montagem==='kb'){ const q=Number(qtd)||1; total=q*cv(p,un); const suf=montagem==='kb'?" KB":""; parcial=(q>1?q+" × ":"")+p+" "+un+suf; }
-  else if(montagem==='barra'){ const side=p+" "+un+(p2?" + "+p2+" "+(un2||'kg'):""); total=(cv(p,un)+cv(p2,un2||'kg'))*2+b; parcial=side+"/lado + barra "+b+" kg"; }
-  else { total=cv(p,un)+cv(p2,un2||'kg')+b; parcial=p+" "+un+(p2?" + "+p2+" "+(un2||'kg'):"")+" + barra "+b+" kg"; }
+  // siglas padronizadas: DB=halter, KB=kettlebell, BB=barra
+  if(montagem==='impl'||montagem==='kb'){ const q=Number(qtd)||1; total=q*cv(p,un); const sig=montagem==='kb'?"KB":"DB"; parcial=(q>1?q+" × ":"")+p+" "+un+" "+sig; }
+  else if(montagem==='barra'){ const side=p+" "+un+(p2?" + "+p2+" "+(un2||'kg'):""); total=(cv(p,un)+cv(p2,un2||'kg'))*2+b; parcial=side+"/lado + BB "+b+"kg"; }
+  else { total=cv(p,un)+cv(p2,un2||'kg')+b; parcial=p+" "+un+(p2?" + "+p2+" "+(un2||'kg'):"")+" + BB "+b+"kg"; }
   total=Math.round(total*10)/10;
   return p? {total:String(total), parcial} : {total:"", parcial:""};
 }
@@ -717,7 +767,8 @@ function renderPanel(){
   if(!alunosDaTurma(c.turma).length){ $("panel").innerHTML=`<p class="muted">Nenhum aluno na turma ${c.turma}. Vá na aba <b>Alunos</b> e marque o horário ${c.turma} pros alunos dela.</p>`; return; }
   if(!lista.length){ $("panel").innerHTML=`<p class="muted">${usarPresenca?'Nenhum presente marcado na chamada bate com a busca. Marque presentes acima ou use <b>mostrar todos</b>.':'Nenhum aluno encontrado com esse filtro.'}</p>`; return; }
   $("panel").innerHTML = lista.map(a=>{
-    const lines=exs.map(ex=>{
+    const lines=exs.map(exSlot=>{
+      const ex=exEfetivo(exSlot,a.id,c); // efetivo = adaptado do aluno, senão o prescrito da turma
       const r=getRec(c,a.id,ex.id)||{};
       const isCarga=ex.tipo==="carga";
       const isElastico=ex.tipo==="elastico";
@@ -737,27 +788,46 @@ function renderPanel(){
       } else if(!isCarga){
         cargaBox=`<div class="grp"><span>Carga</span><input class="kg" disabled value="${ex.tipo==='pc'?'PC':'tempo'}" style="color:var(--muted);font-size:15px;font-weight:600"></div>`;
       } else {
-        const mtog = ex.carga==='landmine' ? "" : `<div class="mtog"><button class="mbtn ${montagem==='impl'?'on':''}" data-v="impl">Halteres</button><button class="mbtn ${montagem==='kb'?'on':''}" data-v="kb">Kettlebell</button><button class="mbtn ${montagem==='barra'?'on':''}" data-v="barra">Barra</button></div>`;
+        const mtog = ex.carga==='landmine' ? "" : `<div class="mtog"><button class="mbtn ${montagem==='impl'?'on':''}" data-v="impl">DB</button><button class="mbtn ${montagem==='kb'?'on':''}" data-v="kb">KB</button><button class="mbtn ${montagem==='barra'?'on':''}" data-v="barra">BB</button></div>`;
         const totT=`<div class="ctot">= <b class="ctotal">${disp}</b> kg</div>`;
         if(isKbLike){
           cargaBox=`<div class="cbox" data-tipo="${montagem}">${mtog}<div class="grp"><span>Impl.</span><button class="qbtn ${qtd===1?'on':''}" data-c="qtd" data-v="1">1</button><button class="qbtn ${qtd===2?'on':''}" data-c="qtd" data-v="2">2</button></div><div class="grp"><span>Peso</span><input class="cin" data-c="peso" inputmode="decimal" placeholder="0" value="${attrEsc(peso)}"></div>${unTog('un',un)}${totT}</div>`;
         } else if(montagem==='barra'){
-          cargaBox=`<div class="cbox" data-tipo="barra">${mtog}<div class="grp"><span>Por lado</span><input class="cin" data-c="peso" inputmode="decimal" placeholder="0" value="${attrEsc(peso)}"></div>${unTog('un',un)}<div class="grp anilha2" style="${peso2?'':'display:none'}"><span>+</span><input class="cin" data-c="peso2" inputmode="decimal" placeholder="0" value="${attrEsc(peso2)}">${unTog('un2',un2)}</div><button class="icbtn addAnilha" style="${peso2?'display:none':''}">+ anilha</button><span class="x2">×2</span><div class="grp"><span>+ barra</span><input class="cin barra" data-c="bar" inputmode="decimal" value="${attrEsc(bar)}"><small>kg</small></div>${totT}</div>`;
+          cargaBox=`<div class="cbox" data-tipo="barra">${mtog}<div class="grp"><span>Por lado</span><input class="cin" data-c="peso" inputmode="decimal" placeholder="0" value="${attrEsc(peso)}"></div>${unTog('un',un)}<div class="grp anilha2" style="${peso2?'':'display:none'}"><span>+</span><input class="cin" data-c="peso2" inputmode="decimal" placeholder="0" value="${attrEsc(peso2)}">${unTog('un2',un2)}</div><button class="icbtn addAnilha" style="${peso2?'display:none':''}">+ anilha</button><span class="x2">×2</span><div class="grp"><span>+ BB</span><input class="cin barra" data-c="bar" inputmode="decimal" value="${attrEsc(bar)}"><small>kg</small></div>${totT}</div>`;
         } else {
-          cargaBox=`<div class="cbox" data-tipo="landmine"><div class="grp"><span>Peso</span><input class="cin" data-c="peso" inputmode="decimal" placeholder="0" value="${attrEsc(peso)}"></div>${unTog('un',un)}<div class="grp anilha2" style="${peso2?'':'display:none'}"><span>+</span><input class="cin" data-c="peso2" inputmode="decimal" placeholder="0" value="${attrEsc(peso2)}">${unTog('un2',un2)}</div><button class="icbtn addAnilha" style="${peso2?'display:none':''}">+ peso</button><div class="grp"><span>+ barra</span><input class="cin barra" data-c="bar" inputmode="decimal" value="${attrEsc(bar)}"><small>kg</small></div>${totT}</div>`;
+          cargaBox=`<div class="cbox" data-tipo="landmine"><div class="grp"><span>Peso</span><input class="cin" data-c="peso" inputmode="decimal" placeholder="0" value="${attrEsc(peso)}"></div>${unTog('un',un)}<div class="grp anilha2" style="${peso2?'':'display:none'}"><span>+</span><input class="cin" data-c="peso2" inputmode="decimal" placeholder="0" value="${attrEsc(peso2)}">${unTog('un2',un2)}</div><button class="icbtn addAnilha" style="${peso2?'display:none':''}">+ peso</button><div class="grp"><span>+ BB</span><input class="cin barra" data-c="bar" inputmode="decimal" value="${attrEsc(bar)}"><small>kg</small></div>${totT}</div>`;
         }
       }
-      return `<div class="exline" data-aluno="${a.id}" data-ex="${ex.id}">
-        <div class="exhead"><span class="ex">${ex.nome}</span><span class="meta">alvo ${ex.alvo}</span></div>
+      const aTipo = ex.adaptado? ex.tipo : "carga";
+      const aImpl = (ex.adaptado&&ex.carga) ? ex.carga : "impl";
+      const adaptChip = ex.adaptado? `<span class="adaptado" title="original da turma: ${attrEsc(ex.origNome)}">adaptado</span>` : "";
+      const adaptForm = `<div class="adapt-edit">
+          <div class="rowf"><input class="adapt-nome" placeholder="exercício adaptado deste aluno (vira o padrão dele)" value="${ex.adaptado?attrEsc(ex.nome):''}"></div>
+          <div class="adapt-row"><span class="alab">tipo</span><div class="atipo">
+            <button class="abtn ${aTipo==='carga'?'on':''}" data-t="carga">carga</button>
+            <button class="abtn ${aTipo==='pc'?'on':''}" data-t="pc">peso corp.</button>
+            <button class="abtn ${aTipo==='elastico'?'on':''}" data-t="elastico">elástico</button>
+            <button class="abtn ${aTipo==='tempo'?'on':''}" data-t="tempo">tempo</button>
+          </div><div class="aimpl" style="${aTipo==='carga'?'':'display:none'}"><span class="alab">implem.</span>
+            <button class="abtn ${aImpl==='impl'?'on':''}" data-i="impl">DB</button>
+            <button class="abtn ${aImpl==='kb'?'on':''}" data-i="kb">KB</button>
+            <button class="abtn ${aImpl==='barra'?'on':''}" data-i="barra">BB</button>
+          </div></div>
+          <div class="rowf"><button class="btn-primary adapt-salvar">salvar adaptação</button>${ex.adaptado?`<button class="icbtn adapt-voltar">voltar ao original</button>`:""}</div>
+        </div>`;
+      return `<div class="exline" data-aluno="${a.id}" data-ex="${ex.id}" data-slot="${exSlot.id}">
+        <div class="exhead"><span class="ex">${he(ex.nome)}</span>${adaptChip}<span class="meta">alvo ${ex.alvo}</span></div>
         <div class="row">
           ${cargaBox}
           <div class="grp"><span>Reps</span><input class="sm" data-f="reps" inputmode="numeric" placeholder="—" value="${attrEsc(r.reps||"")}"></div>
           <div class="grp"><span>RR</span><input class="sm" data-f="rr" placeholder="—" value="${attrEsc(r.rr||"")}"></div>
-          <button class="icbtn btn-troca" style="margin-left:auto">↻ trocar</button>
+          <button class="icbtn btn-adapt" style="margin-left:auto">⇄ adaptar</button>
+          <button class="icbtn btn-troca">↻ trocar</button>
           <button class="icbtn btn-dor">⚠ dor</button>
           <button class="icbtn btn-obs">✎ obs</button>
         </div>
-        <div class="troca-edit"><input data-f="troca" placeholder="trocou por qual exercício? (histórico fica no original)" value="${attrEsc(r.troca||"")}"></div>
+        ${adaptForm}
+        <div class="troca-edit"><input data-f="troca" placeholder="trocou só hoje? (anota; não vira padrão)" value="${attrEsc(r.troca||"")}"></div>
         <div class="dor-edit"><input data-f="dorNota" placeholder="o que foi? (ex: joelho D, amplitude parcial)" value="${attrEsc(r.dorNota||"")}"></div>
         <div class="obs-edit"><input data-f="obs" placeholder="observação (cansaço, técnica, etc.)" value="${attrEsc(r.obs||"")}"></div>
         <div class="tags"></div>
@@ -771,9 +841,10 @@ function renderPanel(){
 
 function wirePanel(c){
   $("panel").querySelectorAll(".exline").forEach(line=>{
-    const aId=line.dataset.aluno, exId=line.dataset.ex;
+    const aId=line.dataset.aluno, exId=line.dataset.ex, slotId=line.dataset.slot;
     const aluno=alunos.find(a=>a.id===aId);
-    const ex=treinosDo(c.mes)[c.treino].find(e=>e.id===exId);
+    const exSlot=treinosDo(c.mes)[c.treino].find(e=>e.id===slotId);
+    const ex=exEfetivo(exSlot,aId,c); // efetivo; ex.id === exId (adaptado ou prescrito)
     const tags=()=>{ const r=getRec(c,aId,exId)||{}; let t=""; if(r.dor||r.dorNota)t+=`<span class="tag dor">⚠ ${he(r.dorNota||"dor")}</span>`; if(r.troca)t+=`<span class="tag troca">↻ ${he(r.troca)}</span>`; line.querySelector(".tags").innerHTML=t; };
     tags();
     // realça os campos ainda não preenchidos (anti-esquecimento) + selo de pendências no card
@@ -831,6 +902,31 @@ function wirePanel(c){
         upsert(c,aluno,ex,{montagem:"elastico",cargaParcial:b.dataset.nivel,cargaTotal:""});
         flagReps();
       });
+    }
+    // adaptação individual: vira o padrão do aluno (reaparece nas próximas semanas)
+    line.querySelector(".btn-adapt").onclick=()=>tog(line,".adapt-edit");
+    const adaptEdit=line.querySelector(".adapt-edit");
+    if(adaptEdit){
+      adaptEdit.querySelectorAll(".atipo .abtn").forEach(b=>b.onclick=()=>{
+        adaptEdit.querySelectorAll(".atipo .abtn").forEach(x=>x.classList.toggle("on",x===b));
+        adaptEdit.querySelector(".aimpl").style.display = b.dataset.t==="carga"?"flex":"none";
+      });
+      adaptEdit.querySelectorAll(".aimpl .abtn").forEach(b=>b.onclick=()=>{
+        adaptEdit.querySelectorAll(".aimpl .abtn").forEach(x=>x.classList.toggle("on",x===b));
+      });
+      adaptEdit.querySelector(".adapt-salvar").onclick=()=>{
+        const nome=adaptEdit.querySelector(".adapt-nome").value.trim();
+        if(!nome){ $("status").textContent="⚠ Escreva o nome do exercício adaptado"; return; }
+        const tb=adaptEdit.querySelector(".atipo .abtn.on"), ib=adaptEdit.querySelector(".aimpl .abtn.on");
+        const tp=tb?tb.dataset.t:"carga";
+        const def={ nome, tipo:tp };
+        if(tp==="carga"){ def.carga=ib?ib.dataset.i:"impl"; def.un="kg"; def.qtd=1; }
+        saveAdapt(aId,c,slotId,def);
+        const rec=getRec(c,aId,slotId); if(rec){ rec.exercicioNome=nome; DataStore.putRegistro(rec); } // registro de hoje herda o nome
+        renderPanel();
+      };
+      const volta=adaptEdit.querySelector(".adapt-voltar");
+      if(volta) volta.onclick=()=>{ if(confirm("Voltar ao exercício original da turma? A adaptação deste aluno sai (o histórico do adaptado continua salvo).")){ saveAdapt(aId,c,slotId,null); renderPanel(); } };
     }
     line.querySelector(".btn-troca").onclick=()=>tog(line,".troca-edit");
     line.querySelector(".btn-dor").onclick=()=>tog(line,".dor-edit");
@@ -940,7 +1036,11 @@ function renderRelatorio(){
   const aSel=$("repAluno"), eSel=$("repExercicio"); const curA=aSel.value, curE=eSel.value;
   const alunosOrd=[...alunos].sort((x,y)=>x.nome.localeCompare(y.nome,"pt"));
   aSel.innerHTML = `<option value="">todos os alunos</option>` + alunosOrd.map(a=>`<option value="${a.id}">${he(a.nome)}</option>`).join("");
-  eSel.innerHTML = `<option value="">todos os exercícios</option>` + Object.keys(EXALL).map(id=>`<option value="${id}">${he(EXALL[id])}</option>`).join("");
+  // inclui exercícios adaptados (id ~aluno) que aparecem nos registros mas não estão no MESES
+  const adaptIds=[...new Set(records.map(r=>r.exercicioId))].filter(id=>!EXALL[id]);
+  eSel.innerHTML = `<option value="">todos os exercícios</option>`
+    + Object.keys(EXALL).map(id=>`<option value="${id}">${he(EXALL[id])}</option>`).join("")
+    + adaptIds.map(id=>`<option value="${id}">${he(nomeEx(id))} (adaptado)</option>`).join("");
   aSel.value=curA; eSel.value=curE;
 
   const rows=repFiltrados();
@@ -1023,13 +1123,15 @@ function chartSVG(pts, opt){
 function chartsBlock(){
   const aId=$("repAluno").value, eId=$("repExercicio").value;
   if(!aId) return `<p class="muted">Selecione um aluno para ver os gráficos de evolução de carga.</p>`;
-  const exIds = eId ? [eId] : Object.keys(EXALL).filter(x=> serieCarga(aId,x).length);
-  if(!exIds.length) return `<p class="muted">Sem carga registrada para esse aluno no período (exercícios de peso corporal/tempo não têm gráfico).</p>`;
+  const idsCand = new Set([...Object.keys(EXALL), ...records.filter(r=>r.alunoId===aId).map(r=>r.exercicioId)]);
+  // filtra sempre por série não-vazia (mesmo com exercício escolhido) — evita crash em pc/tempo/elástico
+  const exIds = [...idsCand].filter(x=> (!eId || x===eId) && serieCarga(aId,x).length);
+  if(!exIds.length) return `<p class="muted">Sem carga registrada para esse aluno no período (peso corporal/tempo/elástico não têm gráfico de kg).</p>`;
   const big=!!eId;
   return `<div class="charts ${big?'one':''}">` + exIds.map(ex=>{
     const s=serieCarga(aId,ex); const last=s[s.length-1].v, best=Math.max(...s.map(p=>p.v));
     return `<div class="chartcard">
-      <div class="chartt">${he(EXALL[ex])}</div>
+      <div class="chartt">${he(nomeExDe(ex,aId))}</div>
       <div class="chartmeta">última <b>${last}kg</b> · melhor <b>${best}kg</b> · ${s.length} ${s.length===1?'sessão':'sessões'}</div>
       ${chartSVG(s,{w:big?560:300,h:big?230:130})}
     </div>`;
