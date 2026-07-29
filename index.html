@@ -63,6 +63,7 @@ button:active{transform:scale(.985)}
 .exhead{display:flex; align-items:baseline; gap:10px; margin-bottom:7px; flex-wrap:wrap}
 .exhead .ex{font-size:16px; font-weight:600}
 .exhead .meta{font-size:13px; color:var(--muted)}
+.exhead .presc{font-weight:600; color:#a45248; background:#f5e9e6; border-radius:5px; padding:1px 6px}
 .exhead .prev{color:#9c7269}
 .row{display:flex; flex-wrap:wrap; gap:12px; align-items:center}
 .row .grp{display:flex; align-items:center; gap:6px}
@@ -380,32 +381,32 @@ const MESES = {
   },
   "Jul-Ago 26": {
     "1":[
-      {id:"julago26_t1_flexplio",nome:"Flexão pliométrica c/ auxílio SB",tipo:"pc",metodo:"SUPERSET",alvo:"PC",bloco:1},
-      {id:"julago26_t1_kbswing",nome:"KB swing",tipo:"carga",carga:"kb",un:"kg",qtd:1,metodo:"SUPERSET",alvo:"3-4RR",bloco:1},
-      {id:"julago26_t1_nordica",nome:"Flexão nórdica c/ auxílio",tipo:"pc",metodo:"SUPERSET",alvo:"1-2RR",bloco:2},
-      {id:"julago26_t1_barrafixa",nome:"Barra fixa pronada c/ auxílio SB",tipo:"pc",metodo:"SUPERSET",alvo:"1-2RR",bloco:2},
-      {id:"julago26_t1_bulgaro",nome:"Agachamento búlgaro",tipo:"carga",carga:"impl",un:"kg",qtd:1,metodo:"SUPERSET",alvo:"1-2RR",bloco:3},
-      {id:"julago26_t1_arnold",nome:"Arnold press DB",tipo:"carga",carga:"impl",un:"kg",qtd:2,metodo:"SUPERSET",alvo:"1-2RR",bloco:3}
+      {id:"julago26_t1_flexplio",nome:"Flexão pliométrica c/ auxílio SB",tipo:"pc",metodo:"SUPERSET",presc:"5 x 5",alvo:"PC",bloco:1},
+      {id:"julago26_t1_kbswing",nome:"KB swing",tipo:"carga",carga:"kb",un:"kg",qtd:1,metodo:"SUPERSET",presc:"5 x 10",alvo:"3-4RR",bloco:1},
+      {id:"julago26_t1_nordica",nome:"Flexão nórdica c/ auxílio",tipo:"pc",metodo:"SUPERSET",presc:"3 x 6-4",alvo:"1-2RR",bloco:2},
+      {id:"julago26_t1_barrafixa",nome:"Barra fixa pronada c/ auxílio SB",tipo:"pc",metodo:"SUPERSET",presc:"3 x 8-5",alvo:"1-2RR",bloco:2},
+      {id:"julago26_t1_bulgaro",nome:"Agachamento búlgaro",tipo:"carga",carga:"impl",un:"kg",qtd:1,metodo:"SUPERSET",presc:"3 x 8-5 cl",alvo:"1-2RR",bloco:3},
+      {id:"julago26_t1_arnold",nome:"Arnold press DB",tipo:"carga",carga:"impl",un:"kg",qtd:2,metodo:"SUPERSET",presc:"3 x 8-5",alvo:"1-2RR",bloco:3}
     ],
     "2":[
-      {id:"julago26_t2_zercher",nome:"Zercher squat BB",tipo:"carga",carga:"barra",un:"lb",bar:10,metodo:"SUPERSET",alvo:"1-2RR",bloco:1},
-      {id:"julago26_t2_flexbr",nome:"Flexão de braços",tipo:"pc",metodo:"SUPERSET",alvo:"1-2RR",bloco:1},
-      {id:"julago26_t2_hipthrust",nome:"Hip thrust base assimétrica",tipo:"carga",carga:"impl",un:"kg",qtd:1,metodo:"SUPERSET",alvo:"1-2RR",bloco:2},
-      {id:"julago26_t2_serrote",nome:"Remada serrote KB/DB",tipo:"carga",carga:"impl",un:"kg",qtd:1,metodo:"SUPERSET",alvo:"1-2RR",bloco:2},
-      {id:"julago26_t2_crucinv",nome:"Crucifixo inverso 2DB",tipo:"carga",carga:"impl",un:"kg",qtd:2,metodo:"TRISET",alvo:"1-2RR",bloco:3},
-      {id:"julago26_t2_arrasto",nome:"Prancha alta c/ arrasto",tipo:"carga",carga:"impl",un:"kg",qtd:1,metodo:"TRISET",alvo:"1-2RR",bloco:3},
-      {id:"julago26_t2_mergulho",nome:"Mergulho no banco",tipo:"pc",metodo:"TRISET",alvo:"1-2RR",bloco:3}
+      {id:"julago26_t2_zercher",nome:"Zercher squat BB",tipo:"carga",carga:"barra",un:"lb",bar:10,metodo:"SUPERSET",presc:"3 x 12-8",alvo:"1-2RR",bloco:1},
+      {id:"julago26_t2_flexbr",nome:"Flexão de braços",tipo:"pc",metodo:"SUPERSET",presc:"3 x 12-8",alvo:"1-2RR",bloco:1},
+      {id:"julago26_t2_hipthrust",nome:"Hip thrust base assimétrica",tipo:"carga",carga:"impl",un:"kg",qtd:1,metodo:"SUPERSET",presc:"3 x 12-8 cl",alvo:"1-2RR",bloco:2},
+      {id:"julago26_t2_serrote",nome:"Remada serrote KB/DB",tipo:"carga",carga:"impl",un:"kg",qtd:1,metodo:"SUPERSET",presc:"3 x 12-8 cl",alvo:"1-2RR",bloco:2},
+      {id:"julago26_t2_crucinv",nome:"Crucifixo inverso 2DB",tipo:"carga",carga:"impl",un:"kg",qtd:2,metodo:"TRISET",presc:"3 x 15-12",alvo:"1-2RR",bloco:3},
+      {id:"julago26_t2_arrasto",nome:"Prancha alta c/ arrasto",tipo:"carga",carga:"impl",un:"kg",qtd:1,metodo:"TRISET",presc:"3 x 8 cl",alvo:"1-2RR",bloco:3},
+      {id:"julago26_t2_mergulho",nome:"Mergulho no banco",tipo:"pc",metodo:"TRISET",presc:"3 x 15-12",alvo:"1-2RR",bloco:3}
     ],
     "3":[
-      {id:"julago26_t3_supinoinc",nome:"Supino inclinado",tipo:"carga",carga:"impl",un:"kg",qtd:2,metodo:"SUPERSET",alvo:"1-2RR",bloco:1},
-      {id:"julago26_t3_stiff",nome:"Stiff 2DB",tipo:"carga",carga:"impl",un:"kg",qtd:2,metodo:"SUPERSET",alvo:"1-2RR",bloco:1},
-      {id:"julago26_t3_remadacorda",nome:"Remada suspensa na corda naval",tipo:"pc",metodo:"TRISET",alvo:"1-2RR",bloco:2},
-      {id:"julago26_t3_stepup",nome:"Step-up lateral 2DB",tipo:"carga",carga:"impl",un:"kg",qtd:2,metodo:"TRISET",alvo:"1-2RR",bloco:2},
-      {id:"julago26_t3_abdvela",nome:"ABD vela",tipo:"pc",metodo:"TRISET",alvo:"1-2RR",bloco:2},
-      {id:"julago26_t3_corda",nome:"Pular corda",tipo:"tempo",metodo:"CIRCUITO",alvo:"40s PC",bloco:3},
-      {id:"julago26_t3_airbike",nome:"Air bike",tipo:"tempo",metodo:"CIRCUITO",alvo:"80%",bloco:3},
-      {id:"julago26_t3_suitcase",nome:"Carregamento UNL (suitcase carry)",tipo:"carga",carga:"impl",un:"kg",qtd:1,metodo:"CIRCUITO",alvo:"carga alta",bloco:3},
-      {id:"julago26_t3_remo",nome:"Remo (skill row)",tipo:"tempo",metodo:"CIRCUITO",alvo:"80%",bloco:3}
+      {id:"julago26_t3_supinoinc",nome:"Supino inclinado",tipo:"carga",carga:"impl",un:"kg",qtd:2,metodo:"SUPERSET",presc:"4 x 12-10",alvo:"1-2RR",bloco:1},
+      {id:"julago26_t3_stiff",nome:"Stiff 2DB",tipo:"carga",carga:"impl",un:"kg",qtd:2,metodo:"SUPERSET",presc:"4 x 12-10",alvo:"1-2RR",bloco:1},
+      {id:"julago26_t3_remadacorda",nome:"Remada suspensa na corda naval",tipo:"pc",metodo:"TRISET",presc:"4 x 12-10",alvo:"1-2RR",bloco:2},
+      {id:"julago26_t3_stepup",nome:"Step-up lateral 2DB",tipo:"carga",carga:"impl",un:"kg",qtd:2,metodo:"TRISET",presc:"4 x 12-10 cl",alvo:"1-2RR",bloco:2},
+      {id:"julago26_t3_abdvela",nome:"ABD vela",tipo:"pc",metodo:"TRISET",presc:"4 x 12-10",alvo:"1-2RR",bloco:2},
+      {id:"julago26_t3_corda",nome:"Pular corda",tipo:"tempo",metodo:"CIRCUITO",presc:"2 x 40s",alvo:"40s PC",bloco:3},
+      {id:"julago26_t3_airbike",nome:"Air bike",tipo:"tempo",metodo:"CIRCUITO",presc:"2 x 40s",alvo:"80%",bloco:3},
+      {id:"julago26_t3_suitcase",nome:"Carregamento UNL (suitcase carry)",tipo:"carga",carga:"impl",un:"kg",qtd:1,metodo:"CIRCUITO",presc:"2 x 40s",alvo:"carga alta",bloco:3},
+      {id:"julago26_t3_remo",nome:"Remo (skill row)",tipo:"tempo",metodo:"CIRCUITO",presc:"2 x 40s",alvo:"80%",bloco:3}
     ]
   }
 };
@@ -734,11 +735,17 @@ function calcCarga(montagem,qtd,peso,un,peso2,un2,bar){
   const p=nn(peso), p2=nn(peso2), b=nn(bar);
   let total=0, parcial="";
   // siglas padronizadas: DB=halter, KB=kettlebell, BB=barra
+  const comBarra = montagem==='barra'||montagem==='landmine';
+  // "sem anilha" é carga válida na BB/landmine: a própria barra pesa. Exige que o
+  // campo peso tenha sido preenchido (inclusive "0") pra não marcar linha intocada como completa.
+  const preencheu = String(peso??"").trim()!=="" || String(peso2??"").trim()!=="";
+  const semAnilha = comBarra && p===0 && p2===0;
   if(montagem==='impl'||montagem==='kb'){ const q=Number(qtd)||1; total=q*cv(p,un); const sig=montagem==='kb'?"KB":"DB"; parcial=(q>1?q+" × ":"")+p+" "+un+" "+sig; }
-  else if(montagem==='barra'){ const side=p+" "+un+(p2?" + "+p2+" "+(un2||'kg'):""); total=(cv(p,un)+cv(p2,un2||'kg'))*2+b; parcial=side+"/lado + BB "+b+"kg"; }
-  else { total=cv(p,un)+cv(p2,un2||'kg')+b; parcial=p+" "+un+(p2?" + "+p2+" "+(un2||'kg'):"")+" + BB "+b+"kg"; }
+  else if(montagem==='barra'){ const side=p+" "+un+(p2?" + "+p2+" "+(un2||'kg'):""); total=(cv(p,un)+cv(p2,un2||'kg'))*2+b; parcial=semAnilha?("só BB "+b+"kg"):(side+"/lado + BB "+b+"kg"); }
+  else { total=cv(p,un)+cv(p2,un2||'kg')+b; parcial=semAnilha?("só BB "+b+"kg"):(p+" "+un+(p2?" + "+p2+" "+(un2||'kg'):"")+" + BB "+b+"kg"); }
   total=Math.round(total*10)/10;
-  return p? {total:String(total), parcial} : {total:"", parcial:""};
+  const valido = comBarra ? (preencheu && total>0) : p>0;
+  return valido? {total:String(total), parcial} : {total:"", parcial:""};
 }
 function histBlock(aId,eId,before){
   const h=hist(aId,eId,before,3);
@@ -846,7 +853,7 @@ function renderPanel(){
           <div class="rowf"><button class="btn-primary adapt-salvar">salvar adaptação</button>${ex.adaptado?`<button class="icbtn adapt-voltar">voltar ao original</button>`:""}</div>
         </div>`;
       return `<div class="exline" data-aluno="${a.id}" data-ex="${ex.id}" data-slot="${exSlot.id}">
-        <div class="exhead"><span class="ex">${he(ex.nome)}</span>${adaptChip}<span class="meta">alvo ${ex.alvo}</span></div>
+        <div class="exhead"><span class="ex">${he(ex.nome)}</span>${adaptChip}${ex.presc?`<span class="meta presc">${he(ex.presc)}</span>`:""}<span class="meta">alvo ${ex.alvo}</span></div>
         <div class="row">
           ${cargaBox}
           <div class="grp"><span>Reps</span><input class="sm" data-f="reps" inputmode="numeric" placeholder="—" value="${attrEsc(r.reps||"")}"></div>
