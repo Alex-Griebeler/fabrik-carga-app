@@ -13,6 +13,8 @@
   --hot:#a45248; --hot-bg:#f5e9e6;
   --danger:#a45248; --danger-bg:#f5e9e6;
   --ok:#33312f; --ok-bg:#eceae6;
+  /* campo ainda não preenchido: terracota da marca em 3 intensidades */
+  --falta:#a45248; --falta-bg:#f7e0db; --falta-ring:rgba(164,82,72,.28); --falta-row:#fbf1ee;
   --graf:#33312f; --graf-bg:#eceae6;
   --radius:12px;
 }
@@ -149,11 +151,16 @@ button:active{transform:scale(.985)}
 #syncBanner{display:none; align-items:center; gap:10px; flex-wrap:wrap; background:#f5e9e6; border:1px solid var(--info); color:#8c4139; border-radius:10px; padding:10px 14px; margin:0 0 14px; font-size:14px; font-weight:600}
 #syncBanner button{font-size:13px}
 input.sm.semreps{border-color:var(--info); box-shadow:0 0 0 2px var(--info-bg)}
-/* anti-esquecimento: exercício com campo faltando + campo específico realçado */
-.exline.pend{border-left:3px solid var(--info); padding-left:9px; background:#fbf4f2}
-.faltou{border-color:var(--info) !important; box-shadow:0 0 0 2px var(--info-bg)}
-.elchips.faltou{box-shadow:none; border:1px dashed var(--info); border-radius:8px; padding:4px}
-.pendbadge{font-size:12px; font-weight:700; padding:4px 10px; border-radius:8px; background:var(--info-bg); color:var(--info); margin-left:8px}
+/* anti-esquecimento: exercício com campo faltando + campo específico realçado.
+   Campo vazio fica TERRACOTA (fundo + borda + anel + rótulo); ao preencher volta ao branco.
+   O anel é box-shadow, não borda: não desloca o layout enquanto o treinador digita. */
+.exline.pend{border-left:4px solid var(--falta); padding-left:9px; background:var(--falta-row)}
+.faltou{border-color:var(--falta) !important; background:var(--falta-bg) !important; color:var(--falta) !important; box-shadow:0 0 0 2px var(--falta-ring)}
+.faltou::placeholder{color:var(--falta); opacity:.6}
+.elchips.faltou{background:transparent !important; border:1px dashed var(--falta); border-radius:8px; padding:4px; box-shadow:0 0 0 2px var(--falta-ring)}
+/* rótulo do campo ("Reps", "Peso"…) acompanha o realce. Sem :has() só perde a cor do rótulo. */
+.row .grp:has(.faltou) span,.cbox .grp:has(.faltou) span,.cbox:has(.elchips.faltou) .ellbl{color:var(--falta)}
+.pendbadge{font-size:12px; font-weight:700; padding:4px 10px; border-radius:8px; background:var(--falta); color:#fff; margin-left:8px}
 .pendbadge.ok{background:var(--ok-bg); color:var(--ok)}
 .pendbadge:empty{display:none}
 .syncbadge.ok{background:var(--ok-bg); color:var(--ok)}
@@ -411,8 +418,8 @@ const MESES = {
   },
   "Ago-Set 26": {
     "1":[
-      {id:"agoset26_t1_saltosb",nome:"Salto lateral c/ SB na pelve",tipo:"elastico",metodo:"SUPERSET",presc:"3 x 5 cl",alvo:"potência",bloco:1},
-      {id:"agoset26_t1_slam",nome:"Slam medball",tipo:"carga",carga:"impl",un:"kg",qtd:1,metodo:"SUPERSET",presc:"3 x 5",alvo:"3-4RR",bloco:1},
+      {id:"agoset26_t1_saltosb",nome:"Salto lateral c/ SB na pelve",tipo:"pc",cargaLabel:"livre",metodo:"SUPERSET",presc:"3 x 5 cl",alvo:"distância + freio",bloco:1},
+      {id:"agoset26_t1_slam",nome:"Slam medball",tipo:"pc",cargaLabel:"livre",metodo:"SUPERSET",presc:"3 x 5",alvo:"3-4RR",bloco:1},
       {id:"agoset26_t1_rdlsumo",nome:"RDL sumô 2KB",tipo:"carga",carga:"kb",un:"kg",qtd:2,metodo:"SUPERSET",presc:"4 x 8-5",alvo:"1-2RR",bloco:2},
       {id:"agoset26_t1_supino",nome:"Supino reto BB",tipo:"carga",carga:"barra",un:"lb",bar:10,metodo:"SUPERSET",presc:"4 x 8-5",alvo:"1-2RR",bloco:2},
       {id:"agoset26_t1_lungefrente",nome:"Lunge a frente BB",tipo:"carga",carga:"barra",un:"lb",bar:10,metodo:"SUPERSET",presc:"3 x 8-5 cl",alvo:"1-2RR",bloco:3},
@@ -852,7 +859,7 @@ function renderPanel(){
         cargaBox=`<div class="cbox elastico" data-tipo="elastico"><span class="ellbl">Elástico</span><div class="elchips">`+
           NIVEIS_ELASTICO.map(n=>`<button class="elch ${nivel===n?'on':''}" data-nivel="${attrEsc(n)}">${he(n)}</button>`).join("")+`</div></div>`;
       } else if(!isCarga){
-        cargaBox=`<div class="grp"><span>Carga</span><input class="kg" disabled value="${ex.tipo==='pc'?'PC':'tempo'}" style="color:var(--muted);font-size:15px;font-weight:600"></div>`;
+        cargaBox=`<div class="grp"><span>Carga</span><input class="kg" disabled value="${ex.cargaLabel || (ex.tipo==='pc'?'PC':'tempo')}" style="color:var(--muted);font-size:15px;font-weight:600"></div>`;
       } else {
         const mtog = ex.carga==='landmine' ? "" : `<div class="mtog"><button class="mbtn ${montagem==='impl'?'on':''}" data-v="impl">DB</button><button class="mbtn ${montagem==='kb'?'on':''}" data-v="kb">KB</button><button class="mbtn ${montagem==='barra'?'on':''}" data-v="barra">BB</button></div>`;
         const totT=`<div class="ctot">= <b class="ctotal">${disp}</b> kg</div>`;
