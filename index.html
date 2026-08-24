@@ -418,8 +418,8 @@ const MESES = {
   },
   "Ago-Set 26": {
     "1":[
-      {id:"agoset26_t1_saltosb",nome:"Salto lateral c/ SB na pelve",tipo:"pc",cargaLabel:"livre",metodo:"SUPERSET",presc:"3 x 5 cl",alvo:"distância + freio",bloco:1},
-      {id:"agoset26_t1_slam",nome:"Slam medball",tipo:"pc",cargaLabel:"livre",metodo:"SUPERSET",presc:"3 x 5",alvo:"3-4RR",bloco:1},
+      {id:"agoset26_t1_saltosb",nome:"Salto lateral c/ SB na pelve",tipo:"elastico",semReps:true,metodo:"SUPERSET",presc:"3 x 5 cl",alvo:"distância + freio",bloco:1},
+      {id:"agoset26_t1_slam",nome:"Slam medball",tipo:"carga",carga:"impl",un:"kg",qtd:1,semReps:true,metodo:"SUPERSET",presc:"3 x 5",alvo:"3-4RR",bloco:1},
       {id:"agoset26_t1_rdlsumo",nome:"RDL sumô 2KB",tipo:"carga",carga:"kb",un:"kg",qtd:2,metodo:"SUPERSET",presc:"4 x 8-5",alvo:"1-2RR",bloco:2},
       {id:"agoset26_t1_supino",nome:"Supino reto BB",tipo:"carga",carga:"barra",un:"lb",bar:10,metodo:"SUPERSET",presc:"4 x 8-5",alvo:"1-2RR",bloco:2},
       {id:"agoset26_t1_lungefrente",nome:"Lunge a frente BB",tipo:"carga",carga:"barra",un:"lb",bar:10,metodo:"SUPERSET",presc:"3 x 8-5 cl",alvo:"1-2RR",bloco:3},
@@ -759,10 +759,11 @@ function hist(aId,eId,before,n){ return records.filter(r=>r.alunoId===aId&&r.exe
 // "trocou" zera a cobrança (fez outro exercício); tempo (metcon) não exige campo.
 function faltando(ex,r){
   r=r||{}; if(r.troca) return [];
-  const f=[]; const temReps=String(r.reps||"").trim()!=="";
-  if(ex.tipo==="carga"){ if(String(r.cargaTotal||"").trim()==="") f.push("carga"); if(!temReps) f.push("reps"); }
-  else if(ex.tipo==="elastico"){ if(String(r.cargaParcial||"").trim()==="") f.push("nivel"); if(!temReps) f.push("reps"); }
-  else if(ex.tipo==="pc"){ if(!temReps) f.push("reps"); }
+  // semReps: reps fixas na prescrição — não vira pendência nem aparece como campo.
+  const f=[]; const pedeReps=!ex.semReps && String(r.reps||"").trim()==="";
+  if(ex.tipo==="carga"){ if(String(r.cargaTotal||"").trim()==="") f.push("carga"); if(pedeReps) f.push("reps"); }
+  else if(ex.tipo==="elastico"){ if(String(r.cargaParcial||"").trim()==="") f.push("nivel"); if(pedeReps) f.push("reps"); }
+  else if(ex.tipo==="pc"){ if(pedeReps) f.push("reps"); }
   return f; // tempo: nada obrigatório
 }
 function calcCarga(montagem,qtd,peso,un,peso2,un2,bar){
@@ -892,8 +893,8 @@ function renderPanel(){
         <div class="exhead"><span class="ex">${he(ex.nome)}</span>${adaptChip}${ex.presc?`<span class="meta presc">${he(ex.presc)}</span>`:""}<span class="meta">alvo ${ex.alvo}</span></div>
         <div class="row">
           ${cargaBox}
-          <div class="grp"><span>Reps</span><input class="sm" data-f="reps" inputmode="numeric" placeholder="—" value="${attrEsc(r.reps||"")}"></div>
-          <div class="grp"><span>RR</span><input class="sm" data-f="rr" placeholder="—" value="${attrEsc(r.rr||"")}"></div>
+          ${ex.semReps?"":`<div class="grp"><span>Reps</span><input class="sm" data-f="reps" inputmode="numeric" placeholder="—" value="${attrEsc(r.reps||"")}"></div>
+          <div class="grp"><span>RR</span><input class="sm" data-f="rr" placeholder="—" value="${attrEsc(r.rr||"")}"></div>`}
           <button class="icbtn btn-adapt" style="margin-left:auto">⇄ adaptar</button>
           <button class="icbtn btn-troca">↻ trocar</button>
           <button class="icbtn btn-dor">⚠ dor</button>
