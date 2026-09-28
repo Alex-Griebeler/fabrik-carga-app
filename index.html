@@ -447,12 +447,12 @@ const MESES = {
   },
   "Set-Out 26": {
     "1":[
-      {id:"setout26_t1_saltovert",nome:"Salto vertical bilateral",tipo:"pc",metodo:"SUPERSET",presc:"4 x 5",alvo:"potência",bloco:1},
+      {id:"setout26_t1_saltovert",nome:"Salto vertical bilateral",tipo:"pc",repsFixas:"5",metodo:"SUPERSET",presc:"4 x 5",alvo:"potência",bloco:1},
       {id:"setout26_t1_boxsquat",nome:"Box squat BB (amplitude reduzida)",tipo:"carga",carga:"barra",un:"lb",bar:10,metodo:"SUPERSET",presc:"4 x 5",alvo:"3-4RR",bloco:1},
       {id:"setout26_t1_puxadacomando",nome:"Puxada comando (argola + barra)",tipo:"pc",metodo:"SUPERSET",presc:"3 x 8-5",alvo:"1-2RR",bloco:2},
       {id:"setout26_t1_floorpress",nome:"Floor press em ponte BB",tipo:"carga",carga:"barra",un:"lb",bar:10,metodo:"SUPERSET",presc:"3 x 8-5",alvo:"1-2RR",bloco:2},
       {id:"setout26_t1_rdldeficit",nome:"RDL assimétrico deficit (step)",tipo:"carga",carga:"impl",un:"kg",qtd:1,metodo:"SUPERSET",presc:"3 x 8-5 cl",alvo:"1-2RR",bloco:3},
-      {id:"setout26_t1_rotsb",nome:"Rotação ALT c/ SB",tipo:"elastico",metodo:"SUPERSET",presc:"3 x 8 cl",alvo:"1-2RR",bloco:3}
+      {id:"setout26_t1_rotsb",nome:"Rotação ALT c/ SB",tipo:"elastico",repsFixas:"8",metodo:"SUPERSET",presc:"3 x 8 cl",alvo:"1-2RR",bloco:3}
     ],
     "2":[
       {id:"setout26_t2_tacaprof",nome:"Agachamento taça profundo",tipo:"carga",carga:"impl",un:"kg",qtd:1,metodo:"SUPERSET",presc:"3 x 10-8",alvo:"1-2RR",bloco:1},
@@ -788,7 +788,8 @@ function hist(aId,eId,before,n){ return records.filter(r=>r.alunoId===aId&&r.exe
 // "trocou" zera a cobrança (fez outro exercício); tempo (metcon) não exige campo.
 function faltando(ex,r){
   r=r||{}; if(r.troca) return [];
-  const f=[]; const temReps=String(r.reps||"").trim()!=="";
+  // repsFixas: reps travadas na prescrição (sem RR) — nunca viram pendência.
+  const f=[]; const temReps=!!ex.repsFixas || String(r.reps||"").trim()!=="";
   if(ex.tipo==="carga"){ if(String(r.cargaTotal||"").trim()==="") f.push("carga"); if(!temReps) f.push("reps"); }
   else if(ex.tipo==="elastico"){ if(String(r.cargaParcial||"").trim()==="") f.push("nivel"); if(!temReps) f.push("reps"); }
   else if(ex.tipo==="pc"){ if(!temReps) f.push("reps"); }
@@ -834,6 +835,7 @@ function upsert(c,aluno,ex,patch){
   let r=getRec(c,aluno.id,ex.id);
   if(!r){ r={alunoId:aluno.id,alunoNome:aluno.nome,turma:c.turma,treino:c.treino,semana:c.semana,data:c.data,exercicioId:ex.id,exercicioNome:ex.nome,metodo:ex.metodo,bloco:ex.bloco,montagem:"",qtd:"",peso:"",un:"",peso2:"",un2:"",bar:"",cargaParcial:"",cargaTotal:"",reps:"",rr:"",troca:"",dor:false,dorNota:"",obs:""}; records.push(r); }
   Object.assign(r,patch,{semana:c.semana});
+  if(ex.repsFixas){ r.reps=ex.repsFixas; r.rr=""; }
   DataStore.putRegistro(r);
   $("status").textContent="Salvo "+new Date().toLocaleTimeString("pt-BR",{hour:'2-digit',minute:'2-digit',second:'2-digit'});
 }
@@ -921,8 +923,9 @@ function renderPanel(){
         <div class="exhead"><span class="ex">${he(ex.nome)}</span>${adaptChip}${ex.presc?`<span class="meta presc">${he(ex.presc)}</span>`:""}<span class="meta">alvo ${ex.alvo}</span></div>
         <div class="row">
           ${cargaBox}
-          <div class="grp"><span>Reps</span><input class="sm" data-f="reps" inputmode="numeric" placeholder="—" value="${attrEsc(r.reps||"")}"></div>
-          <div class="grp"><span>RR</span><input class="sm" data-f="rr" placeholder="—" value="${attrEsc(r.rr||"")}"></div>
+          ${ex.repsFixas ? `<div class="grp"><span>Reps</span><input class="sm" disabled value="${attrEsc(ex.repsFixas)}" title="fixo na prescrição" style="color:var(--muted);font-weight:600"></div>` :
+          `<div class="grp"><span>Reps</span><input class="sm" data-f="reps" inputmode="numeric" placeholder="—" value="${attrEsc(r.reps||"")}"></div>
+          <div class="grp"><span>RR</span><input class="sm" data-f="rr" placeholder="—" value="${attrEsc(r.rr||"")}"></div>`}
           <button class="icbtn btn-adapt" style="margin-left:auto">⇄ adaptar</button>
           <button class="icbtn btn-troca">↻ trocar</button>
           <button class="icbtn btn-dor">⚠ dor</button>
