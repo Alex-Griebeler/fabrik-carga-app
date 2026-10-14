@@ -1,0 +1,836 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Ficha VO₂ Fabrik</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gloock&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: faixa preta com o nome, dados do aluno, abas dos 5 protocolos; em cada aba a tabela de estágios ao lado do resultado. */
+:root{
+  --ink:#0a0a0a; --paper:#ffffff; --surface:#f6f4f1; --line:#e3ddd6; --muted:#6b625b;
+  --accent:#A45248; --accent-ink:#ffffff; --input:#FAF7F2; --input-line:#c98f86;
+  --ok:#2f7d4f; --warn:#a86a00; --bad:#b3261e; --ok-bg:#e8f3ec; --warn-bg:#fbf1dd; --bad-bg:#f9e4e2;
+  --band:#0a0a0a; --band-ink:#ffffff;
+  --f-display:"Gloock",Georgia,"Times New Roman",serif;
+  --f-body:"Inter",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-num:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --ink:#f1ece6; --paper:#141211; --surface:#1d1a18; --line:#35302c; --muted:#a69c93;
+  --accent:#d07e72; --accent-ink:#141211; --input:#221d1a; --input-line:#8c544b;
+  --ok:#7cc79a; --warn:#e0b25c; --bad:#f08a80; --ok-bg:#1c2e23; --warn-bg:#33281a; --bad-bg:#3a1f1c;
+  --band:#000000; --band-ink:#f1ece6; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --ink:#f1ece6; --paper:#141211; --surface:#1d1a18; --line:#35302c; --muted:#a69c93;
+  --accent:#d07e72; --accent-ink:#141211; --input:#221d1a; --input-line:#8c544b;
+  --ok:#7cc79a; --warn:#e0b25c; --bad:#f08a80; --ok-bg:#1c2e23; --warn-bg:#33281a; --bad-bg:#3a1f1c;
+  --band:#000000; --band-ink:#f1ece6; color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0}
+[hidden]{display:none!important}
+#loginOverlay{position:fixed;inset:0;background:rgba(10,10,10,.55);display:flex;align-items:center;justify-content:center;padding:16px;z-index:50}
+.loginbox{background:var(--paper);color:var(--ink);border-radius:10px;padding:22px;width:min(380px,100%);display:flex;flex-direction:column;gap:12px}
+#loginErro{margin:0;font-size:13px;color:var(--bad);min-height:1em}
+body{background:var(--paper);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.5}
+.wrap{max-width:1180px;margin:0 auto;padding-inline:16px;padding-block:0 48px}
+header.band{background:var(--band);color:var(--band-ink)}
+header.band .wrap{padding-block:22px 18px;display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:8px 24px}
+h1{font-family:var(--f-display);font-weight:400;font-size:clamp(28px,4vw,40px);line-height:1.05;margin:0;letter-spacing:.2px}
+.band p{margin:0;font-size:13px;opacity:.75;max-width:60ch}
+h2{font-family:var(--f-display);font-weight:400;font-size:24px;margin:0;text-wrap:balance}
+h3{font-size:12px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);margin:0 0 8px;font-weight:600}
+.num{font-family:var(--f-num);font-variant-numeric:tabular-nums}
+label{display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--muted);font-weight:500}
+input,select,textarea{font:inherit;font-size:15px;color:var(--ink);background:var(--input);border:1px solid var(--input-line);border-radius:6px;padding:8px 10px;min-width:0;width:100%}
+input:focus-visible,select:focus-visible,textarea:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+input[readonly]{background:var(--surface);border-color:var(--line);color:var(--muted)}
+.aluno{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;padding-block:20px;border-bottom:1px solid var(--line)}
+.aluno .wide{grid-column:span 2}
+.checks{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:8px 24px}
+.checks label{flex-direction:row;align-items:center;gap:8px;font-size:14px;color:var(--ink)}
+.checks input{width:18px;height:18px;padding:0}
+.tabs{display:flex;gap:6px;overflow-x:auto;padding-block:16px 0;border-bottom:1px solid var(--line);scrollbar-width:thin}
+.tab{flex:0 0 auto;font:inherit;font-size:14px;font-weight:600;background:none;border:1px solid transparent;border-bottom:none;border-radius:8px 8px 0 0;padding:10px 14px;color:var(--muted);cursor:pointer;display:flex;flex-direction:column;align-items:flex-start;gap:2px;margin-bottom:-1px}
+.tab small{font-weight:500;font-size:11px;letter-spacing:.06em;text-transform:uppercase}
+.tab[aria-selected="true"]{background:var(--paper);border-color:var(--line);color:var(--ink)}
+.tab[aria-selected="true"] small{color:var(--accent)}
+.panel{padding-block:20px}
+.ptop{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;margin-bottom:14px}
+.chip{font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;padding:3px 8px;border-radius:999px;border:1px solid currentColor}
+.chip.atual{color:var(--ok)}.chip.proposta{color:var(--warn)}
+.facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px 24px;margin-bottom:18px}
+.facts div{min-width:0}.facts p,.facts ul{margin:0;font-size:14px}.facts ul{padding-left:18px}
+.stopline{background:var(--accent);color:var(--accent-ink);border-radius:6px;padding:8px 12px;font-size:14px;font-weight:600}
+.grid2{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:20px;align-items:start}
+@media (max-width:920px){.grid2{grid-template-columns:minmax(0,1fr)}.aluno .wide{grid-column:span 1}}
+.tablebox{overflow-x:auto;border:1px solid var(--line);border-radius:8px}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:600;text-align:left;padding:8px;border-bottom:1px solid var(--line);background:var(--surface);white-space:nowrap}
+td{padding:6px 8px;border-bottom:1px solid var(--line);vertical-align:middle}
+tr:last-child td{border-bottom:none}
+td input{padding:6px 8px;font-family:var(--f-num);font-variant-numeric:tabular-nums;width:76px}
+td.calc{font-family:var(--f-num);font-variant-numeric:tabular-nums;white-space:nowrap}
+td.fase{font-size:12px;color:var(--muted);white-space:nowrap}
+tr.warm td,tr.rec td{background:var(--surface)}
+tr.stop td{background:var(--bad-bg)}
+tr.near td{background:var(--warn-bg)}
+.tabtools{display:flex;flex-wrap:wrap;gap:8px;align-items:end;margin-bottom:10px}
+.tabtools label{width:150px}
+button.btn{font:inherit;font-size:14px;font-weight:600;border-radius:6px;padding:8px 14px;cursor:pointer;border:1px solid var(--line);background:var(--surface);color:var(--ink)}
+button.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+button.btn.danger{color:var(--bad);border-color:var(--bad)}
+.result{border:1px solid var(--line);border-radius:8px;padding:16px;display:flex;flex-direction:column;gap:14px;background:var(--paper)}
+.big{display:flex;flex-direction:column;gap:2px}
+.big .v{font-family:var(--f-display);font-size:40px;line-height:1}
+.big .u{font-size:12px;color:var(--muted)}
+.kv{display:grid;grid-template-columns:1fr auto;gap:6px 12px;font-size:14px}
+.kv dt{color:var(--muted)}.kv dd{margin:0;font-family:var(--f-num);font-variant-numeric:tabular-nums;text-align:right}
+.alerts{display:flex;flex-direction:column;gap:6px;margin:0;padding:0;list-style:none}
+.alerts li{font-size:13px;padding:7px 10px;border-radius:6px;border-left:3px solid}
+.alerts .bad{background:var(--bad-bg);border-color:var(--bad)}
+.alerts .warn{background:var(--warn-bg);border-color:var(--warn)}
+.alerts .ok{background:var(--ok-bg);border-color:var(--ok)}
+.recov{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.actions{display:flex;flex-wrap:wrap;gap:8px;padding-block:20px;border-top:1px solid var(--line);margin-top:8px;align-items:center}
+.actions .msg{font-size:13px;color:var(--muted)}
+.copyfall{width:100%;min-height:140px;font-family:var(--f-num);font-size:12px}
+.safety{border:1px solid var(--bad);border-radius:8px;padding:12px 14px;font-size:14px;margin-top:18px}
+.safety strong{color:var(--bad)}
+.review{max-width:78ch;display:flex;flex-direction:column;gap:22px}
+.review section{display:flex;flex-direction:column;gap:8px}
+.review p,.review li{font-size:15px}
+.review ul,.review ol{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px}
+.review .tablebox table{font-size:13px}
+.review td{vertical-align:top}
+.decision{border:1px solid var(--line);border-radius:8px;padding:14px 16px;background:var(--surface)}
+.src{font-size:13px;color:var(--muted)}
+.src a{color:var(--accent)}
+a{color:var(--accent)}
+.note{font-size:13px;color:var(--muted)}
+.bar{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px 16px;padding-block:14px;border-bottom:1px solid var(--line)}
+.bar-l,.bar-r{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;min-width:0}
+.savechip{font-size:13px;font-weight:600;padding:5px 10px;border-radius:999px;border:1px solid currentColor;display:inline-flex;align-items:center;gap:6px}
+.savechip::before{content:"";width:8px;height:8px;border-radius:50%;background:currentColor}
+.savechip.ok{color:var(--ok)}.savechip.warn{color:var(--warn)}.savechip.bad{color:var(--bad)}.savechip.idle{color:var(--muted)}
+.banner{border-radius:8px;padding:10px 14px;font-size:14px;margin-top:12px}
+.banner.bad{background:var(--bad-bg);border:1px solid var(--bad)}
+.banner.warn{background:var(--warn-bg);border:1px solid var(--warn)}
+.saved{padding-block:12px 4px;border-bottom:1px solid var(--line)}
+.saved .tablebox{max-height:360px;overflow:auto}
+.saved td button{font:inherit;font-size:13px;font-weight:600;background:none;border:1px solid var(--accent);color:var(--accent);border-radius:6px;padding:4px 10px;cursor:pointer}
+.saved tr.atual td{background:var(--surface)}
+fieldset.ro{border:0;margin:0;padding:0;min-width:0}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+
+<header class="band">
+  <div class="wrap">
+    <h1>Ficha VO₂ Fabrik</h1>
+    <p>Registro estágio a estágio dos 5 testes de VO₂ (bike Ride e esteira Technogym). A ficha calcula enquanto o treinador preenche.</p>
+  </div>
+</header>
+
+<main class="wrap">
+  <section class="bar" aria-label="Salvamento">
+    <div class="bar-l"><span class="savechip idle" id="save-chip" role="status">Conectando ao banco…</span><span class="note" id="doc-label"></span></div>
+    <div class="bar-r"><button class="btn" type="button" id="btn-list" aria-expanded="false" aria-controls="saved">Avaliações salvas</button><button class="btn primary" type="button" id="btn-new">Nova avaliação</button></div>
+  </section>
+  <div id="banner"></div>
+  <section class="saved" id="saved" hidden aria-label="Avaliações salvas">
+    <div class="tablebox"><table><thead><tr><th>Aluno</th><th>Data do teste</th><th>Testes preenchidos</th><th>Avaliador</th><th>Última alteração</th><th></th></tr></thead><tbody id="saved-tb"><tr><td colspan="6" class="note">Nenhuma avaliação salva ainda. A primeira aparece aqui assim que você digitar o nome do aluno.</td></tr></tbody></table></div>
+  </section>
+  <fieldset class="ro" id="ro">
+  <section class="aluno" aria-label="Dados do aluno">
+    <label class="wide">Aluno<input id="a-nome" autocomplete="off"></label>
+    <label>Data<input id="a-data" type="date"></label>
+    <label>Avaliador<input id="a-aval" autocomplete="off"></label>
+    <label>Idade (anos)<input id="a-idade" inputmode="decimal"></label>
+    <label>Peso (kg)<input id="a-peso" inputmode="decimal"></label>
+    <label>Sexo<select id="a-sexo"><option value="">—</option><option value="m">Masculino</option><option value="f">Feminino</option></select></label>
+    <label>FCmáx prevista<input id="a-fcmax" readonly title="208 − 0,7 × idade"></label>
+    <label>FC de repouso<input id="a-fcrep" inputmode="numeric"></label>
+    <div class="checks">
+      <label><input type="checkbox" id="a-parq"> PAR-Q em dia</label>
+      <label><input type="checkbox" id="a-cinta"> Cinta de FC no peito</label>
+      <label><input type="checkbox" id="a-med"> Usa remédio que altera a FC (ex.: betabloqueador)</label>
+    </div>
+  </section>
+
+  <nav class="tabs" role="tablist" id="tabs"></nav>
+  <div id="panel" class="panel" role="tabpanel"></div>
+
+  </fieldset>
+  <div class="actions">
+    <button class="btn" id="btn-copy" type="button">Copiar resumo</button>
+    <span class="msg" id="msg" role="status"></span>
+  </div>
+  <textarea class="copyfall" id="copyfall" hidden readonly aria-label="Resumo para copiar"></textarea>
+</main>
+
+<div id="loginOverlay" hidden>
+  <div class="loginbox" role="dialog" aria-labelledby="loginTit">
+    <h2 id="loginTit">Entrar</h2>
+    <p class="note">Mesmo login do Registro de Carga. Enquanto você não entra, tudo o que for digitado fica guardado neste aparelho.</p>
+    <label>E-mail<input id="loginEmail" type="email" autocomplete="username"></label>
+    <label>Senha<input id="loginSenha" type="password" autocomplete="current-password"></label>
+    <button class="btn primary" id="loginBtn" type="button">Entrar</button>
+    <button class="btn" id="loginDepois" type="button">Continuar sem entrar</button>
+    <p id="loginErro" role="status"></p>
+  </div>
+</div>
+<script src="../vendor/supabase.js"></script>
+<script>
+(function(){
+"use strict";
+// Banco do Registro de Carga. A anon key é pública por design; a segurança é a RLS (só login da equipe lê/grava).
+const SUPABASE_CONFIG={
+  url:"https://xmyqwniiaicflfcvjiyj.supabase.co",
+  anonKey:"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhteXF3bmlpYWljZmxmY3ZqaXlqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEwNTU3MDQsImV4cCI6MjA5NjYzMTcwNH0.bDlxgkZEZa7I_lpqzmjgLH0HT2d5MV8nwz_Grz5hj7M"
+};
+const KEY="fichaVO2.fabrik.v1";
+const $=s=>document.querySelector(s);
+const n=v=>{if(v===undefined||v===null)return null;const t=String(v).trim().replace(",",".");if(t==="")return null;const x=Number(t);return Number.isFinite(x)?x:null};
+const f1=x=>x==null?"—":x.toLocaleString("pt-BR",{minimumFractionDigits:1,maximumFractionDigits:1});
+const f0=x=>x==null?"—":Math.round(x).toLocaleString("pt-BR");
+const pct=x=>x==null?"—":Math.round(x*100)+"%";
+
+/* ---------- fórmulas (fontes na aba Decisões) ---------- */
+const F={
+  fcmax:idade=>idade==null?null:208-0.7*idade,                                   // Tanaka, usada nas planilhas Fabrik
+  bikeACSM:(w,kg)=>(w==null||!kg)?null:10.8*w/kg+7,                              // ACSM, bike de pernas
+  bikeFRIEND:(w,kg)=>(w==null||!kg)?null:1.74*(w*6.12/kg)+3.5,                   // Kokkinos 2018
+  mmin:kmh=>kmh*1000/60,
+  walkACSM:(kmh,g)=>{const v=F.mmin(kmh);return 3.5+0.1*v+1.8*v*(g/100)},        // ACSM caminhada
+  runACSM:(kmh,g)=>{const v=F.mmin(kmh);return 3.5+0.2*v+0.9*v*(g/100)},         // ACSM corrida
+  runFRIEND:(kmh,g)=>{const v=F.mmin(kmh);return v*(0.17+(g/100)*0.79)+3.5},     // Kokkinos 2017
+  ebbeling:(kmh,fc,idade,sexo)=>{const mph=kmh/1.609344;const s=sexo==="m"?1:0;
+    return 15.1+21.8*mph-0.327*fc-0.263*mph*idade+0.00504*fc*idade+5.98*s},     // Ebbeling 1991
+  // ACSM cap. 4: reta FC × VO2 dos estágios em estado estável entre 110 bpm e 85% da FCmáx prevista, prolongada até a FCmáx prevista
+  extrap:(pts,fcmax)=>{if(pts.length<2||!fcmax)return null;const k=pts.length;
+    const mx=pts.reduce((a,p)=>a+p.fc,0)/k,my=pts.reduce((a,p)=>a+p.vo2,0)/k;
+    let sxy=0,sxx=0;pts.forEach(p=>{sxy+=(p.fc-mx)*(p.vo2-my);sxx+=(p.fc-mx)**2});
+    if(sxx===0)return null;const b=sxy/sxx;if(b<=0)return null;return my+b*(fcmax-mx)}
+};
+function recovClass(drop){if(drop==null)return null;
+  if(drop>=30)return["Excelente","ok"];if(drop>=20)return["Muito boa","ok"];if(drop>12)return["Moderada","warn"];return["Baixa (≤ 12 bpm)","bad"]}
+
+/* ---------- protocolos ---------- */
+const range=(a,b)=>{const r=[];for(let i=a;i<=b;i++)r.push(i);return r};
+const P=[
+{ id:"bsub", tab:"Bike submáx", sub:"Bike Ride", status:"atual", kind:"bike",
+  titulo:"Bike Ride · teste submáximo",
+  indicacao:"Iniciantes, intermediários, retorno ao treino, limitação articular, primeira avaliação.",
+  passos:["Cadência 70–90 rpm o teste inteiro.","Aquecimento 2 min a 25 W.","Sobe 25 W a cada 2 min (carga da planilha Fabrik).","No fim de cada estágio: watts que o console mostra, FC e PSE (0–10).","Ao parar: 1 min de recuperação ativa a 25 W e anote a FC no fim desse minuto."],
+  parada:"Parar com PSE 9 ou FC entre 90% e 95% da FCmáx prevista.",
+  stop:(r,fm)=>(r.pse!=null&&r.pse>=9)||(r.fc!=null&&fm&&r.fc>=0.9*fm),
+  near:(r,fm)=>(r.pse!=null&&r.pse>=8)||(r.fc!=null&&fm&&r.fc>=0.85*fm),
+  rows:[{t:"0–2",fase:"Aquecimento",plan:"25 W",warm:1}].concat([50,75,100,125,150,175,200].map((w,i)=>({t:(2+2*i)+"–"+(4+2*i),fase:"Teste",plan:w+" W"})))
+},
+{ id:"bmax", tab:"Bike máx", sub:"Bike Ride", status:"atual", kind:"bike",
+  titulo:"Bike Ride · teste máximo",
+  indicacao:"Alunos treinados, sem limitação clínica, foco em performance. Pré-requisito: já ter feito o submáximo.",
+  passos:["Cadência 80–90 rpm.","Aquecimento 2 min no nível 2.","Começa no nível 3 e sobe a cada 2 min (3, 4, 5, 7, 9, 11, 13).","No fim de cada estágio: watts que o console mostra, FC e PSE.","Ao parar: 1 min no nível 2 e anote a FC no fim desse minuto."],
+  parada:"Parar com PSE 10 ou quando a cadência mínima não se sustenta.",
+  stop:(r)=>(r.pse!=null&&r.pse>=10),
+  near:(r)=>(r.pse!=null&&r.pse>=9),
+  rows:[{t:"0–2",fase:"Aquecimento",plan:"nível 2",warm:1}].concat([3,4,5,7,9,11,13].map((l,i)=>({t:(2+2*i)+"–"+(4+2*i),fase:"Teste",plan:"nível "+l})))
+},
+{ id:"ecam", tab:"Esteira caminhada", sub:"Submáx · proposta", status:"proposta", kind:"walk",
+  titulo:"Esteira · caminhada submáxima (Ebbeling)",
+  indicacao:"Iniciantes, sobrepeso, baixa aptidão, quem não corre ou está em reabilitação. Equação feita com adultos de 20 a 59 anos.",
+  passos:["Escolha uma velocidade de caminhada entre 3,2 e 7,2 km/h (no console, o modo caminhada vai até 6,9 km/h).","Etapa 1 (proposta Fabrik, para acertar a velocidade): 4 min a 0%. A FC no fim deve ficar entre 50% e 70% da FCmáx prevista, a faixa descrita para este teste; se não ficar, ajuste a velocidade e recomece.","Etapa 2 (a que entra na equação): 4 min a 5%, mesma velocidade. Anote a FC no fim do 4º minuto.","Sem agarrar o corrimão.","Recuperação: 1 min a 3 km/h e 0%; anote a FC."],
+  parada:"Teste curto, sem critério de exaustão. Interrompa por qualquer sinal de segurança abaixo.",
+  stop:()=>false, near:()=>false,
+  rows:[{t:"0–4",fase:"Etapa 1 · 0%",vel:"5",incl:"0",lockIncl:1},{t:"4–8",fase:"Etapa 2 · 5%",vel:"",incl:"5",lockIncl:1,mirror:1}]
+},
+{ id:"esub", tab:"Esteira corrida submáx", sub:"Proposta", status:"proposta", kind:"run",
+  titulo:"Esteira · corrida submáxima",
+  indicacao:"Intermediários já adaptados à corrida, sem dor ou limitação.",
+  passos:["Aquecimento 2 min caminhando a 3,5 km/h e 0%.","Estágios de 3 min a 0%, começando em 7 km/h e subindo 1 km/h por estágio.","No fim de cada estágio: FC e PSE.","Sem segurar no corrimão.","Ao parar: 1 min a 3 km/h e 0%; anote a FC."],
+  parada:"Proposta: parar quando a FC passar de 85% da FCmáx prevista (ponto final do ACSM para esta conta). O manual Fabrik hoje diz PSE 9 ou 90–95%.",
+  stop:(r,fm)=>(r.fc!=null&&fm&&r.fc>=0.85*fm)||(r.pse!=null&&r.pse>=9),
+  near:(r,fm)=>(r.fc!=null&&fm&&r.fc>=0.8*fm),
+  startSpeed:7, step:1, dur:3, count:7, incl:0
+},
+{ id:"emax", tab:"Esteira corrida máx", sub:"Proposta", status:"proposta", kind:"runmax",
+  titulo:"Esteira · corrida máxima (rampa)",
+  indicacao:"Alunos treinados, alta tolerância ao esforço, sem limitação articular ou clínica. Pré-requisito: já ter feito um submáximo.",
+  passos:["No console: Teste máximo customizado (velocidade inicial, incremento e duração do degrau).","Aquecimento 2 min caminhando a 3,5 km/h e 0%.","Degraus de 1 min a 0%, subindo 1 km/h por degrau (proposta Fabrik).","Velocidade inicial: escolha para o teste durar de 8 a 12 min, como o ACSM recomenda (regra prática da casa: velocidade final esperada menos 9 km/h).","Anote FC e PSE no fim de cada degrau. Se o aluno parar no meio de um degrau, anote na linha desse degrau: a conta usa a velocidade em que o teste terminou.","Ao parar: 1 min a 3 km/h e 0%; anote a FC."],
+  parada:"Parar com PSE 10 ou quando o aluno não sustenta a velocidade.",
+  stop:(r)=>(r.pse!=null&&r.pse>=10),
+  near:(r)=>(r.pse!=null&&r.pse>=9),
+  startSpeed:7, step:1, dur:1, count:12, incl:0
+},
+{ id:"rev", tab:"Decisões da esteira", sub:"Revisão", review:true }
+];
+
+/* ---------- estado e salvamento ----------
+   Onde os dados ficam (mesmo esquema do Registro de Carga):
+   1) no aparelho, na hora: cada avaliação com alteração ainda não confirmada fica numa chave DA ABA
+      ("fichaVO2.doc.<id>.<aba>"). Uma aba nunca grava nem apaga a chave de outra aba aberta;
+      a chave de uma aba que foi fechada é assumida pela próxima.
+   2) no banco do Registro de Carga (tabela avaliacoes_vo2), SÓ pela função salvar_avaliacao_vo2:
+      ela compara a versão do servidor (rev) que esta aba conhecia; se outra aba/aparelho gravou antes,
+      salva uma CÓPIA em vez de sobrescrever. Reenvio do mesmo envio não duplica.
+   A chave só é apagada quando o banco confirma exatamente aquela versão.
+   Não existe apagar pelo app. Se o aparelho não consegue guardar, a ficha trava a edição,
+   tenta mandar a última alteração direto ao banco e pede confirmação antes de fechar a página. */
+const LS_ATUAL="fichaVO2.atual", LS_DOC="fichaVO2.doc.", LS_VIVO="fichaVO2.vivo.";
+let S={tab:"bsub",aluno:{},p:{}};
+let L={docId:null,baseRev:null,copiaDe:null};
+let BLOQUEADA=false, SALVO_EMERGENCIA=false, SOS_ESCRITA=null;
+function lsGet(k){try{return localStorage.getItem(k)}catch(e){return null}}
+function lsSet(k,v){try{localStorage.setItem(k,v);return true}catch(e){return false}}
+function lsDel(k){try{localStorage.removeItem(k)}catch(e){}}
+function jget(k,def){try{const v=JSON.parse(lsGet(k));return v==null?def:v}catch(e){return def}}
+function hoje(){const d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")}
+function rid(){return Math.random().toString(36).slice(2,10)+Date.now().toString(36)}
+// identificador desta ABA: novo a cada abertura da página (aba duplicada ou recarregada ganha outro;
+// a pendência da instância anterior é assumida como órfã — ela apaga o próprio sinal de vida ao sair)
+const TAB="aba_"+rid();
+const keyDe=(id,tab)=>LS_DOC+id+"."+tab;
+const minhaKey=id=>keyDe(id,TAB);
+function marcarViva(){lsSet(LS_VIVO+TAB,String(Date.now()))}
+window.addEventListener("pagehide",()=>{lsDel(LS_VIVO+TAB)});
+window.addEventListener("pageshow",e=>{if(e.persisted)marcarViva()});
+function abaViva(tab){if(tab===TAB)return true;const t=Number(lsGet(LS_VIVO+tab));return !!t&&Date.now()-t<30000}
+// todas as pendências guardadas no aparelho: [{key,id,tab,ent}]
+function pendencias(){const out=[];try{for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);
+  if(!k||k.indexOf(LS_DOC)!==0)continue;const rest=k.slice(LS_DOC.length),cut=rest.lastIndexOf(".");if(cut<1)continue;
+  const ent=jget(k,null);if(ent&&ent.row)out.push({key:k,id:rest.slice(0,cut),tab:rest.slice(cut+1),ent})}}catch(e){}return out}
+function pendenciasDe(id){return pendencias().filter(x=>x.id===id).sort((a,b)=>String(b.ent.row.client_updated_at).localeCompare(String(a.ent.row.client_updated_at)))}
+// assume as pendências de abas fechadas (sem sinal de vida há 30 s)
+function adotarOrfas(){
+  pendencias().forEach(x=>{
+    if(abaViva(x.tab))return;
+    if(!lsGet(minhaKey(x.id))){if(lsSet(minhaKey(x.id),JSON.stringify(x.ent)))lsDel(x.key)}
+    // se esta aba já tem pendência da mesma avaliação, a órfã fica onde está e é enviada mesmo assim (vira cópia se preciso)
+  });
+}
+(function boot(){
+  const probe="fichaVO2.teste";if(!lsSet(probe,"1"))BLOQUEADA=true;else lsDel(probe);
+  marcarViva();adotarOrfas();
+  // limpa sinais de vida de abas fechadas há mais de 1 dia (só o sinal; pendências nunca são apagadas aqui)
+  try{Object.keys(localStorage).forEach(k=>{if(k.indexOf(LS_VIVO)===0&&Date.now()-Number(lsGet(k))>86400000)lsDel(k)})}catch(e){}
+  const o=jget(LS_ATUAL,null);
+  if(o&&o.S){S=Object.assign(S,o.S);L=Object.assign(L,o.L||{})}
+  if(L.docId){const p=jget(minhaKey(L.docId),null)||((pendenciasDe(L.docId)[0]||{}).ent);
+    if(p&&p.row&&p.row.dados){S={tab:S.tab,aluno:p.row.dados.aluno||{},p:p.row.dados.p||{}};L.baseRev=p.baseRev??null;L.copiaDe=p.row.copia_de||null}}
+})();
+setInterval(marcarViva,10000);
+// qualquer dado digitado conta (não só o nome)
+function temDados(st){const a=(st&&st.aluno)||{};if(["nome","idade","peso","fcrep"].some(k=>String(a[k]||"").trim()))return true;
+  return Object.values((st&&st.p)||{}).some(ps=>(ps.rows||[]).some(r=>["w","fc","pse"].some(k=>String(r[k]||"").trim()))||["fcpico","fc1","obs"].some(k=>String(ps[k]||"").trim()))}
+function hasContent(){return temDados(S)}
+function newId(){return "av-"+hoje()+"-"+rid()}
+function persistLocal(){if(!lsSet(LS_ATUAL,JSON.stringify({S,L})))bloquear()}
+function protocolosPreenchidos(st){return P.filter(p=>!p.review&&st.p&&st.p[p.id]&&st.p[p.id].rows.some(r=>String(r.fc||"").trim()!=="")).map(p=>p.id)}
+function rowAtual(){
+  const a=S.aluno||{};
+  return {id:L.docId,aluno_nome:String(a.nome||"").trim(),data_teste:/^\d{4}-\d{2}-\d{2}$/.test(a.data||"")?a.data:null,
+    avaliador:String(a.aval||"").trim()||null,protocolos:protocolosPreenchidos(S),dados:{aluno:S.aluno,p:S.p},
+    copia_de:L.copiaDe||null,versao_ficha:2,client_updated_at:new Date().toISOString(),source_device_id:TAB};
+}
+// cada alteração: grava no aparelho ANTES de qualquer rede
+function save(){
+  if(BLOQUEADA){bloquear();return}
+  // ficha nova: começa a salvar no 1º dado digitado; ficha que já existe: TODA alteração vai (inclusive apagar campos)
+  if(hasContent()||L.docId){
+    if(!L.docId)L.docId=newId();
+    const ent={row:rowAtual(),baseRev:L.baseRev??null,escrita:TAB+"-"+rid()};
+    if(!lsSet(minhaKey(L.docId),JSON.stringify(ent))){bloquear();return}
+  }
+  persistLocal();if(!$("#saved").hidden)renderSaved();Sync.schedule();
+}
+function travar(){document.querySelectorAll("#ro input,#ro select,#ro textarea,#ro [data-act]").forEach(el=>{el.disabled=true})}
+function bloquear(){
+  BLOQUEADA=true;travar();try{Sync.paint()}catch(e){}
+  try{Sync.banner("bad","Este aparelho não está conseguindo guardar a ficha (armazenamento cheio, bloqueado ou aba anônima). A edição foi travada. "+(SALVO_EMERGENCIA?"A última alteração foi gravada direto no banco.":"Não feche a página: toque em Copiar resumo e mande o texto para o Alex. A ficha está tentando mandar a última alteração direto ao banco."))}catch(e){}
+  if(!SOS_ESCRITA){SOS_ESCRITA=TAB+"-sos-"+rid();setTimeout(()=>Sync.emergencia(),0);setInterval(()=>Sync.emergencia(),15000)}
+}
+// sem armazenamento no aparelho: pede confirmação antes de fechar ou recarregar
+window.addEventListener("beforeunload",e=>{if(BLOQUEADA&&!SALVO_EMERGENCIA&&hasContent()){e.preventDefault();e.returnValue=""}});
+
+const Sync={sb:null,on:!!(SUPABASE_CONFIG.url&&SUPABASE_CONFIG.anonKey),busy:null,timer:null,retry:null,lastOk:null,logged:null,remote:[],
+  chip(cls,txt){const c=$("#save-chip");c.className="savechip "+cls;c.textContent=txt},
+  banner(cls,txt){$("#banner").innerHTML=txt?`<div class="banner ${cls}">${esc(txt)}</div>`:""},
+  nPend(){return new Set(pendencias().map(x=>x.id)).size},
+  paint(){
+    const nf=this.nPend();
+    $("#doc-label").textContent=L.docId?"Avaliação: "+(S.aluno.nome||"sem nome")+" · "+(S.aluno.data||""):"";
+    if(BLOQUEADA){this.chip("bad",SALVO_EMERGENCIA?"Aparelho não guarda · última alteração está no banco":"Aparelho não guarda · edição travada");return}
+    if(!this.on){this.chip("warn",nf?"Modo local: "+nf+" avaliação(ões) só neste aparelho":"Modo local (sem banco)");return}
+    if(this.busy){this.chip("warn","Sincronizando…");return}
+    if(!this.sb){this.chip("warn",nf?nf+" guardada(s) no aparelho · sem conexão com o banco":"Sem conexão com o banco");return}
+    if(this.logged===false){this.chip("bad",nf?nf+" guardada(s) no aparelho · entre para sincronizar":"Entre para sincronizar");return}
+    if(nf){this.chip("warn",nf+" guardada(s) no aparelho · envia quando a internet voltar");return}
+    if(!hasContent()){this.chip("idle","Ficha vazia");return}
+    this.chip("ok","Sincronizado"+(this.lastOk?" às "+this.lastOk:""));
+  },
+  schedule(){this.paint();clearTimeout(this.timer);this.timer=setTimeout(()=>this.flush(),1500)},
+  async session(){try{const {data}=await this.sb.auth.getSession();return data.session}catch(e){return null}},
+  // erro de dado (definitivo): classes 22 (dado inválido) e 23 (integridade). O resto é tentado de novo.
+  erroDeDado(e){return !!(e&&e.code&&/^(22|23)/.test(String(e.code)))},
+  // sem armazenamento no aparelho: manda a ficha da tela direto ao banco e repete (a cada 15 s, ao voltar a internet
+  // e ao entrar) até o banco confirmar. O mesmo SOS_ESCRITA em todas as tentativas: reenvio não duplica.
+  async emergencia(){
+    if(!BLOQUEADA||SALVO_EMERGENCIA||this.sosBusy||!hasContent()||!this.sb||!navigator.onLine)return;
+    this.sosBusy=true;
+    try{
+      if(!(await this.session())){this.logged=false;showLogin();return}
+      if(!L.docId)L.docId=newId();
+      if(!this.sosRow)this.sosRow=rowAtual();   // a edição está travada: a ficha da tela não muda mais
+      const {data,error}=await this.sb.rpc("salvar_avaliacao_vo2",{p:this.sosRow,p_base_rev:L.baseRev??null,p_escrita:SOS_ESCRITA});
+      if(!error&&data){SALVO_EMERGENCIA=true;if(data.id){L.docId=data.id;L.baseRev=data.rev}bloquear()}
+    }catch(e){}finally{this.sosBusy=false}
+  },
+  flush(){
+    if(BLOQUEADA){this.emergencia();this.paint();return Promise.resolve()}
+    if(!this.on||!this.sb||!navigator.onLine){this.paint();return Promise.resolve()}
+    if(this.busy)return this.busy.then(()=>{if(this.nPend())this.schedule()});
+    this.busy=(async()=>{
+      try{
+        if(!(await this.session())){this.logged=false;showLogin();return}
+        this.logged=true;
+        adotarOrfas();
+        // esta aba envia só o que é dela (ou de aba já fechada); a outra aba aberta envia o que é dela
+        for(const x of pendencias().filter(x=>x.tab===TAB||!abaViva(x.tab))){
+          const ent=x.ent;
+          if(ent.erro&&ent.erroEm===ent.escrita)continue;   // recusado e não mudou desde então
+          const {data,error}=await this.sb.rpc("salvar_avaliacao_vo2",{p:ent.row,p_base_rev:ent.baseRev??null,p_escrita:ent.escrita});
+          // daqui até o fim do item não há await: nada digitado nesta aba pode se intercalar
+          const cur=jget(x.key,null);
+          if(error){
+            if(this.erroDeDado(error)){
+              if(cur&&cur.escrita===ent.escrita){cur.erro=String(error.message||error.code);cur.erroEm=ent.escrita;lsSet(x.key,JSON.stringify(cur))}
+              this.banner("bad","Uma avaliação foi recusada pelo banco ("+(error.message||error.code)+"). Ela continua guardada neste aparelho e aparece na lista; avise o Alex.");
+              continue;
+            }
+            throw error;   // rede, sessão, permissão ou instabilidade: fica no aparelho e tenta de novo
+          }
+          const res=data||{};
+          if(res.status==="copia"){
+            // o banco já tinha outra versão: o que esta aba mandou virou a avaliação res.id
+            if(cur&&cur.escrita!==ent.escrita){
+              const mov=Object.assign({},cur,{row:Object.assign({},cur.row,{id:res.id,copia_de:x.id}),baseRev:res.rev});delete mov.erro;delete mov.erroEm;
+              if(!lsSet(keyDe(res.id,x.tab),JSON.stringify(mov))){bloquear();return}
+            }
+            lsDel(x.key);
+            if(L.docId===x.id&&x.tab===TAB){L.docId=res.id;L.baseRev=res.rev;L.copiaDe=x.id;persistLocal()}
+            this.banner("warn","A avaliação de "+(ent.row.aluno_nome||"sem nome")+" tinha sido alterada em outro aparelho ou aba. Para não apagar nada, o que estava aqui foi salvo como uma cópia separada. Confira as duas em Avaliações salvas.");
+          }else{
+            if(cur&&cur.escrita===ent.escrita)lsDel(x.key);                     // confirmada exatamente esta versão
+            else if(cur){cur.baseRev=res.rev;lsSet(x.key,JSON.stringify(cur))}   // editada durante o envio: segue pendente sobre a versão nova
+            if(L.docId===x.id&&x.tab===TAB){L.baseRev=res.rev;persistLocal()}
+          }
+        }
+        this.lastOk=new Date().toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"});
+        await this.pull();
+      }catch(e){
+        if(e&&(/^PGRST3/.test(e.code||"")||e.status===401)){this.logged=false;showLogin()}
+      }finally{this.busy=null;this.paint();if(this.nPend()&&!this.retry)this.retry=setTimeout(()=>{this.retry=null;this.flush()},30000)}
+    })();
+    return this.busy;
+  },
+  async pull(){
+    let todos=[],de=0;const PAG=500;
+    for(;;){
+      const {data,error}=await this.sb.from("avaliacoes_vo2").select("id,aluno_nome,data_teste,avaliador,protocolos,atualizado_em").order("atualizado_em",{ascending:false}).range(de,de+PAG-1);
+      if(error||!data)return;
+      todos=todos.concat(data);if(data.length<PAG)break;de+=PAG;
+    }
+    this.remote=todos;renderSaved();
+    if(!this.usoVisto){this.usoVisto=true;const {data:u}=await this.sb.rpc("vo2_uso_banco");
+      if(u&&u.banco_bytes>350*1024*1024)this.banner("bad","O banco está com "+Math.round(u.banco_bytes/1048576)+" MB (limite do plano: 500 MB). Avise o Alex para exportar ou ampliar antes que pare de gravar.")}
+  },
+  async init(){
+    if(!this.on){this.paint();this.banner("warn","Ficha em modo local: nada vai para o banco.");if(BLOQUEADA)bloquear();return}
+    if(!window.supabase){await loadLib()}
+    if(!window.supabase){this.paint();this.banner("warn","Não consegui carregar a conexão com o banco. O que você digitar fica guardado neste aparelho; recarregue a página com internet.");if(BLOQUEADA)bloquear();return}
+    this.sb=window.supabase.createClient(SUPABASE_CONFIG.url,SUPABASE_CONFIG.anonKey,{auth:{persistSession:true,autoRefreshToken:true}});
+    window.addEventListener("online",()=>this.flush());
+    const s=await this.session();
+    if(BLOQUEADA){this.logged=!!s;bloquear();if(!s)showLogin();else this.emergencia();return}
+    if(!s){this.logged=false;this.paint();showLogin();return}
+    this.logged=true;
+    await this.abrirDoBancoSeMaisNovo();
+    await this.flush();
+  },
+  // ao abrir: se a avaliação aberta não tem nada pendente no aparelho, carrega a versão do banco (pode ter sido editada em outro aparelho)
+  async abrirDoBancoSeMaisNovo(){
+    if(!L.docId||pendenciasDe(L.docId).length)return;
+    const {data,error}=await this.sb.from("avaliacoes_vo2").select("dados,rev,copia_de").eq("id",L.docId).maybeSingle();
+    if(error||!data||!data.dados)return;
+    if(pendenciasDe(L.docId).length)return;   // alguém digitou enquanto carregava: não sobrescreve
+    S={tab:S.tab,aluno:data.dados.aluno||{},p:data.dados.p||{}};L.baseRev=data.rev;L.copiaDe=data.copia_de||null;
+    persistLocal();loadAluno();renderTabs();renderPanel();
+  }
+};
+function loadLib(){return new Promise(res=>{const s=document.createElement("script");s.src="../vendor/supabase.js?r="+Date.now();s.onload=res;s.onerror=res;document.head.appendChild(s)})}
+function showLogin(){$("#loginOverlay").hidden=false;setTimeout(()=>{const e=$("#loginEmail");if(e)e.focus()},50)}
+async function doLogin(){
+  const email=$("#loginEmail").value.trim(),pw=$("#loginSenha").value;
+  if(!email||!pw){$("#loginErro").textContent="Preencha e-mail e senha.";return}
+  if(!Sync.sb){$("#loginErro").textContent="Sem conexão com o banco. Confira a internet e recarregue.";return}
+  $("#loginErro").textContent="Entrando…";
+  const {error}=await Sync.sb.auth.signInWithPassword({email,password:pw});
+  if(error){$("#loginErro").textContent=error.message||"Não foi possível entrar.";return}
+  $("#loginSenha").value="";$("#loginErro").textContent="";$("#loginOverlay").hidden=true;Sync.logged=true;
+  if(BLOQUEADA){Sync.emergencia();return}
+  await Sync.abrirDoBancoSeMaisNovo();await Sync.flush();
+}
+// a avaliação que sai da tela já está na chave desta aba (save grava a cada alteração); trocar não perde nada
+function trocarAvaliacao(novoS,novoL){
+  S=novoS;L=Object.assign({docId:null,baseRev:null,copiaDe:null},novoL);Sync.banner("","");
+  persistLocal();loadAluno();renderTabs();renderPanel();renderSaved();Sync.paint();
+}
+async function abrirAvaliacao(id){
+  const loc=jget(minhaKey(id),null)||((pendenciasDe(id)[0]||{}).ent);
+  if(loc&&loc.row){const d=loc.row.dados||{};trocarAvaliacao({tab:"bsub",aluno:d.aluno||{},p:d.p||{}},{docId:id,baseRev:loc.baseRev??null,copiaDe:loc.row.copia_de||null});return loc.row.aluno_nome}
+  if(!Sync.sb)return null;
+  const {data,error}=await Sync.sb.from("avaliacoes_vo2").select("dados,rev,copia_de,aluno_nome").eq("id",id).maybeSingle();
+  if(error||!data){$("#msg").textContent="Não consegui abrir essa avaliação agora. Confira a internet.";return null}
+  trocarAvaliacao({tab:"bsub",aluno:(data.dados&&data.dados.aluno)||{},p:(data.dados&&data.dados.p)||{}},{docId:id,baseRev:data.rev,copiaDe:data.copia_de||null});
+  return data.aluno_nome;
+}
+function renderSaved(){
+  const tb=$("#saved-tb");if(!tb)return;
+  const map={};
+  Sync.remote.forEach(r=>{map[r.id]={id:r.id,nome:r.aluno_nome,data:r.data_teste,aval:r.avaliador,prot:r.protocolos||[],quando:r.atualizado_em,local:false}});
+  pendencias().forEach(x=>{const r=x.ent.row,prev=map[x.id];if(prev&&prev.local&&String(prev.quando)>String(r.client_updated_at))return;
+    map[x.id]={id:x.id,nome:r.aluno_nome,data:r.data_teste,aval:r.avaliador,prot:r.protocolos||[],quando:r.client_updated_at,local:true,erro:x.ent.erro&&x.ent.erroEm===x.ent.escrita}});
+  const docs=Object.values(map).sort((a,b)=>String(b.quando).localeCompare(String(a.quando)));
+  $("#btn-list").textContent="Avaliações salvas"+(docs.length?" ("+docs.length+")":"");
+  if(!docs.length){tb.innerHTML=`<tr><td colspan="6" class="note">Nenhuma avaliação salva ainda. A primeira aparece aqui assim que você começar a preencher.</td></tr>`;return}
+  const nome=id=>{const p=P.find(x=>x.id===id);return p?p.tab:id};
+  tb.innerHTML=docs.map(d=>{const quando=d.quando?new Date(d.quando).toLocaleString("pt-BR",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"}):"—";
+    return `<tr class="${d.id===L.docId?"atual":""}"><td>${esc(d.nome||"sem nome")}${d.erro?' <span class="note">· recusada pelo banco</span>':d.local?' <span class="note">· só no aparelho</span>':""}</td><td class="num">${esc(d.data||"—")}</td><td>${esc((d.prot||[]).map(nome).join(", ")||"—")}</td><td>${esc(d.aval||"—")}</td><td class="num">${esc(quando)}</td><td>${d.id===L.docId?'<span class="note">aberta</span>':`<button type="button" data-open="${esc(d.id)}">Abrir</button>`}</td></tr>`}).join("");
+}
+
+function genRows(p,start){const r=[];for(let i=0;i<p.count;i++){const a=i*p.dur;r.push({t:a+"–"+(a+p.dur),fase:"Teste",vel:String(+(start+i*p.step).toFixed(1)),incl:String(p.incl)})}return r}
+function pstate(p){
+  if(!S.p[p.id]){
+    let rows;
+    if(p.kind==="run"||p.kind==="runmax")rows=genRows(p,p.startSpeed);
+    else rows=p.rows.map(r=>Object.assign({},r));
+    S.p[p.id]={rows:rows.map(r=>({t:r.t,fase:r.fase,plan:r.plan||"",vel:r.vel??"",incl:r.incl??"",warm:r.warm||0,lockIncl:r.lockIncl||0,mirror:r.mirror||0,w:"",fc:"",pse:""})),start:p.startSpeed??null,fcpico:"",fc1:"",obs:""};
+  }
+  return S.p[p.id];
+}
+const A=()=>{const a=S.aluno;return{idade:n(a.idade),peso:n(a.peso),sexo:a.sexo||"",fcmax:F.fcmax(n(a.idade)),med:!!a.med,parq:!!a.parq,cinta:!!a.cinta}};
+
+/* ---------- cálculo por protocolo ---------- */
+function rowCalc(p,r,a){
+  const fc=n(r.fc),pse=n(r.pse);let vo2=null;
+  if(p.kind==="bike")vo2=F.bikeACSM(n(r.w),a.peso);
+  else if(p.kind==="walk"){const v=n(r.vel),g=n(r.incl);if(v!=null&&g!=null)vo2=F.walkACSM(v,g)}
+  else {const v=n(r.vel),g=n(r.incl);if(v!=null&&g!=null)vo2=F.runACSM(v,g)}
+  return{fc,pse,vo2,pf:(fc!=null&&a.fcmax)?fc/a.fcmax:null};
+}
+function compute(p){
+  const st=pstate(p),a=A(),al=[];
+  const rows=st.rows.map(r=>Object.assign({},r,rowCalc(p,r,a)));
+  const test=rows.filter(r=>!r.warm);
+  const done=test.filter(r=>r.fc!=null);
+  const last=done.length?done[done.length-1]:null;
+  const fcs=rows.map(r=>r.fc).filter(x=>x!=null);
+  const fcpico=n(st.fcpico)??(fcs.length?Math.max(...fcs):null);
+  const fc1=n(st.fc1);const drop=(fcpico!=null&&fc1!=null)?fcpico-fc1:null;
+  const out={rows,main:null,mainLabel:"",mainNote:"",kv:[],al,fcpico,fc1,drop};
+  if(a.idade==null)al.push(["bad","Preencha a idade: a FCmáx prevista depende dela."]);
+  if(a.peso==null&&p.kind!=="walk")al.push(["bad","Preencha o peso: o VO₂ é por kg."]);
+  if(a.med)al.push(["bad","Remédio que altera a FC: as estimativas que usam a FC podem não valer para este aluno (o ACSM exclui esse caso no método submáximo). Decida com o Alex."]);
+  if(!a.cinta)al.push(["warn","Use a cinta de FC no peito (padrão Fabrik; nos testes do console, o manual exige ou recomenda monitor de FC)."]);
+  if(!a.parq&&(p.id==="bmax"||p.id==="emax"))al.push(["warn","PAR-Q não está em dia. Confirme com o Alex antes de um teste máximo."]);
+
+  if(p.id==="bsub"){
+    const w=last?n(last.w):null;
+    out.main=last?F.bikeACSM(w,a.peso):null;out.mainLabel="VO₂ no último estágio";out.mainNote="Valor do esforço em que o aluno parou. Não é o VO₂ máximo.";
+    const pts=test.filter(r=>r.fc!=null&&r.vo2!=null&&r.fc>=110&&a.fcmax&&r.fc<=0.85*a.fcmax).map(r=>({fc:r.fc,vo2:r.vo2}));
+    const ex=F.extrap(pts,a.fcmax);
+    out.kv=[["Último estágio",last?last.plan+" · "+f0(w)+" W":"—"],["% da FCmáx prevista",pct(last?last.pf:null)],["Estimativa do máximo (extrapolação ACSM)",f1(ex)],["Estágios usados na extrapolação",String(pts.length)]];
+    if(pts.length<2&&done.length)al.push(["warn","Extrapolação precisa de 2 estágios com FC entre 110 bpm e 85% da FCmáx prevista."]);
+    if(ex!=null)al.push(["warn","A extrapolação superestimou o VO₂ máx em 25,7% em média (Greiwe 1995). Use para comparar o aluno com ele mesmo."]);
+    if(done.length)al.push(["warn","Estágios de 2 min: o ACSM pede 3 min ou mais para a FC estabilizar."]);
+  }
+  if(p.id==="bmax"){
+    const w=last?n(last.w):null;
+    const acsm=F.bikeACSM(w,a.peso),fr=F.bikeFRIEND(w,a.peso);
+    out.main=acsm;out.mainLabel="VO₂ máx estimado · fórmula atual (ACSM)";out.mainNote="Watts do último estágio registrado (fim do teste).";
+    out.kv=[["Estágio final",last?last.plan+" · "+f0(w)+" W":"—"],["VO₂ pela equação FRIEND (proposta)",f1(fr)],["Diferença FRIEND × ACSM",(acsm!=null&&fr!=null)?f1(fr-acsm):"—"],["FC pico · % da prevista",fcpico!=null?f0(fcpico)+" · "+pct(a.fcmax?fcpico/a.fcmax:null):"—"],["PSE final",last&&last.pse!=null?f0(last.pse):"—"]];
+    if(w!=null&&(w<50||w>200))al.push(["warn","Watts fora de 50–200 W: fora da faixa de precisão declarada pelo ACSM para esta equação."]);
+    if(last&&last.pse!=null&&last.pse<10)al.push(["warn","PSE final abaixo de 10: o teste pode não ter chegado ao máximo."]);
+  }
+  if(p.id==="ecam"){
+    const r1=rows[0],r2=rows[1];const v=n(r1.vel);
+    if(v!=null&&(v<3.2||v>7.2))al.push(["bad","Velocidade fora da faixa da equação (3,2 a 7,2 km/h)."]);
+    if(r1.fc!=null&&a.fcmax){const q=r1.fc/a.fcmax;if(q<0.5||q>0.7)al.push(["bad","FC da etapa 1 em "+pct(q)+" da FCmáx prevista. A faixa é 50–70%: ajuste a velocidade e recomece."]);else al.push(["ok","FC da etapa 1 dentro da faixa de 50–70%."])}
+    if(a.idade!=null&&(a.idade<20||a.idade>59))al.push(["warn","Idade fora da faixa em que a equação foi feita (20 a 59 anos)."]);
+    if(!a.sexo)al.push(["bad","Preencha o sexo: entra na equação."]);
+    const ok=v!=null&&r2.fc!=null&&a.idade!=null&&a.sexo;
+    out.main=ok?F.ebbeling(v,r2.fc,a.idade,a.sexo):null;out.mainLabel="VO₂ máx estimado (Ebbeling)";out.mainNote="FC no fim dos 4 min a 5%, com velocidade, idade e sexo.";
+    out.kv=[["Velocidade",v!=null?f1(v)+" km/h":"—"],["FC etapa 1 (0%)",r1.fc!=null?f0(r1.fc)+" · "+pct(r1.pf):"—"],["FC etapa 2 (5%)",r2.fc!=null?f0(r2.fc)+" · "+pct(r2.pf):"—"],["Faixa-alvo da etapa 1",a.fcmax?f0(0.5*a.fcmax)+"–"+f0(0.7*a.fcmax)+" bpm":"—"]];
+    if(out.main!=null)al.push(["warn","Erro típico da equação: cerca de 5 ml/kg/min. Em mulheres de 45 a 65 anos repetiu bem (ICC 0,95), mas acompanhou pouco o VO₂ medido."]);
+  }
+  if(p.id==="esub"){
+    const pts=test.filter(r=>r.fc!=null&&r.vo2!=null&&r.fc>=110&&a.fcmax&&r.fc<=0.85*a.fcmax).map(r=>({fc:r.fc,vo2:r.vo2}));
+    const ex=F.extrap(pts,a.fcmax);
+    out.main=ex;out.mainLabel="VO₂ máx estimado (extrapolação ACSM)";out.mainNote="Reta FC × VO₂ dos estágios entre 110 bpm e 85% da FCmáx prevista, prolongada até a FCmáx prevista.";
+    out.kv=[["Último estágio",last?f1(n(last.vel))+" km/h · "+f0(last.fc)+" bpm":"—"],["VO₂ do último estágio (ACSM)",f1(last?last.vo2:null)],["Estágios usados",String(pts.length)]];
+    if(pts.length<2&&done.length)al.push(["warn","A conta precisa de 2 estágios com FC entre 110 bpm e 85% da FCmáx prevista."]);
+    if(ex!=null)al.push(["warn","Estimativa com erro grande. O número mais útil na reavaliação é a FC na mesma velocidade."]);
+    if(test.some(r=>r.fc!=null&&n(r.vel)!=null&&n(r.vel)<8))al.push(["warn","A equação de corrida do ACSM é mais precisa acima de 8 km/h."]);
+  }
+  if(p.id==="emax"){
+    const v=last?n(last.vel):null,g=last?n(last.incl):null;
+    const fr=(v!=null&&g!=null)?F.runFRIEND(v,g):null,ac=(v!=null&&g!=null)?F.runACSM(v,g):null;
+    out.main=fr;out.mainLabel="VO₂ máx estimado (FRIEND)";out.mainNote="Velocidade e inclinação do degrau em que o teste terminou (pico).";
+    const durMin=done.length*1;
+    out.kv=[["Degrau final (pico)",v!=null?f1(v)+" km/h · "+f1(g)+"%":"—"],["Duração da rampa",done.length?durMin+" min":"—"],["VO₂ pela equação ACSM (comparação)",f1(ac)],["FC pico · % da prevista",fcpico!=null?f0(fcpico)+" · "+pct(a.fcmax?fcpico/a.fcmax:null):"—"],["PSE final",last&&last.pse!=null?f0(last.pse):"—"]];
+    if(done.length&&(durMin<8||durMin>12))al.push(["warn","Rampa de "+durMin+" min. O ideal é 8–12 min: na próxima, ajuste a velocidade inicial."]);
+    if(last&&last.pse!=null&&last.pse<10)al.push(["warn","PSE final abaixo de 10: o teste pode não ter chegado ao máximo."]);
+  }
+  const rc=recovClass(drop);
+  if(rc)out.kv.push(["Queda da FC em 1 min",f0(drop)+" bpm · "+rc[0]]);
+  if(rc)al.push([rc[1]==="bad"?"bad":"warn",(rc[1]==="bad"?"Queda de 12 bpm ou menos: no estudo de Cole 1999 esse valor foi considerado anormal, com recuperação a 2,4 km/h e 2,5%; a Fabrik usa outra recuperação, então o corte é uma referência, não validado aqui. ":"")+"As faixas Excelente, Muito boa e Moderada são classificação da casa, sem fonte."]);
+  return out;
+}
+
+/* ---------- render ---------- */
+function esc(s){return String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]))}
+function renderTabs(){
+  $("#tabs").innerHTML=P.map(p=>`<button class="tab" role="tab" type="button" id="tab-${p.id}" aria-selected="${S.tab===p.id}" data-tab="${p.id}"><small>${esc(p.sub)}</small>${esc(p.tab)}</button>`).join("");
+}
+function renderPanel(){
+  const p=P.find(x=>x.id===S.tab)||P[0];
+  if(p.review){$("#panel").innerHTML=document.getElementById("tpl-review").innerHTML;return}
+  const st=pstate(p);
+  const head=p.kind==="bike"
+    ?"<th>Tempo (min)</th><th>Fase</th><th>Carga</th><th>Watts no console</th><th>FC</th><th>PSE</th><th>% FCmáx</th><th>VO₂ estágio</th>"
+    :"<th>Tempo (min)</th><th>Fase</th><th>Vel. (km/h)</th><th>Incl. (%)</th><th>FC</th><th>PSE</th><th>% FCmáx</th><th>VO₂ estágio</th>";
+  const body=st.rows.map((r,i)=>{
+    const id=`${p.id}-r${i}`;
+    const cls=r.warm?"warm":"";
+    const load=p.kind==="bike"
+      ?`<td class="fase">${esc(r.plan)}</td><td><input id="${id}-w" data-i="${i}" data-k="w" inputmode="decimal" value="${esc(r.w)}" aria-label="Watts estágio ${i+1}"></td>`
+      :`<td><input id="${id}-vel" data-i="${i}" data-k="vel" inputmode="decimal" value="${esc(r.mirror?st.rows[0].vel:r.vel)}" ${r.mirror?"readonly":""} aria-label="Velocidade estágio ${i+1}"></td><td><input id="${id}-incl" data-i="${i}" data-k="incl" inputmode="decimal" value="${esc(r.incl)}" ${r.lockIncl?"readonly":""} aria-label="Inclinação estágio ${i+1}"></td>`;
+    return `<tr class="${cls}" id="${id}"><td class="num">${esc(r.t)}</td><td class="fase">${esc(r.fase)}</td>${load}<td><input id="${id}-fc" data-i="${i}" data-k="fc" inputmode="numeric" value="${esc(r.fc)}" aria-label="FC estágio ${i+1}"></td><td><input id="${id}-pse" data-i="${i}" data-k="pse" inputmode="decimal" value="${esc(r.pse)}" aria-label="PSE estágio ${i+1}"></td><td class="calc" data-c="pf"></td><td class="calc" data-c="vo2"></td></tr>`;
+  }).join("");
+  const tools=(p.kind==="run"||p.kind==="runmax")
+    ?`<div class="tabtools"><label>Velocidade inicial (km/h)<input id="${p.id}-start" inputmode="decimal" value="${esc(st.start)}"></label><button class="btn" type="button" data-act="regen">Refazer velocidades</button>${p.kind==="runmax"?'<button class="btn" type="button" data-act="add">+ degrau</button>':""}</div>`:"";
+  $("#panel").innerHTML=`
+    <div class="ptop"><h2>${esc(p.titulo)}</h2><span class="chip ${p.status}">${p.status==="atual"?"Protocolo atual":"Proposta · aguarda o Alex"}</span></div>
+    <div class="facts">
+      <div><h3>Para quem</h3><p>${esc(p.indicacao)}</p></div>
+      <div style="grid-column:span 2;min-width:0"><h3>Como fazer</h3><ul>${p.passos.map(x=>`<li>${esc(x)}</li>`).join("")}</ul></div>
+    </div>
+    <p class="stopline">${esc(p.parada)}</p>
+    <div class="grid2" style="margin-top:16px">
+      <div style="min-width:0">${tools}<div class="tablebox"><table><thead><tr>${head}</tr></thead><tbody id="tb">${body}</tbody></table></div>
+        <div class="safety"><strong>Interrompa na hora</strong> se houver tontura, náusea, dor no peito, falta de ar desproporcional, perda de controle do movimento ou instabilidade na esteira.</div>
+      </div>
+      <aside class="result" aria-live="polite">
+        <div class="big"><span class="u" id="r-label"></span><span class="v num" id="r-main">—</span><span class="u">ml/kg/min</span><span class="note" id="r-note"></span></div>
+        <div class="recov">
+          <label>FC pico<input id="${p.id}-fcpico" data-g="fcpico" inputmode="numeric" placeholder="maior FC" value="${esc(st.fcpico)}"></label>
+          <label>FC após 1 min<input id="${p.id}-fc1" data-g="fc1" inputmode="numeric" value="${esc(st.fc1)}"></label>
+        </div>
+        <dl class="kv" id="r-kv"></dl>
+        <ul class="alerts" id="r-al"></ul>
+        <label>Observações<textarea id="${p.id}-obs" data-g="obs" rows="3">${esc(st.obs)}</textarea></label>
+      </aside>
+    </div>`;
+  update();if(BLOQUEADA)travar();
+}
+function update(){
+  const p=P.find(x=>x.id===S.tab);if(!p||p.review)return;
+  const a=A();$("#a-fcmax").value=a.fcmax?f0(a.fcmax)+" bpm":"";
+  const o=compute(p);
+  document.querySelectorAll("#tb tr").forEach((tr,i)=>{
+    const r=o.rows[i];if(!r)return;
+    tr.querySelector('[data-c="pf"]').textContent=pct(r.pf);
+    tr.querySelector('[data-c="vo2"]').textContent=f1(r.vo2);
+    tr.classList.toggle("stop",!r.warm&&p.stop(r,a.fcmax));
+    tr.classList.toggle("near",!r.warm&&!p.stop(r,a.fcmax)&&p.near(r,a.fcmax));
+    if(r.mirror){const inp=tr.querySelector('[data-k="vel"]');if(inp)inp.value=pstate(p).rows[0].vel}
+  });
+  const stopRow=o.rows.find(r=>!r.warm&&p.stop(r,a.fcmax));
+  if(stopRow)o.al.unshift(["bad","Critério de parada atingido no estágio "+stopRow.t+" min. Encerre e faça a recuperação."]);
+  $("#r-label").textContent=o.mainLabel;$("#r-main").textContent=f1(o.main);$("#r-note").textContent=o.mainNote;
+  $("#r-kv").innerHTML=o.kv.map(([k,v])=>`<dt>${esc(k)}</dt><dd>${esc(v)}</dd>`).join("");
+  $("#r-al").innerHTML=o.al.map(([c,t])=>`<li class="${c}">${esc(t)}</li>`).join("");
+}
+function summary(){
+  const a=S.aluno,A0=A();const L=[];
+  L.push("FICHA VO₂ FABRIK");
+  L.push(`Aluno: ${a.nome||"—"} · Data: ${a.data||"—"} · Avaliador: ${a.aval||"—"}`);
+  L.push(`Idade: ${a.idade||"—"} · Peso: ${a.peso||"—"} kg · Sexo: ${a.sexo==="m"?"M":a.sexo==="f"?"F":"—"} · FCmáx prevista: ${A0.fcmax?f0(A0.fcmax):"—"} · FC repouso: ${a.fcrep||"—"}`);
+  P.filter(p=>!p.review&&S.p[p.id]).forEach(p=>{
+    const o=compute(p);if(!o.rows.some(r=>r.fc!=null))return;
+    L.push("");L.push("— "+p.titulo+(p.status==="proposta"?" (proposta)":""));
+    o.rows.forEach(r=>{if(r.fc==null&&r.pse==null)return;
+      const load=p.kind==="bike"?`${r.plan}${n(r.w)!=null?" ("+r.w+" W)":""}`:`${r.vel||S.p[p.id].rows[0].vel} km/h ${r.incl}%`;
+      L.push(`  ${r.t} min · ${load} · FC ${r.fc??"—"} · PSE ${r.pse??"—"} · VO₂ ${f1(r.vo2)}`)});
+    L.push(`  ${o.mainLabel}: ${f1(o.main)} ml/kg/min`);
+    o.kv.forEach(([k,v])=>L.push(`  ${k}: ${v}`));
+    if(S.p[p.id].obs)L.push("  Obs.: "+S.p[p.id].obs);
+  });
+  return L.join("\n");
+}
+
+/* ---------- eventos ---------- */
+const AL=["nome","data","aval","idade","peso","sexo","fcrep"];
+function loadAluno(){AL.forEach(k=>{const el=$("#a-"+k);if(el)el.value=S.aluno[k]||""});["parq","cinta","med"].forEach(k=>{$("#a-"+k).checked=!!S.aluno[k]})}
+document.querySelector(".aluno").addEventListener("input",e=>{
+  const id=e.target.id.replace("a-","");
+  if(e.target.type==="checkbox")S.aluno[id]=e.target.checked;else S.aluno[id]=e.target.value;
+  save();update();
+});
+$("#tabs").addEventListener("click",e=>{const b=e.target.closest(".tab");if(!b)return;S.tab=b.dataset.tab;persistLocal();renderTabs();renderPanel()});
+$("#panel").addEventListener("input",e=>{
+  const p=P.find(x=>x.id===S.tab);if(!p||p.review)return;const st=pstate(p);const t=e.target;
+  if(t.dataset.k){st.rows[+t.dataset.i][t.dataset.k]=t.value}
+  else if(t.dataset.g){st[t.dataset.g]=t.value}
+  else if(t.id===p.id+"-start"){st.start=t.value}
+  save();update();
+});
+$("#panel").addEventListener("click",e=>{
+  const b=e.target.closest("[data-act]");if(!b)return;const p=P.find(x=>x.id===S.tab);const st=pstate(p);
+  if(b.dataset.act==="regen"){const s=n(st.start);if(s==null)return;const fresh=genRows(p,s);
+    st.rows=st.rows.map((r,i)=>Object.assign(r,{vel:fresh[i]?fresh[i].vel:r.vel}));save();renderPanel()}
+  if(b.dataset.act==="add"){const lastR=st.rows[st.rows.length-1];const i=st.rows.length;
+    st.rows.push({t:i*p.dur+"–"+(i*p.dur+p.dur),fase:"Teste",plan:"",vel:String(+((n(lastR.vel)??p.startSpeed)+p.step).toFixed(1)),incl:lastR.incl,warm:0,lockIncl:0,mirror:0,w:"",fc:"",pse:""});save();renderPanel()}
+});
+$("#btn-copy").addEventListener("click",()=>{
+  const txt=summary();const fb=$("#copyfall");
+  const done=()=>{$("#msg").textContent="Resumo copiado.";fb.hidden=true};
+  const fail=()=>{fb.value=txt;fb.hidden=false;fb.focus();fb.select();$("#msg").textContent="Não deu para copiar direto: o texto está selecionado abaixo."};
+  try{navigator.clipboard.writeText(txt).then(done,fail)}catch(e){fail()}
+});
+$("#btn-new").addEventListener("click",()=>{
+  const aval=S.aluno.aval||"";
+  trocarAvaliacao({tab:"bsub",aluno:{data:hoje(),aval},p:{}},{});
+  $("#msg").textContent="Nova avaliação aberta. A anterior continua salva.";
+});
+$("#btn-list").addEventListener("click",()=>{const s=$("#saved");s.hidden=!s.hidden;$("#btn-list").setAttribute("aria-expanded",String(!s.hidden))});
+$("#saved").addEventListener("click",async e=>{
+  const b=e.target.closest("[data-open]");if(!b)return;
+  const nome=await abrirAvaliacao(b.dataset.open);
+  if(nome!=null)$("#msg").textContent="Avaliação de "+(nome||"sem nome")+" aberta.";
+});
+$("#btn-list").addEventListener("click",()=>{if(!$("#saved").hidden&&Sync.sb&&Sync.logged)Sync.pull()});
+$("#loginBtn").addEventListener("click",doLogin);
+$("#loginDepois").addEventListener("click",()=>{$("#loginOverlay").hidden=true});
+$("#loginSenha").addEventListener("keydown",e=>{if(e.key==="Enter")doLogin()});
+window.addEventListener("pagehide",()=>{persistLocal()});
+// outra aba deste navegador gravou a avaliação aberta aqui: só avisa (não troca a tela).
+// As duas versões vão para o banco; se divergirem, uma vira cópia.
+window.addEventListener("storage",e=>{
+  if(!L.docId||!e.key||!e.newValue||e.key.indexOf(LS_DOC+L.docId+".")!==0||e.key===minhaKey(L.docId))return;
+  Sync.banner("warn","Esta avaliação também está aberta em outra aba e foi alterada lá. Nada se perde: as duas versões serão salvas (se forem diferentes, uma vira cópia). Feche uma das abas e continue em uma só.");
+});
+
+if(!S.aluno.data){S.aluno.data=hoje()}
+loadAluno();renderTabs();renderPanel();renderSaved();Sync.paint();Sync.init();
+})();
+</script>
+
+<template id="tpl-review">
+<div class="review">
+  <div class="ptop"><h2>Como fazer os testes de esteira</h2><span class="chip proposta">Revisão de 14/10/2026 · aguarda o Alex</span></div>
+
+  <section>
+    <h3>Resumo</h3>
+    <ul>
+      <li><strong>Proposta: o VO₂ que o console da Technogym mostra não vira resultado oficial.</strong> O console mostra "max VO2" em alguns testes (Teste de fitness, por exemplo), mas o manual não diz a fórmula de nenhum. Sem saber a conta, não dá para defender o número nem comparar com a bike. Isso é decisão da Fabrik, não algo que o manual afirma.</li>
+      <li><strong>Usar a esteira para conduzir o teste e a ficha para calcular</strong>, com equações publicadas e validadas contra VO₂ medido.</li>
+      <li><strong>Caminhada submáxima:</strong> teste de Ebbeling (a etapa que entra na conta é a de 4 min a 5%). Dá para rodar no modo Multiestágio do console.</li>
+      <li><strong>Corrida submáxima:</strong> nesta revisão não identifiquei teste validado para a faixa de 40 a 60 anos. Proposta: estágios de 3 min com a conta do ACSM, usada para comparar o aluno com ele mesmo.</li>
+      <li><strong>Corrida máxima:</strong> rampa de 8–12 min no Teste máximo customizado, com a equação FRIEND. Não recomendo o Bruce do console.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h3>O que o console oferece</h3>
+    <p>A folha de especificação da esteira da Fabrik (Excite Live Run) lista 4 testes submáximos e 9 máximos. Os detalhes abaixo vêm do manual do console Unity (linha Artis/Excite). Não achei o manual do console Live: a lista de testes é a mesma, mas os degraus não foram conferidos no aparelho da Fabrik.</p>
+    <div class="tablebox"><table>
+      <thead><tr><th>Teste do console</th><th>Como funciona (manual Unity)</th><th>Uso na Fabrik</th></tr></thead>
+      <tbody>
+        <tr><td>Teste de fitness</td><td>90 s a 3,5 km/h; 3 min a 60% (ou 65%) da FCmáx; 4 min a 75%. A esteira ajusta a carga pela FC. Mostra "max VO2" no fim.</td><td>Não. Fórmula não informada.</td></tr>
+        <tr><td>Estágio único</td><td>90 s de aquecimento + 5 min na velocidade e inclinação escolhidas.</td><td>Não.</td></tr>
+        <tr><td>Multiestágio</td><td>90 s + 2 etapas de 4 min com velocidade e inclinação escolhidas. Caminhada até 6,9 km/h; corrida a partir de 7,0 km/h.</td><td>Sim, para conduzir o Ebbeling.</td></tr>
+        <tr><td>Teste inteligente</td><td>A intensidade sobe até a pessoa dizer que está "forte".</td><td>Não.</td></tr>
+        <tr><td>Máximo Technogym</td><td>15 min de aquecimento guiado pela FC (65, 70 e 75%); depois a velocidade sobe a cada minuto a 0%.</td><td>Não. Aquecimento longo demais.</td></tr>
+        <tr><td>Máximo customizado</td><td>Você define a velocidade inicial, o incremento e a duração do degrau.</td><td>Sim, para a corrida máxima.</td></tr>
+        <tr><td>Bruce</td><td>5 degraus de 3 min, de 2,7 km/h e 10% a 8,0 km/h e 18%. Termina em 15 min.</td><td>Não (ver abaixo).</td></tr>
+        <tr><td>Bruce modificado, Naughton, Balke &amp; Ware</td><td>Caminhada com a inclinação subindo. O manual indica o Bruce modificado para qualquer pessoa e para alto risco, o Naughton para cardiopatas ou alto risco e o Balke &amp; Ware para qualquer pessoa. O ACSM indica Naughton e Balke-Ware para pessoas mais velhas ou descondicionadas.</td><td>Não. São caminhada, não corrida.</td></tr>
+        <tr><td>Åstrand modificado, Costill &amp; Fox</td><td>Corrida a 8–13 km/h ou fixa em 14,3 km/h, com a inclinação subindo.</td><td>Não. São para pessoas muito treinadas.</td></tr>
+      </tbody>
+    </table></div>
+  </section>
+
+  <section>
+    <h3>Por que não usar o Bruce do console</h3>
+    <ul>
+      <li>O ACSM diz que os degraus do Bruce são grandes (2 a 3 METs a cada 3 min) e que estimar a capacidade pelo tempo ou pela carga pode superestimá-la muito. Para pessoas mais velhas ou destreinadas, o ACSM indica degraus menores (Naughton, Balke-Ware) ou rampa.</li>
+      <li>No console, o Bruce para em 15 min. Quem aguenta mais termina sem chegar ao máximo, e o próprio manual manda fazer um teste mais forte nesse caso.</li>
+      <li>O ACSM recomenda um protocolo que dure de 8 a 12 min até o esforço máximo. A rampa com velocidade inicial ajustada ao aluno atende isso; o Bruce fixo, não.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h3>Base de cada proposta</h3>
+    <div class="decision"><strong>Caminhada · Ebbeling.</strong> Estudo com 139 adultos de 20 a 59 anos: equação feita com 117 e validada em 22. A equação usa a FC dos 4 min a 5%, a velocidade, a idade e o sexo. Explicou 86% da variação, com erro típico de 4,85 ml/kg/min; na validação, 90,9% ficaram dentro de ±5. A faixa de FC de 50–70% da FCmáx prevista é a descrita para o teste em Waddoups 2008; a etapa a 0% antes dela é rotina proposta pela Fabrik para acertar a velocidade (o resumo do artigo original não detalha isso). Ressalvas: com FC em 50%, o teste subestimou 3,5 ml/kg/min; em 70%, superestimou 3,5 (Waddoups 2008). Em mulheres de 45 a 65 anos repetiu muito bem (ICC 0,95), mas a associação com o VO₂ medido foi fraca (ρ = 0,48; Mitros 2010). A ficha usa FCmáx prevista = 208 − 0,7 × idade (Tanaka 2001); não sei qual fórmula o estudo original usou para a faixa, e a diferença para 220 − idade é de até 6 bpm.</div>
+    <div class="decision"><strong>Corrida submáxima · estágios de 3 min + conta do ACSM.</strong> O teste de corrida submáxima com equação própria que encontrei (George 1993) foi feito com 129 pessoas treinadas de 18 a 29 anos; num estudo independente com 32 universitários, a correlação com o VO₂ medido foi de r = 0,50 (McNaughton 1998). O ACSM diz que não há protocolo submáximo específico para esteira. A proposta segue o método do ACSM: estágios de 3 min ou mais, FC entre 110 bpm e 85% da FCmáx prevista, reta prolongada até a FCmáx prevista. Na bike, esse método superestimou o VO₂ máx em 25,7% em média (Greiwe 1995); não há esse número para a corrida. Por isso o dado mais útil aqui é a FC na mesma velocidade de uma avaliação para a outra.</div>
+    <div class="decision"><strong>Corrida máxima · rampa + FRIEND.</strong> A equação FRIEND foi feita com 7.983 adultos saudáveis com VO₂ medido em teste máximo, usando a velocidade e a inclinação do fim do teste. Erro relativo global de 5,1%, contra 21,4% das equações do ACSM. A ficha usa a velocidade do degrau em que o teste terminou. A rampa (1 km/h por minuto, 0%, velocidade inicial pela regra da casa) é proposta da Fabrik; não encontrei validação específica dela. Os 8–12 min vêm do ACSM.</div>
+    <div class="decision"><strong>Bike máxima · FRIEND também.</strong> A FRIEND da bike (5.100 pessoas, feita com a potência no fim de teste máximo) teve viés de 0,5%, contra 15,5% da fórmula do ACSM que a Fabrik usa hoje. Num grupo independente de 1.255 pessoas com idade média de 62 anos, o viés ficou abaixo de 1% (Boulay 2025). A ficha mostra as duas lado a lado, com os watts do último estágio registrado.</div>
+    <div class="decision"><strong>Queda da FC em 1 min.</strong> Cole 1999 considerou anormal a queda de 12 bpm ou menos, com recuperação ativa a 2,4 km/h e 2,5%. A Fabrik usa 3 km/h e 0% (esteira) ou 25 W (bike), então o corte serve de referência, sem validação neste protocolo. As faixas Excelente (≥ 30), Muito boa (20–29) e Moderada (13–19) são da casa, sem fonte.</div>
+  </section>
+
+  <section>
+    <h3>O que você precisa decidir</h3>
+    <ol>
+      <li>Aprovar (ou ajustar) os 3 protocolos de esteira desta ficha.</li>
+      <li>Corrida submáxima: parar em 85% da FCmáx prevista (ACSM) ou manter PSE 9 / 90–95% do manual Fabrik.</li>
+      <li>Trocar a fórmula da bike máxima da ACSM para a FRIEND. Isso muda os números antigos: na faixa de 150 W com 70 kg, o resultado cai cerca de 4 ml/kg/min.</li>
+      <li>Bike submáxima: a planilha usa watts (25 a 200 W) e o app usa níveis do console (2 a 9). Qual vale? A troca pelo teste de Ekblom-Bak segue esperando os watts de cada nível a 60 rpm.</li>
+      <li>Confirmar no console da Fabrik se os testes aparecem como no manual Unity (principalmente o Máximo customizado e o Multiestágio).</li>
+      <li>Depois de aprovado, levar os protocolos de esteira para o app: hoje o app guarda o protocolo de esteira só como texto livre.</li>
+    </ol>
+  </section>
+
+  <section>
+    <h3>Números que não devem ser usados</h3>
+    <p>O "Manual Fabrik de Avaliação Cardiovascular" traz uma tabela de esteira (4 a 11 km/h, 0 a 7%) com uma coluna de VO₂ estimado. Esses valores não batem com as equações do ACSM (4 km/h a 0% dá 10,2 pela equação de caminhada; o manual diz 14,3). O texto termina com uma pergunta de assistente de IA, sinal de que não foi revisado.</p>
+  </section>
+
+  <section>
+    <h3>Fontes</h3>
+    <ul class="src">
+      <li>ACSM's Guidelines for Exercise Testing and Prescription, 8ª ed., 2010 (acervo): equações metabólicas (tab. 7.2), método submáximo (cap. 4), protocolos e duração de 8–12 min (cap. 5).</li>
+      <li>Ebbeling CB et al. Med Sci Sports Exerc 1991;23(8):966-73. PMID 1956273.</li>
+      <li>Waddoups L et al. J Sports Sci 2008;26(5):491-7. <a href="https://doi.org/10.1080/02640410701591425">DOI</a></li>
+      <li>Mitros M et al. Eur J Appl Physiol 2010;111(1):47-56. <a href="https://doi.org/10.1007/s00421-010-1615-3">DOI</a></li>
+      <li>George JD et al. Med Sci Sports Exerc 1993;25(5):643-7. PMID 8492693.</li>
+      <li>McNaughton L et al. Percept Mot Skills 1998;87(2):575-84. <a href="https://doi.org/10.2466/pms.1998.87.2.575">DOI</a></li>
+      <li>Greiwe JS et al. Med Sci Sports Exerc 1995;27(9):1315-20. PMID 8531631.</li>
+      <li>Kokkinos P et al. (FRIEND esteira) Am J Cardiol 2017;120(4):688-692. <a href="https://doi.org/10.1016/j.amjcard.2017.05.037">DOI</a></li>
+      <li>Kokkinos P et al. (FRIEND bike) Eur J Prev Cardiol 2018;25(10):1077-1082. <a href="https://doi.org/10.1177/2047487318772667">DOI</a></li>
+      <li>Boulay P et al. Med Sci Sports Exerc 2025;57(10):2207-2215. <a href="https://doi.org/10.1249/MSS.0000000000003761">DOI</a></li>
+      <li>Cole CR et al. NEJM 1999;341:1351-7 (acervo). <a href="https://doi.org/10.1056/NEJM199910283411804">DOI</a></li>
+      <li>Tanaka H et al. J Am Coll Cardiol 2001;37(1):153-6. <a href="https://doi.org/10.1016/S0735-1097(00)01054-8">DOI</a></li>
+      <li>Technogym, ARTIS Cardio · Excite · Unity User Manual (testes de Run); folha de especificação Excite Live Run (pasta Expansão Fabrik 2024).</li>
+      <li>Fabrik: planilhas Bike Ride máximo e submáximo; "Testes de VO2 Fabrik" (critérios de escolha e segurança).</li>
+    </ul>
+    <p class="note">Li o resumo dos artigos no PubMed, não o texto completo. FCmáx prevista = 208 − 0,7 × idade, a mesma das planilhas Fabrik.</p>
+  </section>
+</div>
+</template>
+
+</body>
+</html>
