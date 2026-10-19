@@ -473,6 +473,17 @@ const MESES = {
       {id:"setout26_t3_abdremador",nome:"ABD remador",tipo:"pc",repsFixas:"12",metodo:"EMOM",presc:"3 x 12",alvo:"2-3RR",bloco:3},
       {id:"setout26_t3_ondulacao",nome:"Ondulação lateral na corda naval",tipo:"pc",metodo:"EMOM",presc:"3 x 12 cl",alvo:"2-3RR",bloco:3}
     ]
+  },
+  // Treinos 2 e 3 ainda não entraram: a tela avisa e oferece o mês anterior (avisoTreino).
+  "Out-Nov 26": {
+    "1":[
+      {id:"outnov26_t1_hipthrustpress",nome:"Hip thrust + press horizontal 2DB",tipo:"carga",carga:"impl",un:"kg",qtd:2,metodo:"SUPERSET",presc:"4 x 6",alvo:"3-4RR",bloco:1},
+      {id:"outnov26_t1_boxjump",nome:"Box jump",tipo:"pc",repsFixas:"6",metodo:"SUPERSET",presc:"4 x 6",alvo:"potência",bloco:1},
+      {id:"outnov26_t1_nordica",nome:"Flexão nórdica",tipo:"pc",metodo:"SUPERSET",presc:"3 x 8-5",alvo:"1-2RR",bloco:2},
+      {id:"outnov26_t1_serrote",nome:"Remada serrote",tipo:"carga",carga:"impl",un:"kg",qtd:1,metodo:"SUPERSET",presc:"3 x 8-5",alvo:"1-2RR",bloco:2},
+      {id:"outnov26_t1_frontsquat",nome:"Front squat BB c/ pausa (3s)",tipo:"carga",carga:"barra",un:"lb",bar:10,metodo:"SUPERSET",presc:"3 x 8-5",alvo:"1-2RR",bloco:3},
+      {id:"outnov26_t1_supinoinc",nome:"Supino inclinado DB",tipo:"carga",carga:"impl",un:"kg",qtd:2,metodo:"SUPERSET",presc:"3 x 8-5",alvo:"1-2RR",bloco:3}
+    ]
   }
 };
 
@@ -684,8 +695,14 @@ $("data").value = today();
 
 function ctx(){ return { mes:$("mes").value, turma:$("turma").value, treino:$("treino").value, semana:$("semana").value, data:$("data").value }; }
 function treinosDo(mes){ return MESES[mes] || MESES[Object.keys(MESES)[0]]; }
-function blocosDe(t){ return [...new Set(treinosDo($("mes").value)[t].map(e=>e.bloco))]; }
-function exsDoBloco(t,b){ return treinosDo($("mes").value)[t].filter(e=>e.bloco===b); }
+function blocosDe(t){ return [...new Set((treinosDo($("mes").value)[t]||[]).map(e=>e.bloco))]; }
+function exsDoBloco(t,b){ return (treinosDo($("mes").value)[t]||[]).filter(e=>e.bloco===b); }
+// mês publicado antes de todos os treinos estarem prontos: avisa e aponta o mês anterior que tem esse treino
+function avisoTreino(c){
+  const keys=Object.keys(MESES), ant=keys.slice(0,keys.indexOf(c.mes)).reverse().find(m=>MESES[m][c.treino]);
+  return `<p class="muted">O Treino ${he(c.treino)} de <b>${he(c.mes)}</b> ainda não foi cadastrado.</p>`+
+    (ant?`<button class="btn-primary" id="usarMesAnt" data-mes="${attrEsc(ant)}">Registrar no ${he(ant)}</button>`:"");
+}
 function initials(n){ return n.split(" ").map(w=>w[0]).slice(0,2).join("").toUpperCase(); }
 function alunosDaTurma(t){ return alunos.filter(a=>a.turmas.includes(t)).sort((x,y)=>x.nome.localeCompare(y.nome,"pt")); }
 // ── chamada / presença (só filtro de UI; localStorage por turma+data, sem sync) ──
@@ -713,7 +730,7 @@ function saveAdapt(aId,c,slotId,def){ const k=adaptKey(aId,c,slotId); adapts[k]=
 // órfão, não há colisão de id, e o registro passa a guardar o nome adaptado em exercicioNome.
 // reconstrói a adaptação p/ outro laptop: registro mais recente do slot cujo nome ≠ o prescrito.
 function adaptDeRecords(aId,c,slotId){
-  const prescrito=(treinosDo(c.mes)[c.treino].find(e=>e.id===slotId)||{}).nome;
+  const prescrito=((treinosDo(c.mes)[c.treino]||[]).find(e=>e.id===slotId)||{}).nome;
   const rs=records.filter(r=>r.alunoId===aId && r.exercicioId===slotId && String(r.treino)===String(c.treino)
                   && r.exercicioNome && r.exercicioNome!==prescrito)
                   .sort((x,y)=>String(y.data).localeCompare(String(x.data)));
@@ -868,6 +885,8 @@ function renderPanel(){
     .filter(a=>!presSet || presSet.has(a.id))
     .filter(a=>norm(a.nome).includes(q));
   const exs=exsDoBloco(c.treino,selBloco);
+  if(!treinosDo(c.mes)[c.treino]){ $("panel").innerHTML=avisoTreino(c);
+    const b=$("usarMesAnt"); if(b) b.onclick=()=>{ $("mes").value=b.dataset.mes; $("mes").dispatchEvent(new Event("change")); }; return; }
   if(!alunosDaTurma(c.turma).length){ $("panel").innerHTML=`<p class="muted">Nenhum aluno na turma ${c.turma}. Vá na aba <b>Alunos</b> e marque o horário ${c.turma} pros alunos dela.</p>`; return; }
   if(!lista.length){ $("panel").innerHTML=`<p class="muted">${usarPresenca?'Nenhum presente marcado na chamada bate com a busca. Marque presentes acima ou use <b>mostrar todos</b>.':'Nenhum aluno encontrado com esse filtro.'}</p>`; return; }
   $("panel").innerHTML = lista.map(a=>{
