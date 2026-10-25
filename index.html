@@ -4,27 +4,38 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Fabrik — Registro de Carga</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
 <style>
 :root{
-  --bg:#f4f3f1; --surface:#ffffff; --ink:#141312; --muted:#5f5d59;
-  --line:#e3e1dc; --line2:#c9c6c0;
-  --info:#a45248; --info-bg:#f5e9e6;
-  --warn:#a45248; --warn-bg:#f5e9e6;
-  --hot:#a45248; --hot-bg:#f5e9e6;
-  --danger:#a45248; --danger-bg:#f5e9e6;
-  --ok:#33312f; --ok-bg:#eceae6;
-  /* campo ainda não preenchido: terracota da marca em 3 intensidades */
-  --falta:#a45248; --falta-bg:#f7e0db; --falta-ring:rgba(164,82,72,.28); --falta-row:#fbf1ee;
-  --graf:#33312f; --graf-bg:#eceae6;
+  /* identidade da apresentação BTB Out-Nov 26: fundo quase preto, creme e terracota */
+  --bg:#131210; --surface:rgba(241,236,228,.045); --surface2:rgba(241,236,228,.09); --solid:#1c1a17;
+  --ink:#F1ECE4; --muted:rgba(241,236,228,.62); --faint:rgba(241,236,228,.38);
+  --line:rgba(241,236,228,.12); --line2:rgba(241,236,228,.24);
+  --info:#D15A45; --info-bg:rgba(209,90,69,.17); --info-ink:#EE8C75;
+  --warn:#D15A45; --warn-bg:rgba(209,90,69,.17);
+  --hot:#D15A45; --hot-bg:rgba(209,90,69,.17);
+  --danger:#D15A45; --danger-bg:rgba(209,90,69,.17);
+  --ok:#F1ECE4; --ok-bg:rgba(241,236,228,.10);
+  /* campo ainda não preenchido: terracota em 3 intensidades */
+  --falta:#EE8C75; --falta-bg:rgba(209,90,69,.24); --falta-ring:rgba(209,90,69,.42); --falta-row:rgba(209,90,69,.07);
+  --graf:#F1ECE4; --graf-bg:rgba(241,236,228,.08);
+  --serif:"Instrument Serif","PP Editorial New",Georgia,serif;
+  --sans:"Inter",system-ui,-apple-system,"Segoe UI",sans-serif;
   --radius:12px;
+  color-scheme:dark;
 }
 *{box-sizing:border-box}
 body{
-  font-family:'Segoe UI',system-ui,-apple-system,sans-serif;
-  background:var(--bg); color:var(--ink); margin:0; padding:18px;
+  font-family:var(--sans);
+  background-color:var(--bg); color:var(--ink); margin:0; padding:18px 22px;
+  /* brilho terracota embaixo, como o fundo dos slides (sem a grade: Alex achou poluído) */
+  background-image:radial-gradient(ellipse 65% 55% at 50% 105%, rgba(209,90,69,.17), transparent 70%);
+  background-size:100% 100%; background-attachment:fixed;
   font-size:17px; line-height:1.5; font-variant-numeric:tabular-nums;
 }
-.wrap{max-width:1040px; margin:0 auto}
+.wrap{max-width:1640px; margin:0 auto}
 h1{font-size:22px; font-weight:600; margin:0 0 2px}
 .sub{color:var(--muted); font-size:14px; margin:0 0 16px}
 .views{display:flex; gap:8px; margin:0 0 16px}
@@ -39,14 +50,15 @@ h1{font-size:22px; font-weight:600; margin:0 0 2px}
 .fld label{font-size:12px; color:var(--muted); font-weight:600; text-transform:uppercase; letter-spacing:.03em}
 select,input{font:inherit; padding:9px 11px; border:1px solid var(--line2); border-radius:8px; background:var(--surface); color:var(--ink)}
 select:focus,input:focus{outline:none; border-color:var(--info); box-shadow:0 0 0 3px var(--info-bg)}
-input::placeholder{color:#a8a69d}
+input::placeholder{color:var(--faint)}
+select option{background:var(--solid); color:var(--ink)}
 button{font:inherit; font-weight:600; padding:9px 14px; border:1px solid var(--line2); border-radius:8px; background:var(--surface); color:var(--ink); cursor:pointer}
-button:hover{background:var(--bg)}
+button:hover{background:var(--surface2)}
 button:active{transform:scale(.985)}
 .btn-primary{background:var(--info); color:#fff; border-color:var(--info)}
-.btn-primary:hover{background:#8c4139}
-.week{display:flex; align-items:center; gap:12px; flex:1 1 100%; border-radius:10px; padding:12px 14px; margin-top:4px}
-.week .wk{font-size:15px; font-weight:700}
+.btn-primary:hover{background:#b84c39}
+.week{display:flex; align-items:center; gap:12px; flex:1 1 200px; min-width:0; border-radius:10px; padding:10px 14px; margin-top:4px; align-self:stretch}
+.week .wk{font-size:15px; font-weight:700; white-space:nowrap}
 .week .rule{font-size:14px}
 .blocks{display:flex; gap:8px; flex-wrap:wrap; margin:0 0 8px}
 .bchip{font-size:15px; padding:10px 16px; border:1px solid var(--line2); border-radius:10px; background:var(--surface); cursor:pointer; font-weight:600}
@@ -56,17 +68,17 @@ button:active{transform:scale(.985)}
 .search{position:relative; margin:6px 0 16px; max-width:340px}
 .search i{position:absolute; left:12px; top:11px; color:var(--muted); font-style:normal}
 .search input{width:100%; padding-left:34px}
-.scard{background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); padding:12px 16px; margin-bottom:12px}
+.scard{background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); padding:10px 14px; margin-bottom:8px}
 .shead{display:flex; align-items:center; gap:10px; margin-bottom:8px}
 .avatar{width:34px;height:34px;border-radius:50%;background:var(--info-bg);color:var(--info);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px}
 .shead .nm{font-size:17px;font-weight:600}
-.exline{border-top:1px solid var(--line); padding:10px 0}
+.exline{border-top:1px solid var(--line); padding:8px 0}
 .exline:first-of-type{border-top:none}
-.exhead{display:flex; align-items:baseline; gap:10px; margin-bottom:7px; flex-wrap:wrap}
+.exhead{display:flex; align-items:baseline; gap:10px; margin-bottom:5px; flex-wrap:wrap}
 .exhead .ex{font-size:16px; font-weight:600}
 .exhead .meta{font-size:13px; color:var(--muted)}
-.exhead .presc{font-weight:600; color:#a45248; background:#f5e9e6; border-radius:5px; padding:1px 6px}
-.exhead .prev{color:#9c7269}
+.exhead .presc{font-weight:600; color:var(--info-ink); background:var(--info-bg); border-radius:5px; padding:1px 6px}
+.exhead .prev{color:var(--info-ink)}
 .row{display:flex; flex-wrap:wrap; gap:12px; align-items:center}
 .row .grp{display:flex; align-items:center; gap:6px}
 .row .grp span{font-size:12px; color:var(--muted); font-weight:600}
@@ -138,23 +150,24 @@ button:active{transform:scale(.985)}
 .elchips{display:flex; flex-wrap:wrap; gap:6px}
 .elch{font:inherit; font-weight:700; padding:7px 12px; border:1px solid var(--line2); border-radius:7px; background:var(--surface); cursor:pointer; color:var(--muted)}
 .elch.on{background:var(--info-bg); border-color:var(--info); color:var(--info)}
-.chamada{background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); padding:10px 14px; margin:0 0 12px}
-.chamada .chtop{display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:8px}
+.chamada{background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); padding:8px 14px; margin:0 0 8px}
+.chamada .chtop{display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:5px}
 .chamada .chlbl{font-size:12px; color:var(--muted); text-transform:uppercase; letter-spacing:.03em; font-weight:700}
 .chamada .chcount{font-size:13px; color:var(--muted); font-weight:600}
+.psec,.pdia,.bresumo .brt,.pdash{color:var(--info-ink)}
 .chamada .chtoggle{margin-left:auto; font-size:13px; padding:6px 12px}
 .chnames{display:flex; flex-wrap:wrap; gap:6px}
-.chname{font-size:14px; padding:7px 12px; border:1px solid var(--line2); border-radius:8px; cursor:pointer; color:var(--muted); font-weight:600; background:var(--surface)}
+.chname{font-size:14px; padding:5px 11px; border:1px solid var(--line2); border-radius:8px; cursor:pointer; color:var(--muted); font-weight:600; background:var(--surface)}
 .chname.on{background:var(--info-bg); border-color:var(--info); color:var(--info)}
 .chname.on::before{content:"✓ "; font-weight:700}
 .syncbadge{font-size:12px; font-weight:700; padding:5px 10px; border-radius:8px; background:var(--graf-bg); color:var(--muted)}
-#syncBanner{display:none; align-items:center; gap:10px; flex-wrap:wrap; background:#f5e9e6; border:1px solid var(--info); color:#8c4139; border-radius:10px; padding:10px 14px; margin:0 0 14px; font-size:14px; font-weight:600}
+#syncBanner{display:none; align-items:center; gap:10px; flex-wrap:wrap; background:var(--info-bg); border:1px solid var(--info); color:var(--ink); border-radius:10px; padding:10px 14px; margin:0 0 14px; font-size:14px; font-weight:600}
 #syncBanner button{font-size:13px}
 input.sm.semreps{border-color:var(--info); box-shadow:0 0 0 2px var(--info-bg)}
 /* anti-esquecimento: exercício com campo faltando + campo específico realçado.
    Campo vazio fica TERRACOTA (fundo + borda + anel + rótulo); ao preencher volta ao branco.
    O anel é box-shadow, não borda: não desloca o layout enquanto o treinador digita. */
-.exline.pend{border-left:4px solid var(--falta); padding-left:9px; background:var(--falta-row)}
+.exline.pend{border-left:4px solid var(--falta); padding-left:9px}
 .faltou{border-color:var(--falta) !important; background:var(--falta-bg) !important; color:var(--falta) !important; box-shadow:0 0 0 2px var(--falta-ring)}
 .faltou::placeholder{color:var(--falta); opacity:.6}
 .elchips.faltou{background:transparent !important; border:1px dashed var(--falta); border-radius:8px; padding:4px; box-shadow:0 0 0 2px var(--falta-ring)}
@@ -165,21 +178,21 @@ input.sm.semreps{border-color:var(--info); box-shadow:0 0 0 2px var(--info-bg)}
 .pendbadge:empty{display:none}
 .syncbadge.ok{background:var(--ok-bg); color:var(--ok)}
 .syncbadge.info{background:var(--info-bg); color:var(--info)}
-.syncbadge.warn{background:#efd9d3; color:#8c4139}
+.syncbadge.warn{background:rgba(209,90,69,.28); color:var(--ink)}
 .repkpis{display:flex; gap:12px; flex-wrap:wrap; margin:6px 0 14px}
 .kpi{background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); padding:12px 16px; min-width:150px}
 .kpi .kl{font-size:12px; color:var(--muted); text-transform:uppercase; letter-spacing:.03em; font-weight:700}
 .kpi .kv{font-size:26px; font-weight:700; margin-top:2px}
 .kpi .kv small{font-size:14px; font-weight:600; color:var(--muted)}
 #repTabela{overflow-x:auto}
-.reptab{width:100%; min-width:680px; border-collapse:collapse; background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); overflow:hidden}
+.reptab{width:100%; min-width:680px; border-collapse:collapse; background:var(--solid); border:1px solid var(--line); border-radius:var(--radius); overflow:hidden}
 .reptab th,.reptab td{text-align:left; padding:9px 12px; border-bottom:1px solid var(--line); font-size:14px}
-.reptab th{font-size:12px; text-transform:uppercase; letter-spacing:.03em; color:var(--muted); background:var(--bg)}
+.reptab th{font-size:12px; text-transform:uppercase; letter-spacing:.03em; color:var(--muted); background:var(--surface2)}
 .reptab tr:last-child td{border-bottom:none}
 .reptab td.num{font-weight:700; font-variant-numeric:tabular-nums}
-#loginOverlay{display:none; position:fixed; inset:0; background:rgba(20,19,18,.55); z-index:50; align-items:center; justify-content:center}
+#loginOverlay{display:none; position:fixed; inset:0; background:rgba(0,0,0,.66); z-index:50; align-items:center; justify-content:center}
 #loginOverlay.on{display:flex}
-.loginbox{background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:22px; width:330px; max-width:90vw}
+.loginbox{background:var(--solid); border:1px solid var(--line); border-radius:14px; padding:22px; width:330px; max-width:90vw}
 .loginbox h2{font-size:18px; margin:0 0 2px}
 .loginbox .fld{margin:12px 0}
 .loginbox input{width:100%}
@@ -201,7 +214,9 @@ svg.chart .grid{stroke:var(--line); stroke-width:1}
 /* impressão / Salvar como PDF (relatório de um aluno) */
 #printArea{display:none}
 @media print{
-  body{background:#fff; padding:0}
+  :root{--bg:#fff; --surface:#fff; --surface2:#f4f3f1; --solid:#fff; --ink:#141312; --muted:#5f5d59; --faint:#9a978f;
+    --line:#e3e1dc; --line2:#c9c6c0; --info:#a45248; --info-bg:#f5e9e6; --info-ink:#a45248; color-scheme:light}
+  body{background:#fff; background-image:none; padding:0; color:#141312}
   .wrap, #loginOverlay{display:none !important}
   #printArea{display:block !important}
   .charts{grid-template-columns:1fr 1fr}
@@ -214,15 +229,94 @@ svg.chart .grid{stroke:var(--line); stroke-width:1}
   .reptab{min-width:0; font-size:11px} .reptab th,.reptab td{padding:4px 6px}
   #repCharts{margin:0 0 10px}
 }
+/* ---------- cabeçalho ---------- */
+.top{display:flex; align-items:center; gap:18px; flex-wrap:wrap; margin:0 0 14px}
+.brandlogo{height:42px; width:auto; display:block}
+.top h1{font-family:var(--serif); font-weight:400; font-size:30px; line-height:1; margin:0; letter-spacing:-.01em}
+.top h1 em{color:var(--info)}
+.top .views{margin:0 0 0 auto; align-items:center}
+.viewbtn{background:transparent; color:var(--muted); border-color:var(--line2)}
+.viewbtn.on{color:#fff; border-color:var(--info); background:var(--info)}
+.bar{background:var(--surface); border-color:var(--line)}
+/* valor escolhido no formulário (DB/KB/BB, 1/2, kg/lb, elástico, presença) em creme:
+   terracota fica só pra navegação (cheio) e pra campo pendente (contorno) */
+.mbtn.on,.qbtn.on,.ubtn.on,.elch.on,.abtn.on,.chname.on{background:var(--ink); border-color:var(--ink); color:#131210}
+/* botões da linha do aluno: pelo menos 40 px de altura (sugestão do Codex) */
+#panel .mbtn,#panel .qbtn,#panel .ubtn,#panel .elch,#panel .icbtn{min-height:40px}
+#panel .icbtn{padding-inline:12px}
+/* ---------- um modo por vez: treino completo ou registro de cargas ---------- */
+#viewRegistro[data-modo="treino"] .regcol,#viewRegistro[data-modo="treino"] .regtop{display:none}
+#viewRegistro[data-modo="registro"] #programa{display:none}
+.regtop{position:sticky; top:0; z-index:5; margin:0 -22px 12px; padding:10px 22px 2px; background:rgba(19,18,16,.94); backdrop-filter:blur(6px)}
+.modos{display:flex; border:1px solid var(--line2); border-radius:12px; padding:3px; background:var(--surface)}
+.modos button{border:none; border-radius:9px; background:transparent; color:var(--muted); font-size:15px; padding:9px 18px}
+.modos button.on{background:var(--info); color:#fff}
+.regtop .blocks{margin:0}
+.regrow{display:flex; align-items:center; gap:12px; margin:0 0 10px}
+.semcargabtn{margin-left:auto; color:var(--muted); background:transparent}
+.semcargabtn.on{color:var(--ink); border-color:var(--ink)}
+.prog{padding:18px 28px 12px; border:1px solid var(--line); border-radius:16px; background:rgba(19,18,16,.72)}
+.phead{display:flex; justify-content:space-between; gap:12px; align-items:flex-start; border-bottom:1px solid var(--line); padding-bottom:10px; margin-bottom:0}
+.pkick{font-size:12px; font-weight:600; letter-spacing:.07em; text-transform:uppercase}
+.pdia{font-size:13px; font-weight:600; letter-spacing:.06em; text-transform:uppercase; color:var(--info); margin:6px 0 0}
+.pdash{color:var(--info); margin-right:8px}
+.ptitle{font-family:var(--serif); font-weight:400; font-size:42px; line-height:1; margin:4px 0 0; letter-spacing:-.02em}
+.ptitle b{font-weight:400; text-transform:uppercase}
+.ptitle em{color:var(--info)}
+.pdur{flex:0 0 auto; width:50px; height:50px; border-radius:50%; border:1px solid var(--line2); display:flex; align-items:center; justify-content:center; font-weight:700; font-size:17px}
+.psec{display:flex; justify-content:space-between; align-items:baseline; gap:10px; margin:12px 0 2px; font-size:12px; font-weight:600; letter-spacing:.06em; text-transform:uppercase; color:var(--info)}
+.psec small{font-size:11px; font-weight:700; letter-spacing:.06em; color:var(--ink); white-space:nowrap}
+.pit span{min-width:0; overflow-wrap:anywhere}
+.pit{display:flex; justify-content:space-between; gap:12px; align-items:baseline; padding:4px 0; border-bottom:1px solid var(--line); font-size:16px; line-height:1.3}
+.pit b{font-weight:500; color:var(--muted); white-space:nowrap; font-size:15px}
+.pit.big{font-size:19px; padding:4px 0; line-height:1.28}
+.pit.big b{font-weight:700; color:var(--ink); font-size:20px}
+.pcols{display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1.1fr); gap:44px; align-items:start}
+.pcol .psec{letter-spacing:.05em; font-size:13px}
+.pcol .psec small{letter-spacing:.05em; font-size:12px}
+.pcol>.psec:first-child,.pcol>.pblk:first-child .psec{margin-top:10px}
+.pgo{margin-left:10px; font-size:1.6em; line-height:0; vertical-align:-.12em; color:var(--info-ink)}
+.pblk.semcarga{cursor:default}
+.pblk.semcarga:hover{background:transparent}
+.pblk{margin:2px -10px 0; padding:2px 10px 4px; border-radius:10px; border-left:3px solid transparent; cursor:pointer}
+.pblk:hover{background:var(--surface)}
+.pblk.on{background:var(--info-bg); border-left-color:var(--info)}
+.pblk .psec{margin-top:10px}
+.pfoot{position:relative; display:flex; justify-content:space-between; align-items:center; gap:24px; margin-top:8px; padding-top:6px; border-top:1px solid var(--line); font-size:11px; line-height:1.45; font-weight:600; letter-spacing:.05em; text-transform:uppercase; color:var(--muted)}
+.pfoot b{color:var(--info); font-weight:600; white-space:nowrap}
+.psiglas summary{cursor:pointer; list-style:none; color:var(--muted); font-size:12px; letter-spacing:.05em; padding:1px 8px; border:1px solid var(--line2); border-radius:8px}
+.psiglas summary::-webkit-details-marker{display:none}
+.psiglas[open] summary{color:var(--ink); border-color:var(--info)}
+.psiglas-txt{position:absolute; left:0; bottom:calc(100% + 6px); z-index:6; max-width:760px; padding:12px 14px; background:var(--solid);
+  border:1px solid var(--line2); border-radius:10px; box-shadow:0 10px 30px rgba(0,0,0,.45); font-size:14px; line-height:1.6; letter-spacing:.02em; text-transform:none; color:var(--ink); font-weight:500}
+.ppse{margin-top:12px; border:1px solid var(--line); border-radius:10px; padding:8px 12px}
+.ppse summary{cursor:pointer; font-size:12px; font-weight:600; letter-spacing:.06em; text-transform:uppercase; color:var(--muted)}
+.ppse table{width:100%; border-collapse:collapse; margin-top:8px; font-size:14px}
+.ppse td{padding:5px 0; border-bottom:1px solid var(--line)}
+.ppse td:first-child{font-weight:700; width:56px}
+.ppse p{font-size:11px; color:var(--muted); margin:8px 0 2px; letter-spacing:.03em}
+.bresumo[hidden]{display:none}
+.regcol,.prog{min-width:0}
+.bresumo{display:flex; flex-wrap:wrap; align-items:baseline; gap:4px 12px; background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); padding:10px 14px; margin:0 0 12px}
+.bresumo .brt{font-size:11.5px; font-weight:600; letter-spacing:.035em; text-transform:uppercase; color:var(--info)}
+.bresumo small{font-size:10.5px; font-weight:700; letter-spacing:.04em; text-transform:uppercase}
+.bresumo .brx{flex:1 1 100%; display:flex; flex-wrap:wrap; gap:2px 10px; font-size:15px; color:var(--muted)}
+.bresumo .brx .c{color:var(--ink); font-weight:600}
+.bresumo .brx b{font-weight:700}
+.bresumo i{font-style:normal; color:var(--faint)}
+.scard,.chamada{background:var(--surface)}
+.bchip{background:transparent; color:var(--muted)}
+.bchip.on{background:var(--info); border-color:var(--info); color:#fff}
+.bchip.on small{color:rgba(255,255,255,.8)}
 </style>
-</head>
 <body>
 <div class="wrap">
-  <h1>Fabrik — Registro de Carga</h1>
-  <p class="sub">Cadastro geral de alunos + registro por bloco na aula. Exporta CSV pro Fabrik Performance.</p>
-
+  <header class="top">
+  <img class="brandlogo" src="img/fabrik-logo.png" alt="Fabrik — Body &amp; Mind Fitness">
+  <h1>Registro <em>de carga.</em></h1>
+  <div class="modos" id="modos"><button data-m="treino">Treino completo</button><button data-m="registro">Registrar cargas</button></div>
   <div class="views">
-    <button class="viewbtn on" data-v="registro">Registro</button>
+    <button class="viewbtn on" data-v="registro">Aula</button>
     <button class="viewbtn" data-v="alunos">Alunos</button>
     <button class="viewbtn" data-v="relatorio">Relatório</button>
     <span id="syncWrap" style="margin-left:auto;display:none;align-items:center;gap:8px">
@@ -232,6 +326,7 @@ svg.chart .grid{stroke:var(--line); stroke-width:1}
       <button id="btnSair" class="icbtn">sair</button>
     </span>
   </div>
+  </header>
 
   <div id="syncBanner"></div>
 
@@ -255,13 +350,19 @@ svg.chart .grid{stroke:var(--line); stroke-width:1}
         </select>
       </div>
       <div class="fld"><label>Data</label><input type="date" id="data"></div>
-      <div class="fld" style="margin-left:auto"><label>&nbsp;</label><button id="exportar">⭳ Exportar CSV</button></div>
       <div id="weekBanner" class="week"></div>
+      <div class="fld"><label>&nbsp;</label><button id="exportar">↓ Exportar CSV</button></div>
     </div>
-    <div class="blocks" id="blocks"></div>
-    <div id="chamada" class="chamada"></div>
-    <div class="search"><i>⌕</i><input id="busca" placeholder="filtrar aluno na turma…" autocomplete="off"></div>
-    <div id="panel"></div>
+    <div class="regtop">
+      <div class="regrow"><div class="blocks" id="blocks"></div><button id="btnSemCarga" class="icbtn semcargabtn" title="mostrar também os exercícios sem carga (pra adaptar)">ver sem carga</button></div>
+      <div id="blocoResumo" class="bresumo"></div>
+    </div>
+    <aside id="programa" class="prog"></aside>
+    <section class="regcol">
+      <div id="chamada" class="chamada"></div>
+      <div class="search"><i>⌕</i><input id="busca" placeholder="filtrar aluno na turma…" autocomplete="off"></div>
+      <div id="panel"></div>
+    </section>
   </div>
 
   <div id="viewAlunos" style="display:none">
@@ -284,8 +385,8 @@ svg.chart .grid{stroke:var(--line); stroke-width:1}
       <div class="fld"><label>Exercício</label><select id="repExercicio"></select></div>
       <div class="fld"><label>De</label><input type="date" id="repDe"></div>
       <div class="fld"><label>Até</label><input type="date" id="repAte"></div>
-      <div class="fld" style="margin-left:auto"><label>&nbsp;</label><button id="repPdf" class="btn-primary">⭳ PDF do aluno</button></div>
-      <div class="fld"><label>&nbsp;</label><button id="repExport">⭳ CSV do filtro</button></div>
+      <div class="fld" style="margin-left:auto"><label>&nbsp;</label><button id="repPdf" class="btn-primary">↓ PDF do aluno</button></div>
+      <div class="fld"><label>&nbsp;</label><button id="repExport">↓ CSV do filtro</button></div>
     </div>
     <p class="hint">Visão provisória de evolução de carga. O relatório "de verdade" é no Fabrik Performance.</p>
     <div id="repKpis" class="repkpis"></div>
@@ -331,7 +432,7 @@ const RULES = {
   "3":{txt:"Choque — intensidade alta.", cls:"warn"},
   "4":{txt:"Choque — pico antes de virar o ciclo.", cls:"hot"}
 };
-const WCOLOR = { ok:["#eceae6","#33312f"], info:["#f5e9e6","#a45248"], warn:["#efd9d3","#8c4139"], hot:["#a45248","#ffffff"] };
+const WCOLOR = { ok:["rgba(241,236,228,.08)","#F1ECE4"], info:["rgba(209,90,69,.17)","#EE8C75"], warn:["rgba(209,90,69,.30)","#F1ECE4"], hot:["#D15A45","#FFFFFF"] };
 
 const MESES = {
   "Jun 26": {
@@ -714,9 +815,98 @@ const $ = id => document.getElementById(id);
 $("data").value = today();
 
 function ctx(){ return { mes:$("mes").value, turma:$("turma").value, treino:$("treino").value, semana:$("semana").value, data:$("data").value }; }
+// Conteúdo da apresentação do mês que não vira registro: aquecimento, nome e intervalo dos
+// blocos, legenda e respiração final. Os exercícios dos blocos vêm do MESES (fonte única).
+// Mês sem apresentação mostra só os blocos.
+const PROGRAMA = {
+  "Out-Nov 26": {
+    ciclo:"Back to Basics · Out / Nov 2026",
+    "1":{ dia:"01 — Treino 1 · Segunda e quinta", titulo:["Potência","e força."], dur:"50'",
+      aquec:[
+        ["Aquecimento 1 — Liberação miofascial",[["Respiração coerência cardíaca 5,5:5,5","1 min"],["LMF latíssimo","1 × 30s"],["LMF panturrilha","1 × 30s"]]],
+        ["Aquecimento 2 — Mobilidade",[["Snow angel reverso","1 × 8"],["Mobilização posterior do quadril 3 apoios","1 × 8 cl"],["Couch stretch + dorsiflexão","1 × 8 cl"]]],
+        ["Aquecimento 3 — Estabilidade e ativação",[["Ponte c/ MB joelhos","2 × (20s + 5 + 5)"],["Shoulder taps","2 × 20"],["Agachamento c/ anilha + MB","2 × 5 · 4s EXC / 1s CC"]]]
+      ],
+      blocos:{1:["Potência","Superset · 90s"],2:["Força / hipertrofia","Triset · 90s"],3:["Força / hipertrofia","Superset · 90s"]},
+      legenda:"LMF liberação miofascial · MB miniband · DB halter · BB barra · AJ ajoelhado · cl cada lado · EXC excêntrica · CC concêntrica",
+      fecho:"Respiração 4-7-8 · 2 min" },
+    "2":{ dia:"02 — Treino 2 · Terça e sexta", titulo:["Força","e hipertrofia."], dur:"50'",
+      aquec:[
+        ["Aquecimento 1 — Liberação miofascial",[["Respiração coerência cardíaca 5,5:5,5","1 min"],["LMF adutores","1 × 30s"],["LMF peitoral","1 × 30s"]]],
+        ["Aquecimento 2 — Mobilidade",[["Ponte lateral c/ alcance (linha lateral)","1 × 8 cl"],["Cat / camel","1 × 8"],["Cócoras + RI do quadril ALT","1 × 8 cl"]]],
+        ["Aquecimento 3 — Estabilidade e ativação",[["Copenhagen plank no step","2 × 20s cl"],["Bear hold","2 × 20s"],["Agachamento lateral c/ troca de base ALT","2 × 5 cl"]]]
+      ],
+      blocos:{1:["Hipertrofia","Triset · 90s"],2:["Hipertrofia","Triset · 90s"],3:["Hipertrofia","Triset · 90s"]},
+      legenda:"LMF liberação miofascial · RI rotação interna · ALT alternado · SB superband · DB halter · KB kettlebell · BB barra · UNL unilateral · cl cada lado",
+      fecho:"Respiração 4-7-8 · 2 min" },
+    "3":{ dia:"03 — Treino 3 · Quarta e sábado", titulo:["Hipertrofia."], dur:"50'",
+      aquec:[
+        ["Aquecimento 1 — Liberação miofascial",[["Respiração coerência cardíaca 5,5:5,5","1 min"],["LMF oblíquos","1 × 30s"],["LMF flexores do quadril","1 × 30s"]]],
+        ["Aquecimento 2 — Mobilidade",[["Shin box c/ alcance","2 × 5 cl"],["Chute à frente controlado","2 × 5 cl"]]],
+        ["Aquecimento 3 — Estabilidade e ativação",[["Flexão de braços isométrica 90°","2 × 20s"],["Prancha reversa","2 × 20s"],["Suitcase squat","2 × 20s cl"]]]
+      ],
+      blocos:{1:["Hipertrofia","Superset · 1 min"],2:["Hipertrofia","Superset · 1 min"],3:["Hipertrofia","Triset · 1 min"]},
+      legenda:"LMF liberação miofascial · UNL unilateral · CNTL contralateral · PTE pé de trás elevado · SB superband · DB halter · KB kettlebell · BB barra · cl cada lado",
+      fecho:"Respiração 4-7-8 · 2 min" },
+    pse:[["10","Esforço máximo"],["9,5","Não faria mais repetições, mas aumentaria o peso"],["9","1 repetição de reserva (RR)"],["8,5","1-2 repetições de reserva (RR)"],["8","2 repetições de reserva (RR)"],["7,5","2-3 repetições de reserva (RR)"],["7","3 repetições de reserva (RR)"],["5-6","4-6 repetições de reserva (RR)"],["3-4","Esforço leve"],["1-2","Pouco ou nenhum esforço"]],
+    pseNota:"RR repetições de reserva · S1 deload: uma série a menos, carga reduzida, sem RR · S2 a S4: progressão por carga e RR, nunca por séries"
+  }
+};
+// Tela de aula tem dois modos, um por vez: "treino" (roteiro completo na tela toda) ou
+// "registro" (só os exercícios com carga). O MacBook lembra o último (não sincroniza).
+let modoTela = load("fabrik_modo_tela","registro")==="treino" ? "treino" : "registro";
+function setModo(m){ modoTela=m; save("fabrik_modo_tela", m); renderBlocks(); renderPanel(); window.scrollTo(0,0); }
+function renderPrograma(){
+  const el=$("programa"); if(!el) return;
+  $("viewRegistro").dataset.modo=modoTela;
+  document.querySelectorAll("#modos button").forEach(b=>b.classList.toggle("on", b.dataset.m===modoTela));
+  const mes=$("mes").value, t=$("treino").value, P=PROGRAMA[mes], T=P&&P[t];
+  const exs=treinosDo(mes)[t]||[], bs=[...new Set(exs.map(e=>e.bloco))];
+  const dash=x=>`<span class="pdash">—</span>${he(x)}`;
+  const xx=v=>he(String(v||"").replace(/ x /g," × "));
+  // no registro, o bloco aberto aparece inteiro (inclusive o que não tem carga), preso no alto
+  const res=$("blocoResumo"), bxr=exs.filter(e=>e.bloco===selBloco);
+  if(res){
+    res.hidden = !bxr.length;
+    if(bxr.length){ const meta=T&&T.blocos[selBloco];
+      res.innerHTML=`<span class="brt">${dash("Treino "+t+" · Bloco "+String(selBloco).padStart(2,"0")+(meta?" — "+meta[0]:""))}</span>`+
+        `<small>${he(meta?meta[1]:bxr[0].metodo)}</small><span class="brx">`+
+        bxr.map(e=>`<span class="${registraCarga(e)?"c":""}">${he(e.nome)} <b>${xx(e.presc)}</b></span>`).join("<i>·</i>")+`</span>`; }
+  }
+  const titulo = T ? `<b>${he(T.titulo[0])}</b>${T.titulo[1]?` <em>${he(T.titulo[1])}</em>`:""}`
+                   : `<b>Treino ${he(t)}</b>`;
+  let h=`<div class="phead"><div><div class="pkick">${he(P?P.ciclo:mes)}</div>`+
+        `${T?`<div class="pdia">${dash(T.dia)}</div>`:""}<h2 class="ptitle">${titulo}</h2></div>`+
+        `${T&&T.dur?`<span class="pdur">${he(T.dur)}</span>`:""}</div>`;
+  if(!exs.length){ el.innerHTML=h+`<p class="muted">O Treino ${he(t)} de ${he(mes)} ainda não foi cadastrado.</p>`; return; }
+  // coluna 1: aquecimento (todo aberto) + PSE; coluna 2: blocos de trabalho
+  const col1 = T ? T.aquec.map(([nome,itens])=>`<div class="psec"><span>${dash(nome)}</span></div>`+
+      itens.map(([n,q])=>`<div class="pit"><span>${he(n)}</span><b>${he(q)}</b></div>`).join("")).join("")+
+    (P&&P.pse?`<details class="ppse"><summary>PSE · esforço percebido</summary><table>`+
+      P.pse.map(([n,d])=>`<tr><td>${he(n)}</td><td>${he(d)}</td></tr>`).join("")+`</table><p>${he(P.pseNota)}</p></details>`:"") : "";
+  const col2 = bs.map(b=>{
+    const meta=T&&T.blocos[b], bx=exs.filter(e=>e.bloco===b), comCarga=bx.some(registraCarga);
+    const nome="Bloco "+String(b).padStart(2,"0")+(meta?" — "+meta[0]:"");
+    return `<div class="pblk ${comCarga&&b===selBloco?"on":""} ${comCarga?"":"semcarga"}" data-b="${b}"><div class="psec"><span>${dash(nome)}</span><small>${he(meta?meta[1]:bx[0].metodo)}${comCarga?'<span class="pgo">›</span>':""}</small></div>`+
+      bx.map(e=>`<div class="pit big"><span>${he(e.nome)}</span><b>${xx(e.presc)}</b></div>`).join("")+`</div>`;
+  }).join("");
+  h+= col1 ? `<div class="pcols"><div class="pcol">${col1}</div><div class="pcol">${col2}</div></div>` : col2;
+  if(T) h+=`<div class="pfoot"><details class="psiglas"><summary>ⓘ siglas</summary><div class="psiglas-txt">${he(T.legenda)}</div></details><b>${he(T.fecho)}</b></div>`;
+  el.innerHTML=h;
+  // tocar num bloco do treino abre o registro naquele bloco
+  el.querySelectorAll(".pblk:not(.semcarga)").forEach(d=>d.onclick=()=>{ selBloco=Number(d.dataset.b); setModo("registro"); });
+}
 function treinosDo(mes){ return MESES[mes] || MESES[Object.keys(MESES)[0]]; }
-function blocosDe(t){ return [...new Set((treinosDo($("mes").value)[t]||[]).map(e=>e.bloco))]; }
-function exsDoBloco(t,b){ return (treinosDo($("mes").value)[t]||[]).filter(e=>e.bloco===b); }
+// Registro (lado direito) mostra só o que tem carga a anotar: carga e elástico (o nível é a carga).
+// Peso corporal e tempo aparecem só no treino (lado esquerdo). Decide pelo prescrito da turma.
+function registraCarga(e){ return e.tipo==="carga" || e.tipo==="elastico"; }
+// Exercício sem carga adaptado pra um com carga continua no registro (só pro aluno adaptado).
+// "ver sem carga" mostra o bloco inteiro de novo, pra o professor conseguir adaptar na hora.
+let verSemCarga = false;
+function slotVisivel(slot,aId,c){ return verSemCarga || registraCarga(slot) || registraCarga(exEfetivo(slot,aId,c)); }
+function slotNaTurma(slot){ const c=ctx(); return verSemCarga || registraCarga(slot) || alunosDaTurma(c.turma).some(a=>registraCarga(exEfetivo(slot,a.id,c))); }
+function blocosDe(t){ return [...new Set((treinosDo($("mes").value)[t]||[]).filter(slotNaTurma).map(e=>e.bloco))]; }
+function exsDoBloco(t,b){ return (treinosDo($("mes").value)[t]||[]).filter(e=>e.bloco===b && slotNaTurma(e)); }
 // mês publicado antes de todos os treinos estarem prontos: avisa e aponta o mês anterior que tem esse treino
 function avisoTreino(c){
   const keys=Object.keys(MESES), ant=keys.slice(0,keys.indexOf(c.mes)).reverse().find(m=>MESES[m][c.treino]);
@@ -791,6 +981,7 @@ function setView(v){
   $("viewRegistro").style.display  = v==="registro" ?"block":"none";
   $("viewAlunos").style.display    = v==="alunos"   ?"block":"none";
   $("viewRelatorio").style.display = v==="relatorio"?"block":"none";
+  $("modos").style.visibility      = v==="registro" ?"visible":"hidden"; // seletor só vale na aula
   document.querySelectorAll(".viewbtn").forEach(b=>b.classList.toggle("on", b.dataset.v===v));
   if(v==="alunos") renderMaster();
   else if(v==="relatorio") renderRelatorio();
@@ -809,6 +1000,7 @@ function renderBlocks(){
   if(!bs.includes(selBloco)) selBloco=bs[0];
   $("blocks").innerHTML = bs.map(b=>{ const exs=exsDoBloco(tr,b); return `<div class="bchip ${b===selBloco?'on':''}" data-b="${b}">Bloco ${b}<small>${exs[0].metodo.toLowerCase()} · ${exs.length} ex</small></div>`; }).join("");
   $("blocks").querySelectorAll(".bchip").forEach(c=>c.onclick=()=>{ selBloco=Number(c.dataset.b); renderBlocks(); renderPanel(); });
+  renderPrograma();
 }
 
 function recKey(a,e,d,t){ return [a,e,d,t].join("|"); }
@@ -852,7 +1044,7 @@ function calcCarga(montagem,qtd,peso,un,peso2,un2,bar){
 }
 function histBlock(aId,eId,before){
   const h=hist(aId,eId,before,3);
-  if(!h.length) return `<div class="hist"><span class="hlbl">sem histórico</span></div>`;
+  if(!h.length) return "";
   const lines=h.map(r=>{
     const total = r.cargaTotal? he(r.cargaTotal)+" kg" : "";
     const parcial = r.cargaParcial? he(r.cargaParcial) : "";
@@ -907,10 +1099,13 @@ function renderPanel(){
   const exs=exsDoBloco(c.treino,selBloco);
   if(!treinosDo(c.mes)[c.treino]){ $("panel").innerHTML=avisoTreino(c);
     const b=$("usarMesAnt"); if(b) b.onclick=()=>{ $("mes").value=b.dataset.mes; $("mes").dispatchEvent(new Event("change")); }; return; }
+  if(!exs.length){ $("panel").innerHTML=`<p class="muted">Este treino não tem exercício com carga para registrar.</p>`; return; }
   if(!alunosDaTurma(c.turma).length){ $("panel").innerHTML=`<p class="muted">Nenhum aluno na turma ${c.turma}. Vá na aba <b>Alunos</b> e marque o horário ${c.turma} pros alunos dela.</p>`; return; }
   if(!lista.length){ $("panel").innerHTML=`<p class="muted">${usarPresenca?'Nenhum presente marcado na chamada bate com a busca. Marque presentes acima ou use <b>mostrar todos</b>.':'Nenhum aluno encontrado com esse filtro.'}</p>`; return; }
   $("panel").innerHTML = lista.map(a=>{
-    const lines=exs.map(exSlot=>{
+    const visiveis=exs.filter(exSlot=>slotVisivel(exSlot,a.id,c));
+    if(!visiveis.length) return ""; // aluno sem nada com carga neste bloco
+    const lines=visiveis.map(exSlot=>{
       const ex=exEfetivo(exSlot,a.id,c); // efetivo = adaptado do aluno, senão o prescrito da turma
       const r=getRec(c,a.id,ex.id)||{};
       const isCarga=ex.tipo==="carga";
@@ -980,6 +1175,7 @@ function renderPanel(){
     }).join("");
     return `<div class="scard"><div class="shead"><div class="avatar">${initials(a.nome)}</div><div class="nm">${he(a.nome)}</div><span class="pendbadge"></span><button class="icbtn btn-rename" data-aluno="${a.id}" style="margin-left:auto">✎ nome</button></div>${lines}</div>`;
   }).join("");
+  if(!$("panel").innerHTML.trim()) $("panel").innerHTML=`<p class="muted">Nenhum aluno listado tem exercício com carga neste bloco.</p>`;
   wirePanel(c);
 }
 
@@ -1308,6 +1504,9 @@ document.querySelectorAll(".viewbtn").forEach(b=>b.onclick=()=>setView(b.dataset
   renderWeek(); renderBlocks(); renderPanel();
 }));
 $("busca").addEventListener("keyup",renderPanel);
+document.querySelectorAll("#modos button").forEach(b=>b.onclick=()=>setModo(b.dataset.m));
+$("btnSemCarga").onclick=()=>{ verSemCarga=!verSemCarga; $("btnSemCarga").classList.toggle("on",verSemCarga);
+  $("btnSemCarga").textContent = verSemCarga ? "só com carga" : "ver sem carga"; renderBlocks(); renderPanel(); };
 $("exportar").onclick=()=>exportCSV();
 $("novoNome").addEventListener("input",renderDup);
 $("novoNome").addEventListener("keydown",e=>{ if(e.key==="Enter") addAluno(); });
