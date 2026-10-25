@@ -8,216 +8,416 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
 <style>
+/* ================================================================
+   Identidade BTB Out-Nov 26: quase preto, creme e terracota.
+   Terracota cheio = onde estou (bloco, ação principal); creme cheio = valor
+   escolhido no formulário; terracota em contorno/fundo = campo pendente.
+   ================================================================ */
 :root{
-  /* identidade da apresentação BTB Out-Nov 26: fundo quase preto, creme e terracota */
-  --bg:#131210; --surface:rgba(241,236,228,.045); --surface2:rgba(241,236,228,.09); --solid:#1c1a17;
-  --ink:#F1ECE4; --muted:rgba(241,236,228,.62); --faint:rgba(241,236,228,.38);
-  --line:rgba(241,236,228,.12); --line2:rgba(241,236,228,.24);
-  --info:#D15A45; --info-bg:rgba(209,90,69,.17); --info-ink:#EE8C75;
-  --warn:#D15A45; --warn-bg:rgba(209,90,69,.17);
-  --hot:#D15A45; --hot-bg:rgba(209,90,69,.17);
-  --danger:#D15A45; --danger-bg:rgba(209,90,69,.17);
-  --ok:#F1ECE4; --ok-bg:rgba(241,236,228,.10);
-  /* campo ainda não preenchido: terracota em 3 intensidades */
-  --falta:#EE8C75; --falta-bg:rgba(209,90,69,.24); --falta-ring:rgba(209,90,69,.42); --falta-row:rgba(209,90,69,.07);
-  --graf:#F1ECE4; --graf-bg:rgba(241,236,228,.08);
+  --bg:#131210; --solid:#1b1916; --raised:#221f1b;
+  --surface:rgba(241,236,228,.035); --surface2:rgba(241,236,228,.07); --surface3:rgba(241,236,228,.12);
+  --ink:#F1ECE4; --ink2:rgba(241,236,228,.84); --muted:rgba(241,236,228,.64); --faint:rgba(241,236,228,.36);
+  --line:rgba(241,236,228,.085); --line2:rgba(241,236,228,.16); --line3:rgba(241,236,228,.28);
+  --accent:#D15A45; --accent-ink:#EE8C75; --accent-bg:rgba(209,90,69,.14); --accent-bg2:rgba(209,90,69,.24);
+  /* nomes antigos, usados pelo relatório e pela impressão */
+  --info:var(--accent); --info-ink:var(--accent-ink); --info-bg:var(--accent-bg);
+  --warn:var(--accent); --warn-bg:var(--accent-bg); --danger:var(--accent);
+  --ok:var(--ink); --ok-bg:rgba(241,236,228,.09); --graf-bg:rgba(241,236,228,.08);
+  /* campo ainda não preenchido */
+  --falta:#EE8C75; --falta-bg:rgba(209,90,69,.2); --falta-ring:rgba(209,90,69,.42);
   --serif:"Instrument Serif","PP Editorial New",Georgia,serif;
   --sans:"Inter",system-ui,-apple-system,"Segoe UI",sans-serif;
-  --radius:12px;
+  /* escala: rótulo 11 · apoio 13 · corpo 15 · exercício 16,5 · aluno 17 · título 44 */
+  --r-sm:8px; --r:10px; --r-lg:14px; --r-xl:18px;
+  --h:40px; --h-sm:32px;
+  --gutter:28px;
   color-scheme:dark;
 }
 *{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
 body{
-  font-family:var(--sans);
-  background-color:var(--bg); color:var(--ink); margin:0; padding:18px 22px;
-  /* brilho terracota embaixo, como o fundo dos slides (sem a grade: Alex achou poluído) */
-  background-image:radial-gradient(ellipse 65% 55% at 50% 105%, rgba(209,90,69,.17), transparent 70%);
-  background-size:100% 100%; background-attachment:fixed;
-  font-size:17px; line-height:1.5; font-variant-numeric:tabular-nums;
+  margin:0; padding:0 var(--gutter) 40px;
+  font-family:var(--sans); font-size:15px; line-height:1.5; color:var(--ink);
+  background-color:var(--bg);
+  /* brilho terracota embaixo, como o fundo dos slides (sem grade) */
+  background-image:radial-gradient(ellipse 70% 50% at 50% 112%, rgba(209,90,69,.13), transparent 70%);
+  background-attachment:fixed;
+  font-variant-numeric:tabular-nums; -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale;
 }
-.wrap{max-width:1640px; margin:0 auto}
-h1{font-size:22px; font-weight:600; margin:0 0 2px}
-.sub{color:var(--muted); font-size:14px; margin:0 0 16px}
-.views{display:flex; gap:8px; margin:0 0 16px}
-.viewbtn{font-size:15px; padding:9px 18px; border:1px solid var(--line2); border-radius:10px; background:var(--surface); cursor:pointer; font-weight:600}
-.viewbtn.on{background:var(--info-bg); border-color:var(--info); color:var(--info)}
-.bar{
-  display:flex; gap:10px; flex-wrap:wrap; align-items:flex-end;
-  background:var(--surface); border:1px solid var(--line); border-radius:var(--radius);
-  padding:14px; margin-bottom:14px;
-}
-.fld{display:flex; flex-direction:column; gap:4px}
-.fld label{font-size:12px; color:var(--muted); font-weight:600; text-transform:uppercase; letter-spacing:.03em}
-select,input{font:inherit; padding:9px 11px; border:1px solid var(--line2); border-radius:8px; background:var(--surface); color:var(--ink)}
-select:focus,input:focus{outline:none; border-color:var(--info); box-shadow:0 0 0 3px var(--info-bg)}
-input::placeholder{color:var(--faint)}
-select option{background:var(--solid); color:var(--ink)}
-button{font:inherit; font-weight:600; padding:9px 14px; border:1px solid var(--line2); border-radius:8px; background:var(--surface); color:var(--ink); cursor:pointer}
-button:hover{background:var(--surface2)}
-button:active{transform:scale(.985)}
-.btn-primary{background:var(--info); color:#fff; border-color:var(--info)}
-.btn-primary:hover{background:#b84c39}
-.week{display:flex; align-items:center; gap:12px; flex:1 1 200px; min-width:0; border-radius:10px; padding:10px 14px; margin-top:4px; align-self:stretch}
-.week .wk{font-size:15px; font-weight:700; white-space:nowrap}
-.week .rule{font-size:14px}
-.blocks{display:flex; gap:8px; flex-wrap:wrap; margin:0 0 8px}
-.bchip{font-size:15px; padding:10px 16px; border:1px solid var(--line2); border-radius:10px; background:var(--surface); cursor:pointer; font-weight:600}
-.bchip small{font-weight:500; color:var(--muted); display:block; font-size:12px; margin-top:1px}
-.bchip.on{background:var(--info-bg); border-color:var(--info); color:var(--info)}
-.bchip.on small{color:var(--info)}
-.search{position:relative; margin:6px 0 16px; max-width:340px}
-.search i{position:absolute; left:12px; top:11px; color:var(--muted); font-style:normal}
-.search input{width:100%; padding-left:34px}
-.scard{background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); padding:10px 14px; margin-bottom:8px}
-.shead{display:flex; align-items:center; gap:10px; margin-bottom:8px}
-.avatar{width:34px;height:34px;border-radius:50%;background:var(--info-bg);color:var(--info);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px}
-.shead .nm{font-size:17px;font-weight:600}
-.exline{border-top:1px solid var(--line); padding:8px 0}
-.exline:first-of-type{border-top:none}
-.exhead{display:flex; align-items:baseline; gap:10px; margin-bottom:5px; flex-wrap:wrap}
-.exhead .ex{font-size:16px; font-weight:600}
-.exhead .meta{font-size:13px; color:var(--muted)}
-.exhead .presc{font-weight:600; color:var(--info-ink); background:var(--info-bg); border-radius:5px; padding:1px 6px}
-.exhead .prev{color:var(--info-ink)}
-.row{display:flex; flex-wrap:wrap; gap:12px; align-items:center}
-.row .grp{display:flex; align-items:center; gap:6px}
-.row .grp span{font-size:12px; color:var(--muted); font-weight:600}
-.row input.kg{width:84px; font-size:19px; font-weight:700; text-align:center}
-.row input.sm{width:60px; font-size:17px; text-align:center}
-.row input.parc{width:210px; font-size:14px}
-.cbox{display:flex; flex-wrap:wrap; gap:10px; align-items:center}
-.unit{display:flex}
-.mtog{display:flex; margin-right:2px}
-.mbtn{font:inherit; font-weight:700; padding:7px 11px; border:1px solid var(--line2); background:var(--surface); cursor:pointer; color:var(--muted)}
-.mbtn:first-child{border-radius:7px 0 0 7px}
-.mbtn:last-child{border-radius:0 7px 7px 0; border-left:none}
-.mbtn.on{background:var(--info-bg); border-color:var(--info); color:var(--info)}
-.qbtn,.ubtn{font:inherit; font-weight:700; padding:7px 11px; border:1px solid var(--line2); background:var(--surface); cursor:pointer; color:var(--muted)}
-.qbtn{border-radius:7px; min-width:36px}
-.qbtn+.qbtn{margin-left:4px}
-.ubtn{border-radius:0}
-.unit .ubtn:first-child{border-radius:7px 0 0 7px}
-.unit .ubtn:last-child{border-radius:0 7px 7px 0; border-left:none}
-.qbtn.on,.ubtn.on{background:var(--info-bg); border-color:var(--info); color:var(--info)}
-.cin{width:74px; font-size:18px; font-weight:700; text-align:center}
-.cin.barra{width:58px; font-size:16px; font-weight:600}
-.cbox small{font-size:12px; color:var(--muted)}
-.x2{font-weight:700; color:var(--muted)}
-.ctot{font-size:15px; color:var(--muted); white-space:nowrap}
-.ctot .ctotal{font-size:20px; color:var(--ink); font-weight:700}
-.icbtn{padding:7px 11px; font-size:13px}
-.tags{display:flex; flex-wrap:wrap; gap:7px; margin-top:9px}
-.tag{font-size:13px; font-weight:600; padding:4px 10px; border-radius:8px}
-.tag.dor{color:#fff; background:var(--info)}
-.tag.troca{color:var(--muted); background:var(--graf-bg)}
-.hist{margin-top:10px; border-top:1px dashed var(--line2); padding-top:8px; display:flex; flex-direction:column; gap:5px}
-.hist .hlbl{font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:.05em; font-weight:700}
-.histline{font-size:13px; display:flex; flex-wrap:wrap; gap:8px; align-items:baseline}
-.histline .hd{color:var(--muted); font-weight:700; min-width:40px}
-.histline .hc{font-weight:600; color:var(--ink)}
-.histline .hmont{font-weight:600; color:var(--info)}
-.hflag{font-size:12px; padding:2px 8px; border-radius:6px; font-weight:600}
-.hflag.dor{color:#fff; background:var(--info)}
-.hflag.troca,.hflag.obs{color:var(--muted); background:var(--graf-bg)}
-.adaptado{font-size:11px; font-weight:700; padding:2px 8px; border-radius:6px; background:var(--info-bg); color:var(--info)}
-.adapt-edit{display:none; margin-top:9px; background:var(--bg); border:1px dashed var(--line2); border-radius:8px; padding:10px}
-.adapt-edit .rowf{display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-bottom:8px}
-.adapt-edit .adapt-nome{flex:1 1 260px}
-.adapt-row{display:flex; gap:14px; flex-wrap:wrap; align-items:center; margin-bottom:8px}
-.alab{font-size:12px; color:var(--muted); font-weight:600}
-.atipo,.aimpl{display:flex; gap:4px; align-items:center}
-.abtn{font:inherit; font-weight:700; padding:6px 11px; border:1px solid var(--line2); border-radius:7px; background:var(--surface); cursor:pointer; color:var(--muted)}
-.abtn.on{background:var(--info-bg); border-color:var(--info); color:var(--info)}
-.troca-edit,.obs-edit,.dor-edit{margin-top:9px; display:none}
-.troca-edit input,.obs-edit input,.dor-edit input{width:100%}
+.wrap{max-width:1520px; margin:0 auto}
+.ic{width:16px; height:16px; flex:0 0 auto; fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round}
 .muted{color:var(--muted); font-size:13px}
-.addbox{background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); padding:14px 16px; margin-bottom:16px}
+.hint{font-size:13px; color:var(--muted); margin:4px 0 10px}
+:focus-visible{outline:2px solid var(--accent-ink); outline-offset:2px}
+
+/* ---------- controles ---------- */
+select,input{font:inherit; font-size:15px; height:var(--h); padding:0 12px; border:1px solid var(--line2); border-radius:var(--r);
+  background:rgba(241,236,228,.04); color:var(--ink); transition:border-color .15s, box-shadow .15s, background .15s}
+select{appearance:none; -webkit-appearance:none; padding-right:34px; cursor:pointer;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23F1ECE4' stroke-opacity='.6' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat:no-repeat; background-position:right 12px center}
+select:hover,input:hover{border-color:var(--line3)}
+select:focus,input:focus{outline:none; border-color:var(--accent-ink); box-shadow:0 0 0 3px var(--accent-bg)}
+input::placeholder{color:var(--faint)}
+input:disabled{opacity:.6}
+select option{background:var(--solid); color:var(--ink)}
+/* botão padrão = secundário (contorno) */
+button{font:inherit; font-size:14px; font-weight:600; display:inline-flex; align-items:center; justify-content:center; gap:7px;
+  height:var(--h); padding:0 16px; border:1px solid var(--line2); border-radius:var(--r); background:transparent; color:var(--ink);
+  cursor:pointer; white-space:nowrap; transition:background .15s, border-color .15s, color .15s}
+button:hover{background:var(--surface2); border-color:var(--line3)}
+button:active{transform:translateY(1px)}
+.btn-primary{background:var(--accent); border-color:var(--accent); color:#fff}
+.btn-primary:hover{background:#bf4f3b; border-color:#bf4f3b}
+.icbtn{height:var(--h-sm); padding:0 12px; font-size:13px; border-radius:var(--r-sm)}
+.ghost{border-color:transparent; color:var(--muted)}
+.ghost:hover{border-color:transparent; color:var(--ink)}
+.iconbtn{width:var(--h-sm); height:var(--h-sm); padding:0; border-color:transparent; color:var(--muted); border-radius:var(--r-sm)}
+.iconbtn:hover{color:var(--ink); border-color:transparent}
+/* grupo segmentado: uma escolha entre opções equivalentes (DB/KB/BB, kg/lb, 1/2, nível do elástico…) */
+.seg{display:inline-flex; align-items:center; gap:2px; padding:3px; border:1px solid var(--line2); border-radius:var(--r); background:rgba(0,0,0,.14)}
+.seg>button{height:calc(var(--h) - 8px); min-width:36px; padding:0 11px; border:0; border-radius:7px; background:none; color:var(--muted); font-size:13.5px; font-weight:700}
+.seg>button:hover{background:var(--surface2); color:var(--ink)}
+.seg>button.on{background:var(--ink); color:#131210}
+.seg.sm>button{height:26px; font-size:12.5px; padding:0 10px}
+
+/* ---------- barra do app ---------- */
+.appbar{display:flex; align-items:center; gap:32px; height:60px; margin:0 calc(-1*var(--gutter)) 18px; padding:0 var(--gutter);
+  border-bottom:1px solid var(--line)}
+.brandlogo{height:34px; width:auto; display:block}
+.views{display:flex; align-self:stretch; gap:2px}
+.viewbtn{position:relative; height:100%; padding:0 14px; border:0; border-radius:0; background:none; color:var(--muted); font-size:14.5px; font-weight:500}
+.viewbtn:hover{background:none; color:var(--ink)}
+.viewbtn.on{color:var(--ink); font-weight:600}
+.viewbtn.on::after{content:""; position:absolute; left:14px; right:14px; bottom:-1px; height:2px; border-radius:2px; background:var(--accent)}
+.appright{margin-left:auto; display:flex; align-items:center; gap:10px}
+.syncwrap{align-items:center}
+.syncbadge{display:inline-flex; align-items:center; gap:8px; height:32px; padding:0 12px; border-radius:999px; border:1px solid var(--line);
+  background:var(--surface); color:var(--muted); font-size:12.5px; font-weight:600; cursor:pointer; white-space:nowrap}
+.syncbadge::before{content:""; width:7px; height:7px; border-radius:50%; background:var(--faint)}
+.syncbadge.ok::before{background:var(--ink)}
+.syncbadge.info::before{background:var(--accent-ink)}
+.syncbadge:hover{background:var(--surface2); border-color:var(--line2)}
+.syncbadge.warn{color:var(--ink); border-color:var(--accent); background:var(--accent-bg)}
+.syncbadge.warn::before{background:var(--accent)}
+.menu{position:relative}
+.menu>summary{list-style:none; width:var(--h); height:var(--h); display:grid; place-items:center; border:1px solid var(--line2); border-radius:var(--r);
+  color:var(--ink2); cursor:pointer; transition:background .15s}
+.menu>summary::-webkit-details-marker{display:none}
+.menu>summary:hover,.menu[open]>summary{background:var(--surface2)}
+.menu>summary .ic{width:18px; height:18px}
+.menupop{position:absolute; right:0; top:calc(100% + 8px); z-index:40; min-width:230px; padding:6px; background:var(--raised);
+  border:1px solid var(--line2); border-radius:var(--r-lg); box-shadow:0 18px 44px rgba(0,0,0,.55)}
+.mi{width:100%; justify-content:flex-start; height:38px; padding:0 10px; border:0; border-radius:var(--r-sm); background:none; color:var(--ink2); font-weight:500}
+.mi:hover{background:var(--surface2); border:0; color:var(--ink)}
+.menupop hr{border:0; border-top:1px solid var(--line); margin:6px 4px}
+body:not(.sync-on) .synconly{display:none}
+#syncBanner{display:none; align-items:center; gap:12px; flex-wrap:wrap; margin:0 0 18px; padding:10px 14px; border:1px solid var(--accent);
+  border-radius:var(--r-lg); background:var(--accent-bg); color:var(--ink); font-size:14px; font-weight:600}
+#syncBanner button{height:var(--h-sm); font-size:13px}
+
+/* ---------- configuração da aula (recolhível) ---------- */
+.ctx{margin:0 0 18px}
+.ctxsum{display:flex; flex-wrap:wrap; border:1px solid var(--line); border-radius:var(--r-lg); background:var(--surface); overflow:hidden}
+.ci{height:auto; min-height:50px; flex-direction:column; align-items:flex-start; justify-content:center; gap:0; padding:6px 20px;
+  border:0; border-right:1px solid var(--line); border-radius:0; background:none; text-align:left}
+.ci:hover{background:var(--surface2); border-color:var(--line)}
+.ci small{font-size:10.5px; font-weight:600; letter-spacing:.09em; text-transform:uppercase; color:var(--muted)}
+.ci b{display:flex; align-items:center; gap:10px; font-size:15.5px; font-weight:600; color:var(--ink)}
+.ci.alerta b{color:var(--accent-ink)}
+.ctxedit{margin-left:auto; flex-direction:row; align-items:center; gap:8px; border-right:0; border-left:1px solid var(--line); color:var(--muted); font-size:13.5px; font-weight:600}
+.ctxedit:hover{color:var(--ink)}
+.cfg{display:flex; flex-wrap:wrap; align-items:flex-end; gap:14px; padding:14px 16px 16px; border:1px solid var(--line2); border-radius:var(--r-lg); background:var(--surface)}
+.ctx[data-open="1"] .ctxsum,.ctx:not([data-open="1"]) .cfg{display:none}
+.fld{display:flex; flex-direction:column; gap:6px}
+.fld label{font-size:10.5px; font-weight:600; letter-spacing:.09em; text-transform:uppercase; color:var(--muted)}
+.cfg .cfgok{margin-left:auto}
+.wkrule{display:inline-flex; align-items:center; height:24px; padding:0 10px; border-radius:999px; font-size:12px; font-weight:600; font-style:normal; letter-spacing:0; text-transform:none; white-space:nowrap}
+.cfg .wkrule{align-self:flex-end; height:var(--h); padding:0 14px; border-radius:var(--r); font-size:13px}
+.wk-ok{background:rgba(241,236,228,.09); color:var(--ink2)}
+.wk-info{background:var(--accent-bg); color:var(--accent-ink)}
+.wk-warn{background:var(--accent-bg2); color:var(--ink)}
+.wk-hot{background:var(--accent); color:#fff}
+
+/* ---------- título da aula (comum aos dois modos) ---------- */
+.titlerow{display:flex; align-items:flex-end; justify-content:space-between; gap:24px; margin:0 0 16px}
+.eyebrow{font-size:11.5px; font-weight:600; letter-spacing:.1em; text-transform:uppercase; color:var(--accent-ink); margin:0 0 6px}
+.eyebrow:empty{display:none}
+.ptitle{font-family:var(--serif); font-weight:400; font-size:42px; line-height:.95; letter-spacing:-.015em; margin:0}
+.ptitle b{font-weight:400; text-transform:uppercase}
+.ptitle em{color:var(--accent)}
+.modos{display:inline-flex; gap:2px; padding:4px; border:1px solid var(--line); border-radius:12px; background:var(--surface); flex:0 0 auto}
+.modos button{height:36px; padding:0 16px; border:0; border-radius:9px; background:none; color:var(--muted); font-size:14px}
+.modos button:hover{background:none; color:var(--ink)}
+.modos button.on{background:var(--surface3); color:var(--ink); box-shadow:0 1px 2px rgba(0,0,0,.45)}
+
+/* um modo por vez */
+#viewRegistro[data-modo="treino"] .regcol,#viewRegistro[data-modo="treino"] .regtop{display:none}
+#viewRegistro[data-modo="registro"] #programa{display:none}
+.regcol,.prog{min-width:0}
+
+/* ---------- treino completo ---------- */
+.prog{padding:4px 36px 16px; border:1px solid var(--line); border-radius:var(--r-xl); background:var(--surface)}
+.pcols{display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1.15fr); gap:56px; align-items:start}
+.psec{display:flex; justify-content:space-between; align-items:baseline; gap:12px; margin:20px 0 4px;
+  font-size:11.5px; font-weight:600; letter-spacing:.09em; text-transform:uppercase; color:var(--accent-ink)}
+.psec small{display:inline-flex; align-items:center; gap:6px; font-size:11px; font-weight:600; letter-spacing:.08em; color:var(--muted); white-space:nowrap}
+.pdash{color:var(--accent); margin-right:8px}
+.pit{display:flex; justify-content:space-between; align-items:baseline; gap:16px; padding:6px 0; border-bottom:1px solid var(--line);
+  font-size:15px; line-height:1.35; color:var(--ink2)}
+.pit span{min-width:0; overflow-wrap:anywhere}
+.pit b{font-weight:500; font-size:14px; color:var(--muted); white-space:nowrap}
+.pit.big{padding:7px 0; font-size:17.5px; color:var(--ink)}
+.pit.big b{font-size:17.5px; font-weight:700; color:var(--ink)}
+.pblk{margin:6px -14px 0; padding:10px 14px 2px; border-radius:var(--r-lg); cursor:pointer; transition:background .15s}
+.pblk .psec{margin-top:0}
+.pblk .pit:last-child{border-bottom:0}
+.pblk:hover{background:var(--surface2)}
+.pblk.on{background:var(--accent-bg); box-shadow:inset 3px 0 0 var(--accent)}
+.pblk.semcarga{cursor:default}
+.pblk.semcarga:hover{background:transparent}
+.pgo{display:inline-flex; color:var(--accent-ink)}
+.pcol>.psec:first-child{margin-top:16px}
+.pcol>.pblk:first-child{margin-top:6px}
+.ppse{margin-top:18px; border:1px solid var(--line); border-radius:var(--r); padding:0 14px}
+.ppse summary{display:flex; align-items:center; gap:8px; height:38px; cursor:pointer; list-style:none; font-size:11.5px; font-weight:600; letter-spacing:.09em; text-transform:uppercase; color:var(--muted)}
+.ppse summary::-webkit-details-marker{display:none}
+.ppse summary .ic{transition:transform .15s}
+.ppse[open] summary .ic{transform:rotate(90deg)}
+.ppse table{width:100%; border-collapse:collapse; margin:0 0 6px; font-size:14px}
+.ppse td{padding:5px 0; border-top:1px solid var(--line)}
+.ppse td:first-child{font-weight:700; width:56px}
+.ppse p{font-size:12px; color:var(--muted); margin:6px 0 12px}
+.pfoot{position:relative; display:flex; justify-content:space-between; align-items:center; gap:24px; margin-top:12px; padding-top:12px; border-top:1px solid var(--line);
+  font-size:11.5px; font-weight:600; letter-spacing:.09em; text-transform:uppercase; color:var(--muted)}
+.pfoot b{color:var(--accent-ink); font-weight:600; white-space:nowrap}
+.psiglas summary{display:inline-flex; align-items:center; gap:7px; height:30px; padding:0 12px; border:1px solid var(--line2); border-radius:999px; cursor:pointer; list-style:none; color:var(--muted)}
+.psiglas summary::-webkit-details-marker{display:none}
+.psiglas summary:hover{color:var(--ink)}
+.psiglas[open] summary{color:var(--ink); border-color:var(--accent)}
+.psiglas-txt{position:absolute; left:0; bottom:calc(100% + 8px); z-index:6; max-width:760px; padding:14px 16px; background:var(--raised);
+  border:1px solid var(--line2); border-radius:var(--r-lg); box-shadow:0 14px 34px rgba(0,0,0,.5);
+  font-size:14px; line-height:1.6; letter-spacing:.01em; text-transform:none; color:var(--ink); font-weight:500}
+
+/* ---------- registro: blocos (presos no alto ao rolar) ---------- */
+.regtop{position:sticky; top:0; z-index:20; display:grid; grid-template-columns:minmax(0,1fr) auto; column-gap:16px; align-items:center; margin:0 calc(-1*var(--gutter)) 16px; padding:10px var(--gutter) 12px;
+  background:rgba(19,18,16,.9); -webkit-backdrop-filter:saturate(1.3) blur(12px); backdrop-filter:saturate(1.3) blur(12px); border-bottom:1px solid var(--line)}
+.regrow{display:contents}
+.blocks{grid-column:1; grid-row:1; display:flex; gap:8px; overflow-x:auto; scrollbar-width:none}
+.blocks::-webkit-scrollbar{display:none}
+.bchip{flex:0 0 auto; height:auto; min-height:46px; flex-direction:column; align-items:flex-start; justify-content:center; gap:0; padding:6px 18px;
+  border-color:var(--line2); color:var(--ink2); font-size:14.5px}
+.bchip small{font-size:11.5px; font-weight:500; color:var(--muted)}
+.bchip.on{background:var(--accent); border-color:var(--accent); color:#fff}
+.bchip.on small{color:rgba(255,255,255,.82)}
+.switch{grid-column:2; grid-row:1; height:var(--h-sm); padding:0 4px; gap:10px; border:0; background:none; color:var(--muted); font-size:13.5px; font-weight:500}
+.switch:hover{background:none; border:0; color:var(--ink)}
+.switch .sw{position:relative; width:30px; height:18px; border-radius:999px; background:var(--surface3); transition:background .15s}
+.switch .sw::after{content:""; position:absolute; top:2px; left:2px; width:14px; height:14px; border-radius:50%; background:var(--ink2); transition:transform .15s}
+.switch.on{color:var(--ink)}
+.switch.on .sw{background:var(--accent)}
+.switch.on .sw::after{transform:translateX(12px); background:#fff}
+.bresumo{grid-column:1/-1; grid-row:2; display:flex; flex-wrap:wrap; align-items:baseline; gap:3px 14px; margin:10px 0 0}
+.bresumo[hidden]{display:none}
+.bresumo .brt{font-size:11.5px; font-weight:600; letter-spacing:.09em; text-transform:uppercase; color:var(--accent-ink)}
+.bresumo small{font-size:11px; font-weight:600; letter-spacing:.08em; text-transform:uppercase; color:var(--muted)}
+.bresumo .brx{flex:1 1 auto; display:flex; flex-wrap:wrap; gap:2px 20px; margin-left:10px; font-size:14.5px; color:var(--muted)}
+.bresumo .brx .c{color:var(--ink)}
+.bresumo .brx b{font-weight:600; color:inherit; margin-left:4px; white-space:nowrap}
+.bresumo i{display:none}
+
+/* ---------- chamada (recolhível) ---------- */
+.chamada{margin:0 0 14px; border:1px solid var(--line); border-radius:var(--r-lg); background:var(--surface)}
+.chtop{display:flex; align-items:center; gap:12px; padding:6px 8px 6px 6px}
+#chamadaTop{flex:1 1 auto; min-width:0; display:flex; align-items:center; gap:12px}
+.chsum{flex:1 1 auto; min-width:0; justify-content:flex-start; gap:16px; padding:0 12px; border:0; background:none; font-weight:500}
+.chsum:hover{border:0}
+.chlbl{font-size:11px; font-weight:600; letter-spacing:.09em; text-transform:uppercase; color:var(--muted)}
+.chcount{font-size:14px; color:var(--muted)}
+.chcount b{font-size:15.5px; font-weight:700; color:var(--ink)}
+.chwho{min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:var(--ink2); font-size:14px}
+.chgo{margin-left:auto; display:inline-flex; align-items:center; gap:6px; color:var(--muted); font-size:13px; font-weight:600}
+.chsum:hover .chgo{color:var(--ink)}
+.chamada.open .chgo .ic{transform:rotate(180deg)}
+.chcount{white-space:nowrap}
+.chnames{display:none; flex-wrap:wrap; gap:8px; padding:6px 18px 18px}
+.chamada.open .chnames{display:flex}
+.chname{height:36px; padding:0 14px; gap:6px; border-radius:999px; border-color:var(--line2); color:var(--ink2); font-size:14px; font-weight:500}
+.chname .ic{display:none; width:14px; height:14px; stroke-width:2.4}
+.chname.on{background:var(--ink); border-color:var(--ink); color:#131210; font-weight:600}
+.chname.on .ic{display:block}
+.search{position:relative; max-width:340px; margin:0 0 16px}
+.search .ic{position:absolute; left:12px; top:50%; transform:translateY(-50%); color:var(--muted); pointer-events:none}
+.search input{width:100%; padding-left:36px}
+.chtop .search{flex:0 0 280px; margin:0}
+
+/* ---------- registro: cartão do aluno ---------- */
+.scard{margin:0 0 14px; border:1px solid var(--line); border-radius:var(--r-xl); background:var(--surface); overflow:hidden}
+.shead{display:flex; align-items:center; gap:12px; padding:10px 16px 10px 20px; border-bottom:1px solid var(--line); background:rgba(241,236,228,.02)}
+.avatar{width:34px; height:34px; flex:0 0 auto; border-radius:50%; display:grid; place-items:center; background:var(--surface3); color:var(--ink); font-size:12.5px; font-weight:700; letter-spacing:.02em}
+.shead .nm{font-size:17px; font-weight:600; letter-spacing:-.005em}
+.pendbadge{display:inline-flex; align-items:center; gap:7px; font-size:12.5px; font-weight:600; color:var(--accent-ink)}
+.pendbadge::before{content:""; width:7px; height:7px; border-radius:50%; background:var(--accent)}
+.pendbadge.ok{color:var(--muted)}
+.pendbadge.ok::before{content:"✓"; width:auto; height:auto; background:none; color:var(--ink2); font-weight:700}
+.pendbadge:empty{display:none}
+.shead .btn-rename{margin-left:auto}
+.exline{display:grid; grid-template-columns:minmax(0,1fr) auto; column-gap:16px; padding:12px 16px 14px 20px; border-top:1px solid var(--line)}
+.shead+.exline{border-top:0}
+.exline>*{grid-column:1/-1; min-width:0}
+.exline>.exhead{grid-column:1; grid-row:1; align-self:center}
+.exline>.exacts{grid-column:2; grid-row:1; align-self:center}
+.exline.pend{box-shadow:inset 3px 0 0 var(--accent)}
+.exhead{display:flex; align-items:baseline; flex-wrap:wrap; gap:4px 12px}
+.exhead .ex{font-size:16.5px; font-weight:600; letter-spacing:-.005em}
+.presc{font-size:13.5px; font-weight:700; color:var(--accent-ink)}
+.alvo{font-size:13px; color:var(--muted)}
+.adaptado{font-size:10.5px; font-weight:700; letter-spacing:.07em; text-transform:uppercase; padding:3px 8px; border-radius:6px; background:var(--accent-bg); color:var(--accent-ink)}
+.exacts{display:flex; align-items:center; gap:2px}
+.exacts .asep{width:1px; height:18px; margin:0 6px; background:var(--line2)}
+.act{height:var(--h-sm); padding:0 10px; gap:6px; border:0; border-radius:var(--r-sm); background:none; color:var(--muted); font-size:13px; font-weight:500}
+.act:hover{border:0; color:var(--ink)}
+.act.open{background:var(--surface2); color:var(--ink)}
+.row{display:flex; flex-wrap:wrap; align-items:center; gap:10px 12px; margin-top:10px}
+.cbox{display:flex; flex-wrap:wrap; align-items:center; gap:10px 10px}
+.grp{display:flex; align-items:center; gap:7px}
+.grp>span:not(.fixed){font-size:11px; font-weight:600; letter-spacing:.07em; text-transform:uppercase; color:var(--muted)}
+.fixed{display:inline-flex; align-items:center; height:var(--h); padding:0 14px; border-radius:var(--r); background:var(--surface2); color:var(--muted); font-size:15px; font-weight:600}
+.cin{width:76px; padding:0 6px; font-size:19px; font-weight:700; text-align:center}
+.cin.barra{width:60px; font-size:16px; font-weight:600}
+input.sm{width:62px; padding:0 6px; font-size:17px; font-weight:600; text-align:center}
+.cbox small{font-size:12px; color:var(--muted)}
+.x2{font-weight:600; color:var(--muted)}
+.ctot{display:inline-flex; align-items:baseline; gap:6px; padding-left:2px; color:var(--muted); font-size:14px; white-space:nowrap}
+.ctot .ctotal{font-size:22px; font-weight:700; color:var(--ink); letter-spacing:-.01em}
+.vsep{width:1px; height:28px; background:var(--line2)}
+.addAnilha{height:var(--h-sm)}
+/* anti-esquecimento: campo vazio fica terracota até ser preenchido (anel = box-shadow, não desloca o layout) */
+.faltou{border-color:var(--falta) !important; background:var(--falta-bg) !important; color:var(--falta) !important; box-shadow:0 0 0 2px var(--falta-ring)}
+.faltou::placeholder{color:var(--falta); opacity:.6}
+.seg.faltou{background:var(--falta-bg) !important}
+.grp:has(.faltou)>span:not(.fixed){color:var(--falta)}
+/* adaptar / trocar / dor / obs */
+.adapt-edit{display:none; margin-top:14px; padding:14px; border:1px solid var(--line2); border-radius:var(--r-lg); background:rgba(0,0,0,.2)}
+.adapt-edit .adapt-nome{width:100%}
+.adapt-row{display:flex; flex-wrap:wrap; align-items:center; gap:10px 20px; margin:12px 0}
+.adapt-acts{display:flex; gap:10px; flex-wrap:wrap}
+.troca-edit,.obs-edit,.dor-edit{display:none; margin-top:12px}
+.troca-edit input,.obs-edit input,.dor-edit input{width:100%}
+.tags{display:flex; flex-wrap:wrap; gap:6px; margin-top:12px}
+.tags:empty{display:none}
+.tag{display:inline-flex; align-items:center; gap:6px; height:26px; padding:0 10px; border-radius:999px; font-size:12.5px; font-weight:600}
+.tag .ic{width:13px; height:13px}
+.tag.dor{background:var(--accent-bg2); color:var(--ink)}
+.tag.troca,.tag.obs{background:var(--surface2); color:var(--ink2)}
+/* histórico das últimas 3 vezes */
+.hist{display:flex; gap:16px; margin-top:14px; padding-top:10px; border-top:1px solid var(--line)}
+.hist .hlbl{flex:0 0 76px; padding-top:2px; font-size:10.5px; font-weight:600; letter-spacing:.09em; text-transform:uppercase; color:var(--muted)}
+.hlines{display:flex; flex-direction:column; gap:3px; min-width:0}
+.histline{display:grid; grid-template-columns:40px minmax(0,1fr); align-items:baseline; column-gap:10px; font-size:13px; color:var(--muted)}
+.histline .hd{font-weight:600}
+.histline .hflag{grid-column:2; justify-self:start; margin-top:2px}
+.histline .hc{color:var(--ink2); font-weight:500}
+.histline .hmont{color:var(--muted); font-weight:500}
+.hflag{font-size:11.5px; font-weight:600; padding:1px 8px; border-radius:999px}
+.hflag.dor{background:var(--accent-bg); color:var(--accent-ink)}
+.hflag.troca,.hflag.obs{background:var(--surface2); color:var(--ink2)}
+#panel>p.muted,#programa>p.muted,#panel>.empty{margin:0; padding:32px 24px; border:1px dashed var(--line2); border-radius:var(--r-xl); text-align:center; font-size:14px}
+#panel>.empty p{margin:0 0 14px; color:var(--muted)}
+
+/* aviso flutuante: "Salvo hh:mm:ss" e alertas (antes ficavam no pé da página) */
+#status{position:fixed; left:50%; bottom:22px; z-index:60; margin:0; padding:9px 16px; border-radius:999px; background:var(--raised);
+  border:1px solid var(--line2); box-shadow:0 12px 30px rgba(0,0,0,.5); font-size:13px; font-weight:600; color:var(--ink2);
+  transform:translate(-50%,12px); opacity:0; pointer-events:none; transition:opacity .2s, transform .2s}
+#status.show{opacity:1; transform:translate(-50%,0)}
+#status.warn{background:var(--accent); border-color:var(--accent); color:#fff}
+
+/* ---------- alunos e relatório ---------- */
+.bar{display:flex; flex-wrap:wrap; align-items:flex-end; gap:14px; padding:14px 16px 16px; margin:0 0 16px; border:1px solid var(--line); border-radius:var(--r-lg); background:var(--surface)}
+.addbox{padding:14px 16px; margin:0 0 16px; border:1px solid var(--line); border-radius:var(--r-lg); background:var(--surface)}
 .addbox .rowf{display:flex; gap:10px; flex-wrap:wrap; align-items:center}
 .addbox input{flex:1 1 280px}
 .dup{margin-top:10px; font-size:13px; display:flex; flex-wrap:wrap; gap:7px; align-items:center}
-.dup .okx{color:var(--ok); font-weight:600}
-.dup .warnx{color:var(--warn); font-weight:700}
-.dup .dupname{background:var(--warn-bg); color:var(--warn); padding:3px 9px; border-radius:6px; font-weight:600}
-.mrow{background:var(--surface); border:1px solid var(--line); border-radius:10px; padding:10px 14px; margin-bottom:8px}
+.dup:empty{display:none}
+.dup .okx{color:var(--ink2); font-weight:600}
+.dup .warnx{color:var(--accent-ink); font-weight:700}
+.dup .dupname{background:var(--accent-bg); color:var(--accent-ink); padding:3px 9px; border-radius:6px; font-weight:600}
+.mrow{padding:12px 16px; margin:0 0 8px; border:1px solid var(--line); border-radius:var(--r-lg); background:var(--surface)}
 .mtop{display:flex; align-items:center; gap:8px}
-.mnome{font-size:16px; font-weight:600; flex:1}
-.hint{font-size:12px; color:var(--muted); margin:2px 0 6px}
-.hchips{display:flex; flex-wrap:wrap; gap:5px; margin-top:8px}
-.hchip{font-size:12px; padding:5px 10px; border:1px solid var(--line2); border-radius:6px; cursor:pointer; color:var(--muted); font-weight:600}
-.hchip.on{background:var(--info-bg); border-color:var(--info); color:var(--info)}
-.cbox.elastico{align-items:center}
-.ellbl{font-size:12px; color:var(--muted); font-weight:600; margin-right:2px}
-.elchips{display:flex; flex-wrap:wrap; gap:6px}
-.elch{font:inherit; font-weight:700; padding:7px 12px; border:1px solid var(--line2); border-radius:7px; background:var(--surface); cursor:pointer; color:var(--muted)}
-.elch.on{background:var(--info-bg); border-color:var(--info); color:var(--info)}
-.chamada{background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); padding:8px 14px; margin:0 0 8px}
-.chamada .chtop{display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:5px}
-.chamada .chlbl{font-size:12px; color:var(--muted); text-transform:uppercase; letter-spacing:.03em; font-weight:700}
-.chamada .chcount{font-size:13px; color:var(--muted); font-weight:600}
-.psec,.pdia,.bresumo .brt,.pdash{color:var(--info-ink)}
-.chamada .chtoggle{margin-left:auto; font-size:13px; padding:6px 12px}
-.chnames{display:flex; flex-wrap:wrap; gap:6px}
-.chname{font-size:14px; padding:5px 11px; border:1px solid var(--line2); border-radius:8px; cursor:pointer; color:var(--muted); font-weight:600; background:var(--surface)}
-.chname.on{background:var(--info-bg); border-color:var(--info); color:var(--info)}
-.chname.on::before{content:"✓ "; font-weight:700}
-.syncbadge{font-size:12px; font-weight:700; padding:5px 10px; border-radius:8px; background:var(--graf-bg); color:var(--muted)}
-#syncBanner{display:none; align-items:center; gap:10px; flex-wrap:wrap; background:var(--info-bg); border:1px solid var(--info); color:var(--ink); border-radius:10px; padding:10px 14px; margin:0 0 14px; font-size:14px; font-weight:600}
-#syncBanner button{font-size:13px}
-input.sm.semreps{border-color:var(--info); box-shadow:0 0 0 2px var(--info-bg)}
-/* anti-esquecimento: exercício com campo faltando + campo específico realçado.
-   Campo vazio fica TERRACOTA (fundo + borda + anel + rótulo); ao preencher volta ao branco.
-   O anel é box-shadow, não borda: não desloca o layout enquanto o treinador digita. */
-.exline.pend{border-left:4px solid var(--falta); padding-left:9px}
-.faltou{border-color:var(--falta) !important; background:var(--falta-bg) !important; color:var(--falta) !important; box-shadow:0 0 0 2px var(--falta-ring)}
-.faltou::placeholder{color:var(--falta); opacity:.6}
-.elchips.faltou{background:transparent !important; border:1px dashed var(--falta); border-radius:8px; padding:4px; box-shadow:0 0 0 2px var(--falta-ring)}
-/* rótulo do campo ("Reps", "Peso"…) acompanha o realce. Sem :has() só perde a cor do rótulo. */
-.row .grp:has(.faltou) span,.cbox .grp:has(.faltou) span,.cbox:has(.elchips.faltou) .ellbl{color:var(--falta)}
-.pendbadge{font-size:12px; font-weight:700; padding:4px 10px; border-radius:8px; background:var(--falta); color:#fff; margin-left:8px}
-.pendbadge.ok{background:var(--ok-bg); color:var(--ok)}
-.pendbadge:empty{display:none}
-.syncbadge.ok{background:var(--ok-bg); color:var(--ok)}
-.syncbadge.info{background:var(--info-bg); color:var(--info)}
-.syncbadge.warn{background:rgba(209,90,69,.28); color:var(--ink)}
+.mnome{flex:1; font-size:16px; font-weight:600}
+.hchips{display:flex; flex-wrap:wrap; gap:6px; margin-top:10px}
+.hchip{display:inline-flex; align-items:center; height:30px; padding:0 12px; border:1px solid var(--line2); border-radius:999px; cursor:pointer; color:var(--muted); font-size:12.5px; font-weight:600}
+.hchip:hover{color:var(--ink)}
+.hchip.on{background:var(--ink); border-color:var(--ink); color:#131210}
 .repkpis{display:flex; gap:12px; flex-wrap:wrap; margin:6px 0 14px}
-.kpi{background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); padding:12px 16px; min-width:150px}
-.kpi .kl{font-size:12px; color:var(--muted); text-transform:uppercase; letter-spacing:.03em; font-weight:700}
+.repkpis:empty{display:none}
+.kpi{min-width:160px; padding:12px 16px; border:1px solid var(--line); border-radius:var(--r-lg); background:var(--surface)}
+.kpi .kl{font-size:10.5px; font-weight:600; letter-spacing:.09em; text-transform:uppercase; color:var(--muted)}
 .kpi .kv{font-size:26px; font-weight:700; margin-top:2px}
 .kpi .kv small{font-size:14px; font-weight:600; color:var(--muted)}
 #repTabela{overflow-x:auto}
-.reptab{width:100%; min-width:680px; border-collapse:collapse; background:var(--solid); border:1px solid var(--line); border-radius:var(--radius); overflow:hidden}
-.reptab th,.reptab td{text-align:left; padding:9px 12px; border-bottom:1px solid var(--line); font-size:14px}
-.reptab th{font-size:12px; text-transform:uppercase; letter-spacing:.03em; color:var(--muted); background:var(--surface2)}
+.reptab{width:100%; min-width:680px; border-collapse:separate; border-spacing:0; background:var(--surface); border:1px solid var(--line); border-radius:var(--r-lg); overflow:hidden}
+.reptab th,.reptab td{text-align:left; padding:10px 12px; border-bottom:1px solid var(--line); font-size:14px}
+.reptab th{font-size:10.5px; font-weight:600; letter-spacing:.09em; text-transform:uppercase; color:var(--muted); background:var(--surface2)}
 .reptab tr:last-child td{border-bottom:none}
-.reptab td.num{font-weight:700; font-variant-numeric:tabular-nums}
-#loginOverlay{display:none; position:fixed; inset:0; background:rgba(0,0,0,.66); z-index:50; align-items:center; justify-content:center}
-#loginOverlay.on{display:flex}
-.loginbox{background:var(--solid); border:1px solid var(--line); border-radius:14px; padding:22px; width:330px; max-width:90vw}
-.loginbox h2{font-size:18px; margin:0 0 2px}
-.loginbox .fld{margin:12px 0}
-.loginbox input{width:100%}
-.loginbox .btn-primary{width:100%; margin-top:6px}
-#loginErro{color:var(--info); font-size:13px; font-weight:600; min-height:16px; margin:10px 0 0}
-/* gráficos de evolução de carga */
+.reptab td.num{font-weight:700}
 #repCharts{margin:4px 0 14px}
 .charts{display:grid; grid-template-columns:repeat(auto-fill,minmax(290px,1fr)); gap:12px}
 .charts.one{grid-template-columns:1fr; max-width:620px}
-.chartcard{background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); padding:10px 12px}
+.chartcard{padding:12px 14px; border:1px solid var(--line); border-radius:var(--r-lg); background:var(--surface)}
 .chartt{font-size:14px; font-weight:600}
 .chartmeta{font-size:12px; color:var(--muted); margin:1px 0 6px}
 .chartmeta b{color:var(--ink)}
 svg.chart{width:100%; height:auto; display:block}
 svg.chart .cax{font-size:10px; fill:var(--muted)}
-svg.chart .cval{font-size:11px; font-weight:700; fill:var(--info)}
+svg.chart .cval{font-size:11px; font-weight:700; fill:var(--accent-ink)}
 svg.chart .creps{font-size:10px; font-weight:600; fill:var(--muted)}
 svg.chart .grid{stroke:var(--line); stroke-width:1}
-/* impressão / Salvar como PDF (relatório de um aluno) */
+
+/* ---------- login ---------- */
+#loginOverlay{display:none; position:fixed; inset:0; z-index:50; align-items:center; justify-content:center; background:rgba(8,7,6,.72); -webkit-backdrop-filter:blur(6px); backdrop-filter:blur(6px)}
+#loginOverlay.on{display:flex}
+.loginbox{width:360px; max-width:calc(100vw - 32px); padding:26px; border:1px solid var(--line2); border-radius:var(--r-xl); background:var(--raised); box-shadow:0 24px 60px rgba(0,0,0,.55)}
+.loginbox h2{font-family:var(--serif); font-weight:400; font-size:30px; line-height:1; margin:0 0 6px}
+.loginbox .fld{margin:14px 0}
+.loginbox input{width:100%}
+.loginbox .btn-primary{width:100%; margin-top:6px}
+#loginErro{color:var(--accent-ink); font-size:13px; font-weight:600; min-height:16px; margin:10px 0 0}
+
+/* tela larga: histórico ao lado dos campos de hoje (a lista de alunos fica bem mais curta) */
+@media (min-width:1420px){
+  .exline{grid-template-columns:minmax(0,1fr) 340px; column-gap:24px}
+  .exline>.row{grid-column:1; grid-row:2}
+  .exline>.hist{grid-column:2; grid-row:2; align-self:center; flex-direction:column; gap:3px; margin-top:12px; padding:2px 0 2px 16px; border-top:0; border-left:1px solid var(--line)}
+  .exline>.hist .hlbl{flex:none; padding:0}
+  .exline>.hist .histline{grid-template-columns:38px minmax(0,1fr); font-size:12.5px}
+  .exacts{justify-content:flex-end}
+}
+/* ---------- telas menores ---------- */
+@media (max-width:1100px){
+  .pcols{gap:36px}
+  .prog{padding:4px 24px 14px}
+  .exline{grid-template-columns:1fr}
+  .exline>.exacts{grid-column:1; grid-row:3; margin-top:12px}
+  .exline>.row{grid-row:2}
+}
+@media (max-width:900px){
+  .pcols{grid-template-columns:1fr; gap:0}
+  .titlerow{flex-direction:column; align-items:stretch; gap:16px}
+  .modos{display:flex}
+  .modos button{flex:1}
+  .ctxsum .ci{flex:1 1 auto; padding:7px 14px}
+  .ctxedit{flex:1 1 100% !important; justify-content:center; border-left:0; border-top:1px solid var(--line); min-height:44px}
+}
+@media (prefers-reduced-motion:reduce){ *{transition:none !important} }
+
+/* ---------- impressão / Salvar como PDF (relatório de um aluno) ---------- */
 #printArea{display:none}
 @media print{
   :root{--bg:#fff; --surface:#fff; --surface2:#f4f3f1; --solid:#fff; --ink:#141312; --muted:#5f5d59; --faint:#9a978f;
-    --line:#e3e1dc; --line2:#c9c6c0; --info:#a45248; --info-bg:#f5e9e6; --info-ink:#a45248; color-scheme:light}
+    --line:#e3e1dc; --line2:#c9c6c0; --accent:#a45248; --accent-ink:#a45248; --info:#a45248; --info-bg:#f5e9e6; --info-ink:#a45248; color-scheme:light}
   body{background:#fff; background-image:none; padding:0; color:#141312}
-  .wrap, #loginOverlay{display:none !important}
+  .wrap, #loginOverlay, #status{display:none !important}
   #printArea{display:block !important}
   .charts{grid-template-columns:1fr 1fr}
   .chartcard{break-inside:avoid; border-color:#ccc}
@@ -229,138 +429,99 @@ svg.chart .grid{stroke:var(--line); stroke-width:1}
   .reptab{min-width:0; font-size:11px} .reptab th,.reptab td{padding:4px 6px}
   #repCharts{margin:0 0 10px}
 }
-/* ---------- cabeçalho ---------- */
-.top{display:flex; align-items:center; gap:18px; flex-wrap:wrap; margin:0 0 14px}
-.brandlogo{height:42px; width:auto; display:block}
-.top h1{font-family:var(--serif); font-weight:400; font-size:30px; line-height:1; margin:0; letter-spacing:-.01em}
-.top h1 em{color:var(--info)}
-.top .views{margin:0 0 0 auto; align-items:center}
-.viewbtn{background:transparent; color:var(--muted); border-color:var(--line2)}
-.viewbtn.on{color:#fff; border-color:var(--info); background:var(--info)}
-.bar{background:var(--surface); border-color:var(--line)}
-/* valor escolhido no formulário (DB/KB/BB, 1/2, kg/lb, elástico, presença) em creme:
-   terracota fica só pra navegação (cheio) e pra campo pendente (contorno) */
-.mbtn.on,.qbtn.on,.ubtn.on,.elch.on,.abtn.on,.chname.on{background:var(--ink); border-color:var(--ink); color:#131210}
-/* botões da linha do aluno: pelo menos 40 px de altura (sugestão do Codex) */
-#panel .mbtn,#panel .qbtn,#panel .ubtn,#panel .elch,#panel .icbtn{min-height:40px}
-#panel .icbtn{padding-inline:12px}
-/* ---------- um modo por vez: treino completo ou registro de cargas ---------- */
-#viewRegistro[data-modo="treino"] .regcol,#viewRegistro[data-modo="treino"] .regtop{display:none}
-#viewRegistro[data-modo="registro"] #programa{display:none}
-.regtop{position:sticky; top:0; z-index:5; margin:0 -22px 12px; padding:10px 22px 2px; background:rgba(19,18,16,.94); backdrop-filter:blur(6px)}
-.modos{display:flex; border:1px solid var(--line2); border-radius:12px; padding:3px; background:var(--surface)}
-.modos button{border:none; border-radius:9px; background:transparent; color:var(--muted); font-size:15px; padding:9px 18px}
-.modos button.on{background:var(--info); color:#fff}
-.regtop .blocks{margin:0}
-.regrow{display:flex; align-items:center; gap:12px; margin:0 0 10px}
-.semcargabtn{margin-left:auto; color:var(--muted); background:transparent}
-.semcargabtn.on{color:var(--ink); border-color:var(--ink)}
-.prog{padding:18px 28px 12px; border:1px solid var(--line); border-radius:16px; background:rgba(19,18,16,.72)}
-.phead{display:flex; justify-content:space-between; gap:12px; align-items:flex-start; border-bottom:1px solid var(--line); padding-bottom:10px; margin-bottom:0}
-.pkick{font-size:12px; font-weight:600; letter-spacing:.07em; text-transform:uppercase}
-.pdia{font-size:13px; font-weight:600; letter-spacing:.06em; text-transform:uppercase; color:var(--info); margin:6px 0 0}
-.pdash{color:var(--info); margin-right:8px}
-.ptitle{font-family:var(--serif); font-weight:400; font-size:42px; line-height:1; margin:4px 0 0; letter-spacing:-.02em}
-.ptitle b{font-weight:400; text-transform:uppercase}
-.ptitle em{color:var(--info)}
-.pdur{flex:0 0 auto; width:50px; height:50px; border-radius:50%; border:1px solid var(--line2); display:flex; align-items:center; justify-content:center; font-weight:700; font-size:17px}
-.psec{display:flex; justify-content:space-between; align-items:baseline; gap:10px; margin:12px 0 2px; font-size:12px; font-weight:600; letter-spacing:.06em; text-transform:uppercase; color:var(--info)}
-.psec small{font-size:11px; font-weight:700; letter-spacing:.06em; color:var(--ink); white-space:nowrap}
-.pit span{min-width:0; overflow-wrap:anywhere}
-.pit{display:flex; justify-content:space-between; gap:12px; align-items:baseline; padding:4px 0; border-bottom:1px solid var(--line); font-size:16px; line-height:1.3}
-.pit b{font-weight:500; color:var(--muted); white-space:nowrap; font-size:15px}
-.pit.big{font-size:19px; padding:4px 0; line-height:1.28}
-.pit.big b{font-weight:700; color:var(--ink); font-size:20px}
-.pcols{display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1.1fr); gap:44px; align-items:start}
-.pcol .psec{letter-spacing:.05em; font-size:13px}
-.pcol .psec small{letter-spacing:.05em; font-size:12px}
-.pcol>.psec:first-child,.pcol>.pblk:first-child .psec{margin-top:10px}
-.pgo{margin-left:10px; font-size:1.6em; line-height:0; vertical-align:-.12em; color:var(--info-ink)}
-.pblk.semcarga{cursor:default}
-.pblk.semcarga:hover{background:transparent}
-.pblk{margin:2px -10px 0; padding:2px 10px 4px; border-radius:10px; border-left:3px solid transparent; cursor:pointer}
-.pblk:hover{background:var(--surface)}
-.pblk.on{background:var(--info-bg); border-left-color:var(--info)}
-.pblk .psec{margin-top:10px}
-.pfoot{position:relative; display:flex; justify-content:space-between; align-items:center; gap:24px; margin-top:8px; padding-top:6px; border-top:1px solid var(--line); font-size:11px; line-height:1.45; font-weight:600; letter-spacing:.05em; text-transform:uppercase; color:var(--muted)}
-.pfoot b{color:var(--info); font-weight:600; white-space:nowrap}
-.psiglas summary{cursor:pointer; list-style:none; color:var(--muted); font-size:12px; letter-spacing:.05em; padding:1px 8px; border:1px solid var(--line2); border-radius:8px}
-.psiglas summary::-webkit-details-marker{display:none}
-.psiglas[open] summary{color:var(--ink); border-color:var(--info)}
-.psiglas-txt{position:absolute; left:0; bottom:calc(100% + 6px); z-index:6; max-width:760px; padding:12px 14px; background:var(--solid);
-  border:1px solid var(--line2); border-radius:10px; box-shadow:0 10px 30px rgba(0,0,0,.45); font-size:14px; line-height:1.6; letter-spacing:.02em; text-transform:none; color:var(--ink); font-weight:500}
-.ppse{margin-top:12px; border:1px solid var(--line); border-radius:10px; padding:8px 12px}
-.ppse summary{cursor:pointer; font-size:12px; font-weight:600; letter-spacing:.06em; text-transform:uppercase; color:var(--muted)}
-.ppse table{width:100%; border-collapse:collapse; margin-top:8px; font-size:14px}
-.ppse td{padding:5px 0; border-bottom:1px solid var(--line)}
-.ppse td:first-child{font-weight:700; width:56px}
-.ppse p{font-size:11px; color:var(--muted); margin:8px 0 2px; letter-spacing:.03em}
-.bresumo[hidden]{display:none}
-.regcol,.prog{min-width:0}
-.bresumo{display:flex; flex-wrap:wrap; align-items:baseline; gap:4px 12px; background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); padding:10px 14px; margin:0 0 12px}
-.bresumo .brt{font-size:11.5px; font-weight:600; letter-spacing:.035em; text-transform:uppercase; color:var(--info)}
-.bresumo small{font-size:10.5px; font-weight:700; letter-spacing:.04em; text-transform:uppercase}
-.bresumo .brx{flex:1 1 100%; display:flex; flex-wrap:wrap; gap:2px 10px; font-size:15px; color:var(--muted)}
-.bresumo .brx .c{color:var(--ink); font-weight:600}
-.bresumo .brx b{font-weight:700}
-.bresumo i{font-style:normal; color:var(--faint)}
-.scard,.chamada{background:var(--surface)}
-.bchip{background:transparent; color:var(--muted)}
-.bchip.on{background:var(--info); border-color:var(--info); color:#fff}
-.bchip.on small{color:rgba(255,255,255,.8)}
 </style>
+
 <body>
+<!-- ícones (traço 1,8, 24×24) -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-swap" viewBox="0 0 24 24"><path d="M4 8h15l-3.5-3.5"/><path d="M20 16H5l3.5 3.5"/></symbol>
+  <symbol id="i-repeat" viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.34-5.66"/><path d="M20 4v5h-5"/></symbol>
+  <symbol id="i-alert" viewBox="0 0 24 24"><path d="M10.3 4.2 2.6 17.6A2 2 0 0 0 4.3 20.6h15.4a2 2 0 0 0 1.7-3L13.7 4.2a2 2 0 0 0-3.4 0z"/><path d="M12 9.5v4"/><path d="M12 17h.01"/></symbol>
+  <symbol id="i-note" viewBox="0 0 24 24"><path d="M5 4h14v11l-5 5H5z"/><path d="M14 20v-5h5"/><path d="M9 9h6"/><path d="M9 12.5h3"/></symbol>
+  <symbol id="i-pencil" viewBox="0 0 24 24"><path d="M4 20h4L19 9a2.1 2.1 0 0 0-4-4L4 16z"/><path d="m13.5 6.5 4 4"/></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="m20 20-4.2-4.2"/></symbol>
+  <symbol id="i-down" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
+  <symbol id="i-right" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12.5 4.5 4.5L19 7.5"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14"/><path d="M5 12h14"/></symbol>
+  <symbol id="i-more" viewBox="0 0 24 24"><circle cx="5.5" cy="12" r="1.1"/><circle cx="12" cy="12" r="1.1"/><circle cx="18.5" cy="12" r="1.1"/></symbol>
+  <symbol id="i-download" viewBox="0 0 24 24"><path d="M12 4v11"/><path d="m7.5 10.5 4.5 4.5 4.5-4.5"/><path d="M5 20h14"/></symbol>
+  <symbol id="i-sync" viewBox="0 0 24 24"><path d="M20 11a8 8 0 0 0-14.3-4.9L4 8"/><path d="M4 4v4h4"/><path d="M4 13a8 8 0 0 0 14.3 4.9L20 16"/><path d="M20 20v-4h-4"/></symbol>
+  <symbol id="i-archive" viewBox="0 0 24 24"><rect x="3.5" y="4.5" width="17" height="4" rx="1"/><path d="M5 8.5V19a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8.5"/><path d="M10 12.5h4"/></symbol>
+  <symbol id="i-logout" viewBox="0 0 24 24"><path d="M14 4h4a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-4"/><path d="m9 8-4 4 4 4"/><path d="M5 12h11"/></symbol>
+  <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 11v5"/><path d="M12 8h.01"/></symbol>
+  <symbol id="i-sliders" viewBox="0 0 24 24"><path d="M4 7h9"/><path d="M17 7h3"/><circle cx="15" cy="7" r="2"/><path d="M4 17h3"/><path d="M11 17h9"/><circle cx="9" cy="17" r="2"/></symbol>
+  <symbol id="i-list" viewBox="0 0 24 24"><path d="M9 6h11"/><path d="M9 12h11"/><path d="M9 18h11"/><path d="M4.5 6h.01"/><path d="M4.5 12h.01"/><path d="M4.5 18h.01"/></symbol>
+  <symbol id="i-weight" viewBox="0 0 24 24"><path d="M6.5 6.5v11"/><path d="M17.5 6.5v11"/><path d="M3.5 9v6"/><path d="M20.5 9v6"/><path d="M6.5 12h11"/></symbol>
+</svg>
 <div class="wrap">
-  <header class="top">
-  <img class="brandlogo" src="img/fabrik-logo.png" alt="Fabrik — Body &amp; Mind Fitness">
-  <h1>Registro <em>de carga.</em></h1>
-  <div class="modos" id="modos"><button data-m="treino">Treino completo</button><button data-m="registro">Registrar cargas</button></div>
-  <div class="views">
-    <button class="viewbtn on" data-v="registro">Aula</button>
-    <button class="viewbtn" data-v="alunos">Alunos</button>
-    <button class="viewbtn" data-v="relatorio">Relatório</button>
-    <span id="syncWrap" style="margin-left:auto;display:none;align-items:center;gap:8px">
-      <span id="syncBadge" class="syncbadge">local</span>
-      <button id="btnSync" class="icbtn">↻ sincronizar</button>
-      <button id="btnPend" class="icbtn" title="Baixa os lançamentos guardados neste computador que ainda não subiram pra nuvem">⤓ backup local</button>
-      <button id="btnSair" class="icbtn">sair</button>
-    </span>
-  </div>
+  <header class="appbar">
+    <img class="brandlogo" src="img/fabrik-logo.png" alt="Fabrik — Body &amp; Mind Fitness">
+    <nav class="views">
+      <button class="viewbtn on" data-v="registro">Aula</button>
+      <button class="viewbtn" data-v="alunos">Alunos</button>
+      <button class="viewbtn" data-v="relatorio">Relatório</button>
+    </nav>
+    <div class="appright">
+      <span id="syncWrap" class="syncwrap" style="display:none"><button id="syncBadge" class="syncbadge" title="Sincronizar agora">local</button></span>
+      <details class="menu" id="menu">
+        <summary aria-label="Mais ações" title="Mais ações"><svg class="ic"><use href="#i-more"/></svg></summary>
+        <div class="menupop">
+          <button id="btnSync" class="mi synconly"><svg class="ic"><use href="#i-sync"/></svg>Sincronizar agora</button>
+          <button id="exportar" class="mi"><svg class="ic"><use href="#i-download"/></svg>Exportar CSV</button>
+          <button id="btnPend" class="mi synconly" title="Baixa os lançamentos guardados neste computador que ainda não subiram pra nuvem"><svg class="ic"><use href="#i-archive"/></svg>Backup local</button>
+          <hr class="synconly">
+          <button id="btnSair" class="mi synconly"><svg class="ic"><use href="#i-logout"/></svg>Sair</button>
+        </div>
+      </details>
+    </div>
   </header>
 
   <div id="syncBanner"></div>
 
   <div id="viewRegistro">
-    <div class="bar">
-      <div class="fld"><label>Turma</label><select id="turma"></select></div>
-      <div class="fld"><label>Mês</label><select id="mes"></select></div>
-      <div class="fld"><label>Treino</label>
-        <select id="treino">
-          <option value="1">Treino 1 — potência / força</option>
-          <option value="2" selected>Treino 2 — força / hipertrofia</option>
-          <option value="3">Treino 3 — hipertrofia / metcon</option>
-        </select>
+    <section class="ctx" id="ctx" data-open="1">
+      <div class="ctxsum" id="ctxSum"></div>
+      <div class="cfg">
+        <div class="fld"><label for="turma">Turma</label><select id="turma"></select></div>
+        <div class="fld"><label for="mes">Mês</label><select id="mes"></select></div>
+        <div class="fld"><label for="treino">Treino</label>
+          <select id="treino">
+            <option value="1">Treino 1 — potência / força</option>
+            <option value="2" selected>Treino 2 — força / hipertrofia</option>
+            <option value="3">Treino 3 — hipertrofia / metcon</option>
+          </select>
+        </div>
+        <div class="fld"><label for="semana">Semana</label>
+          <select id="semana">
+            <option value="1">Semana 1</option>
+            <option value="2" selected>Semana 2</option>
+            <option value="3">Semana 3</option>
+            <option value="4">Semana 4</option>
+          </select>
+        </div>
+        <div class="fld"><label for="data">Data</label><input type="date" id="data"></div>
+        <span id="weekBanner" class="wkrule"></span>
+        <button class="cfgok" id="cfgOk"><svg class="ic"><use href="#i-check"/></svg>Concluir</button>
       </div>
-      <div class="fld"><label>Semana</label>
-        <select id="semana">
-          <option value="1">Semana 1</option>
-          <option value="2" selected>Semana 2</option>
-          <option value="3">Semana 3</option>
-          <option value="4">Semana 4</option>
-        </select>
+    </section>
+    <div class="titlerow">
+      <div>
+        <div class="eyebrow" id="aulaKick"></div>
+        <h1 class="ptitle" id="aulaTitulo"></h1>
       </div>
-      <div class="fld"><label>Data</label><input type="date" id="data"></div>
-      <div id="weekBanner" class="week"></div>
-      <div class="fld"><label>&nbsp;</label><button id="exportar">↓ Exportar CSV</button></div>
+      <div class="modos" id="modos"><button data-m="treino"><svg class="ic"><use href="#i-list"/></svg>Treino completo</button><button data-m="registro"><svg class="ic"><use href="#i-weight"/></svg>Registro de carga</button></div>
     </div>
     <div class="regtop">
-      <div class="regrow"><div class="blocks" id="blocks"></div><button id="btnSemCarga" class="icbtn semcargabtn" title="mostrar também os exercícios sem carga (pra adaptar)">ver sem carga</button></div>
+      <div class="regrow"><div class="blocks" id="blocks"></div><button id="btnSemCarga" class="switch" role="switch" aria-checked="false" title="Mostra também os exercícios sem carga, pra adaptar"><span class="sw"></span>Exercícios sem carga</button></div>
       <div id="blocoResumo" class="bresumo"></div>
     </div>
     <aside id="programa" class="prog"></aside>
     <section class="regcol">
-      <div id="chamada" class="chamada"></div>
-      <div class="search"><i>⌕</i><input id="busca" placeholder="filtrar aluno na turma…" autocomplete="off"></div>
+      <div id="chamada" class="chamada">
+        <div class="chtop"><div id="chamadaTop"></div><label class="search"><svg class="ic"><use href="#i-search"/></svg><input id="busca" placeholder="Filtrar aluno na turma" autocomplete="off"></label></div>
+        <div id="chamadaNomes" class="chnames"></div>
+      </div>
       <div id="panel"></div>
     </section>
   </div>
@@ -369,12 +530,12 @@ svg.chart .grid{stroke:var(--line); stroke-width:1}
     <div class="addbox">
       <div class="rowf">
         <input id="novoNome" placeholder="nome do novo aluno…" autocomplete="off">
-        <button class="btn-primary" id="addBtn">adicionar</button>
+        <button class="btn-primary" id="addBtn"><svg class="ic"><use href="#i-plus"/></svg>Adicionar</button>
       </div>
       <div class="dup" id="dupWarn"></div>
     </div>
     <p class="hint">Toque nos horários de cada aluno pra incluí-lo na turma. Excluir tira de todas as turmas, mas o histórico de cargas continua salvo.</p>
-    <div class="search"><i>⌕</i><input id="filtroMaster" placeholder="buscar no cadastro…" autocomplete="off"></div>
+    <label class="search"><svg class="ic"><use href="#i-search"/></svg><input id="filtroMaster" placeholder="Buscar no cadastro" autocomplete="off"></label>
     <p class="muted" id="masterCount"></p>
     <div id="masterList"></div>
   </div>
@@ -385,8 +546,8 @@ svg.chart .grid{stroke:var(--line); stroke-width:1}
       <div class="fld"><label>Exercício</label><select id="repExercicio"></select></div>
       <div class="fld"><label>De</label><input type="date" id="repDe"></div>
       <div class="fld"><label>Até</label><input type="date" id="repAte"></div>
-      <div class="fld" style="margin-left:auto"><label>&nbsp;</label><button id="repPdf" class="btn-primary">↓ PDF do aluno</button></div>
-      <div class="fld"><label>&nbsp;</label><button id="repExport">↓ CSV do filtro</button></div>
+      <div class="fld" style="margin-left:auto"><label>&nbsp;</label><button id="repPdf" class="btn-primary"><svg class="ic"><use href="#i-download"/></svg>PDF do aluno</button></div>
+      <div class="fld"><label>&nbsp;</label><button id="repExport"><svg class="ic"><use href="#i-download"/></svg>CSV do filtro</button></div>
     </div>
     <p class="hint">Visão provisória de evolução de carga. O relatório "de verdade" é no Fabrik Performance.</p>
     <div id="repKpis" class="repkpis"></div>
@@ -403,7 +564,7 @@ svg.chart .grid{stroke:var(--line); stroke-width:1}
     <p class="muted">Login do treinador (Fabrik) para sincronizar os dados.</p>
     <div class="fld"><label>E-mail</label><input id="loginEmail" type="email" autocomplete="username"></div>
     <div class="fld"><label>Senha</label><input id="loginSenha" type="password" autocomplete="current-password"></div>
-    <button class="btn-primary" id="loginBtn">entrar</button>
+    <button class="btn-primary" id="loginBtn">Entrar</button>
     <p id="loginErro"></p>
   </div>
 </div>
@@ -432,7 +593,6 @@ const RULES = {
   "3":{txt:"Choque — intensidade alta.", cls:"warn"},
   "4":{txt:"Choque — pico antes de virar o ciclo.", cls:"hot"}
 };
-const WCOLOR = { ok:["rgba(241,236,228,.08)","#F1ECE4"], info:["rgba(209,90,69,.17)","#EE8C75"], warn:["rgba(209,90,69,.30)","#F1ECE4"], hot:["#D15A45","#FFFFFF"] };
 
 const MESES = {
   "Jun 26": {
@@ -855,6 +1015,8 @@ const PROGRAMA = {
 // Tela de aula tem dois modos, um por vez: "treino" (roteiro completo na tela toda) ou
 // "registro" (só os exercícios com carga). O MacBook lembra o último (não sincroniza).
 let modoTela = load("fabrik_modo_tela","registro")==="treino" ? "treino" : "registro";
+const IC = n=>`<svg class="ic" aria-hidden="true"><use href="#i-${n}"/></svg>`;
+function fmtPresc(v){ return he(String(v||"").replace(/ x /g," × ")); }
 function setModo(m){ modoTela=m; save("fabrik_modo_tela", m); renderBlocks(); renderPanel(); window.scrollTo(0,0); }
 function renderPrograma(){
   const el=$("programa"); if(!el) return;
@@ -863,38 +1025,42 @@ function renderPrograma(){
   const mes=$("mes").value, t=$("treino").value, P=PROGRAMA[mes], T=P&&P[t];
   const exs=treinosDo(mes)[t]||[], bs=[...new Set(exs.map(e=>e.bloco))];
   const dash=x=>`<span class="pdash">—</span>${he(x)}`;
-  const xx=v=>he(String(v||"").replace(/ x /g," × "));
+  const b2=b=>String(b).padStart(2,"0");
+  // título da aula, o mesmo nos dois modos: o nome do treino (turma, mês e semana ficam no resumo acima)
+  const op=$("treino").selectedOptions[0], nomeOp=((op&&op.textContent.split("—")[1])||"").trim();
+  $("aulaKick").textContent = T ? [P.ciclo.split("·")[0].trim(), T.dia.split("·").pop().trim(), T.dur?T.dur.replace("'"," min"):""].filter(Boolean).join(" · ") : "";
+  $("aulaTitulo").innerHTML = T ? `<b>${he(T.titulo[0])}</b>${T.titulo[1]?` <em>${he(T.titulo[1])}</em>`:""}`
+                                : `<b>${he(nomeOp||"Treino "+t)}</b>`;
   // no registro, o bloco aberto aparece inteiro (inclusive o que não tem carga), preso no alto
   const res=$("blocoResumo"), bxr=exs.filter(e=>e.bloco===selBloco);
   if(res){
     res.hidden = !bxr.length;
     if(bxr.length){ const meta=T&&T.blocos[selBloco];
-      res.innerHTML=`<span class="brt">${dash("Treino "+t+" · Bloco "+String(selBloco).padStart(2,"0")+(meta?" — "+meta[0]:""))}</span>`+
+      res.innerHTML=`<span class="brt">${dash("Bloco "+b2(selBloco)+(meta?" — "+meta[0]:""))}</span>`+
         `<small>${he(meta?meta[1]:bxr[0].metodo)}</small><span class="brx">`+
-        bxr.map(e=>`<span class="${registraCarga(e)?"c":""}">${he(e.nome)} <b>${xx(e.presc)}</b></span>`).join("<i>·</i>")+`</span>`; }
+        bxr.map(e=>`<span class="${registraCarga(e)?"c":""}">${he(e.nome)}<b>${fmtPresc(e.presc)}</b></span>`).join("")+`</span>`; }
   }
-  const titulo = T ? `<b>${he(T.titulo[0])}</b>${T.titulo[1]?` <em>${he(T.titulo[1])}</em>`:""}`
-                   : `<b>Treino ${he(t)}</b>`;
-  let h=`<div class="phead"><div><div class="pkick">${he(P?P.ciclo:mes)}</div>`+
-        `${T?`<div class="pdia">${dash(T.dia)}</div>`:""}<h2 class="ptitle">${titulo}</h2></div>`+
-        `${T&&T.dur?`<span class="pdur">${he(T.dur)}</span>`:""}</div>`;
-  if(!exs.length){ el.innerHTML=h+`<p class="muted">O Treino ${he(t)} de ${he(mes)} ainda não foi cadastrado.</p>`; return; }
+  if(!exs.length){ el.innerHTML=`<p class="muted">O Treino ${he(t)} de ${he(mes)} ainda não foi cadastrado.</p>`; return; }
   // coluna 1: aquecimento (todo aberto) + PSE; coluna 2: blocos de trabalho
   const col1 = T ? T.aquec.map(([nome,itens])=>`<div class="psec"><span>${dash(nome)}</span></div>`+
       itens.map(([n,q])=>`<div class="pit"><span>${he(n)}</span><b>${he(q)}</b></div>`).join("")).join("")+
-    (P&&P.pse?`<details class="ppse"><summary>PSE · esforço percebido</summary><table>`+
+    (P&&P.pse?`<details class="ppse"><summary>${IC("right")}PSE · esforço percebido</summary><table>`+
       P.pse.map(([n,d])=>`<tr><td>${he(n)}</td><td>${he(d)}</td></tr>`).join("")+`</table><p>${he(P.pseNota)}</p></details>`:"") : "";
   const col2 = bs.map(b=>{
     const meta=T&&T.blocos[b], bx=exs.filter(e=>e.bloco===b), comCarga=bx.some(registraCarga);
-    const nome="Bloco "+String(b).padStart(2,"0")+(meta?" — "+meta[0]:"");
-    return `<div class="pblk ${comCarga&&b===selBloco?"on":""} ${comCarga?"":"semcarga"}" data-b="${b}"><div class="psec"><span>${dash(nome)}</span><small>${he(meta?meta[1]:bx[0].metodo)}${comCarga?'<span class="pgo">›</span>':""}</small></div>`+
-      bx.map(e=>`<div class="pit big"><span>${he(e.nome)}</span><b>${xx(e.presc)}</b></div>`).join("")+`</div>`;
+    const nome="Bloco "+b2(b)+(meta?" — "+meta[0]:"");
+    return `<div class="pblk ${comCarga&&b===selBloco?"on":""} ${comCarga?"":"semcarga"}" data-b="${b}"${comCarga?` role="button" tabindex="0" title="Registrar a carga deste bloco"`:""}>`+
+      `<div class="psec"><span>${dash(nome)}</span><small>${he(meta?meta[1]:bx[0].metodo)}${comCarga?`<span class="pgo">${IC("right")}</span>`:""}</small></div>`+
+      bx.map(e=>`<div class="pit big"><span>${he(e.nome)}</span><b>${fmtPresc(e.presc)}</b></div>`).join("")+`</div>`;
   }).join("");
-  h+= col1 ? `<div class="pcols"><div class="pcol">${col1}</div><div class="pcol">${col2}</div></div>` : col2;
-  if(T) h+=`<div class="pfoot"><details class="psiglas"><summary>ⓘ siglas</summary><div class="psiglas-txt">${he(T.legenda)}</div></details><b>${he(T.fecho)}</b></div>`;
+  let h = col1 ? `<div class="pcols"><div class="pcol">${col1}</div><div class="pcol">${col2}</div></div>` : col2;
+  if(T) h+=`<div class="pfoot"><details class="psiglas"><summary>${IC("info")}Siglas</summary><div class="psiglas-txt">${he(T.legenda)}</div></details><b>${he(T.fecho)}</b></div>`;
   el.innerHTML=h;
   // tocar num bloco do treino abre o registro naquele bloco
-  el.querySelectorAll(".pblk:not(.semcarga)").forEach(d=>d.onclick=()=>{ selBloco=Number(d.dataset.b); setModo("registro"); });
+  el.querySelectorAll(".pblk:not(.semcarga)").forEach(d=>{
+    const ir=()=>{ selBloco=Number(d.dataset.b); setModo("registro"); };
+    d.onclick=ir; d.onkeydown=e=>{ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); ir(); } };
+  });
 }
 function treinosDo(mes){ return MESES[mes] || MESES[Object.keys(MESES)[0]]; }
 // Registro (lado direito) mostra só o que tem carga a anotar: carga e elástico (o nível é a carga).
@@ -910,8 +1076,8 @@ function exsDoBloco(t,b){ return (treinosDo($("mes").value)[t]||[]).filter(e=>e.
 // mês publicado antes de todos os treinos estarem prontos: avisa e aponta o mês anterior que tem esse treino
 function avisoTreino(c){
   const keys=Object.keys(MESES), ant=keys.slice(0,keys.indexOf(c.mes)).reverse().find(m=>MESES[m][c.treino]);
-  return `<p class="muted">O Treino ${he(c.treino)} de <b>${he(c.mes)}</b> ainda não foi cadastrado.</p>`+
-    (ant?`<button class="btn-primary" id="usarMesAnt" data-mes="${attrEsc(ant)}">Registrar no ${he(ant)}</button>`:"");
+  return `<div class="empty"><p>O Treino ${he(c.treino)} de <b>${he(c.mes)}</b> ainda não foi cadastrado.</p>`+
+    (ant?`<button class="btn-primary" id="usarMesAnt" data-mes="${attrEsc(ant)}">Registrar no ${he(ant)}</button>`:"")+`</div>`;
 }
 function initials(n){ return n.split(" ").map(w=>w[0]).slice(0,2).join("").toUpperCase(); }
 function alunosDaTurma(t){ return alunos.filter(a=>a.turmas.includes(t)).sort((x,y)=>x.nome.localeCompare(y.nome,"pt")); }
@@ -981,7 +1147,6 @@ function setView(v){
   $("viewRegistro").style.display  = v==="registro" ?"block":"none";
   $("viewAlunos").style.display    = v==="alunos"   ?"block":"none";
   $("viewRelatorio").style.display = v==="relatorio"?"block":"none";
-  $("modos").style.visibility      = v==="registro" ?"visible":"hidden"; // seletor só vale na aula
   document.querySelectorAll(".viewbtn").forEach(b=>b.classList.toggle("on", b.dataset.v===v));
   if(v==="alunos") renderMaster();
   else if(v==="relatorio") renderRelatorio();
@@ -990,15 +1155,66 @@ function setView(v){
 
 function fillMes(){ const keys=Object.keys(MESES); $("mes").innerHTML = keys.map((m,i)=>`<option${i===keys.length-1?" selected":""}>${m}</option>`).join(""); }
 function fillTurmas(){ $("turma").innerHTML = TURMAS.map(t=>`<option ${t==="09:00"?"selected":""}>${t}</option>`).join(""); }
+// Treino e semana saem da data (antes abria sempre em Treino 2 / Semana 2 e muita aula foi gravada assim).
+// Treino pelo dia da semana: seg/qui = 1, ter/sex = 2, qua/sáb = 3 (domingo não tem aula: fica como está).
+// Semana pela segunda-feira em que o ciclo do mês começou. MÊS NOVO: incluir a data de início aqui.
+const INICIO_CICLO = { "Out-Nov 26":"2026-10-19" };
+const TREINO_DO_DIA = {1:"1", 2:"2", 3:"3", 4:"1", 5:"2", 6:"3"};
+function dataValida(iso){
+  const m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(iso||""); if(!m) return false;
+  const d=new Date(iso+"T12:00:00"); return d.getFullYear()===+m[1] && d.getMonth()+1===+m[2] && d.getDate()===+m[3];
+}
+function semanaDoCiclo(mes,iso){
+  const ini=INICIO_CICLO[mes]; if(!ini || !dataValida(iso)) return null;
+  const dias=Math.round((new Date(iso+"T12:00:00")-new Date(ini+"T12:00:00"))/864e5);
+  return String(Math.min(4, Math.max(1, Math.floor(dias/7)+1)));
+}
+// ao abrir e quando a data muda; escolher outro treino/semana na mão vale até a data mudar de novo
+function ajustarPelaData(){
+  const d=$("data").value; if(!dataValida(d)) return;
+  const t=TREINO_DO_DIA[new Date(d+"T12:00:00").getDay()]; if(t) $("treino").value=t;
+  const s=semanaDoCiclo($("mes").value,d); if(s) $("semana").value=s;
+}
+// computador que fica aberto de um dia pro outro: a data vira pra hoje sozinha, MAS só se ninguém
+// trocou a data na mão e nunca com um campo em edição (redesenhar a tela perderia o que está sendo digitado)
+let dataAuto=true, diaAberto=today(), virando=false;
+function virarDia(){
+  const h=today(); if(h===diaAberto) return;
+  if(!dataAuto){ diaAberto=h; return; }
+  const a=document.activeElement; if(a && a.matches && a.matches("input,select,textarea")) return; // tenta de novo depois
+  diaAberto=h; virando=true; $("data").value=h; $("data").dispatchEvent(new Event("change")); virando=false;
+}
 function renderWeek(){
-  const r=RULES[$("semana").value]; const [bg,fg]=WCOLOR[r.cls];
-  $("weekBanner").style.background=bg; $("weekBanner").style.color=fg;
-  $("weekBanner").innerHTML=`<span class="wk">Semana ${$("semana").value}</span><span class="rule">${r.txt}</span>`;
+  const r=RULES[$("semana").value];
+  $("weekBanner").className="wkrule wk-"+r.cls; $("weekBanner").textContent=r.txt;
+  renderCtx();
+}
+// Configuração da aula: abre preenchendo (confere turma, treino e semana); "Concluir" recolhe num resumo.
+// Os valores continuam nos mesmos campos; tocar num item do resumo reabre o formulário naquele campo.
+let cfgAberta = true;
+function renderCtx(){
+  const c=ctx(), r=RULES[c.semana], hoje=c.data===today();
+  let dtxt="sem data";
+  if(/^\d{4}-\d{2}-\d{2}$/.test(c.data||"")){
+    const w=new Date(c.data+"T12:00:00").toLocaleDateString("pt-BR",{weekday:"short"}).replace(".","");
+    dtxt=(hoje?"Hoje":w.charAt(0).toUpperCase()+w.slice(1))+", "+fmtD(c.data);
+  }
+  const it=(f,lbl,val,cls)=>`<button class="ci ${cls||""}" data-f="${f}"><small>${lbl}</small><b>${val}</b></button>`;
+  $("ctxSum").innerHTML = it("turma","Turma",he(c.turma)) + it("mes","Mês",he(c.mes)) + it("treino","Treino",he(c.treino)) +
+    it("semana","Semana",`${he(c.semana)}<i class="wkrule wk-${r.cls}">${he(r.txt)}</i>`) +
+    it("data","Data",he(dtxt), hoje?"":"alerta") +
+    `<button class="ci ctxedit" data-f="">${IC("sliders")}Alterar</button>`;
+  $("ctx").dataset.open = cfgAberta ? "1" : "0";
+  $("ctxSum").querySelectorAll(".ci").forEach(b=>b.onclick=()=>{
+    cfgAberta=true; renderCtx();
+    const el=$(b.dataset.f||"turma"); el.focus();
+    if(b.dataset.f && el.showPicker){ try{ el.showPicker(); }catch(e){} }
+  });
 }
 function renderBlocks(){
   const tr=$("treino").value, bs=blocosDe(tr);
   if(!bs.includes(selBloco)) selBloco=bs[0];
-  $("blocks").innerHTML = bs.map(b=>{ const exs=exsDoBloco(tr,b); return `<div class="bchip ${b===selBloco?'on':''}" data-b="${b}">Bloco ${b}<small>${exs[0].metodo.toLowerCase()} · ${exs.length} ex</small></div>`; }).join("");
+  $("blocks").innerHTML = bs.map(b=>{ const exs=exsDoBloco(tr,b); return `<button class="bchip ${b===selBloco?'on':''}" data-b="${b}">Bloco ${String(b).padStart(2,"0")}<small>${exs[0].metodo.toLowerCase()} · ${exs.length} ex</small></button>`; }).join("");
   $("blocks").querySelectorAll(".bchip").forEach(c=>c.onclick=()=>{ selBloco=Number(c.dataset.b); renderBlocks(); renderPanel(); });
   renderPrograma();
 }
@@ -1057,7 +1273,7 @@ function histBlock(aId,eId,before){
     if(r.obs) flags+=`<span class="hflag obs">${he(r.obs)}</span>`;
     return `<div class="histline"><span class="hd">${fmtD(r.data)}</span><span class="hc">${det||"—"}</span>${flags}</div>`;
   }).join("");
-  return `<div class="hist"><span class="hlbl">histórico</span>${lines}</div>`;
+  return `<div class="hist"><span class="hlbl">Histórico</span><div class="hlines">${lines}</div></div>`;
 }
 function upsert(c,aluno,ex,patch){
   if(!c.data || !/^\d{4}-\d{2}-\d{2}$/.test(c.data)){ $("status").textContent="⚠ Defina a data antes de registrar"; return; }
@@ -1069,28 +1285,35 @@ function upsert(c,aluno,ex,patch){
   $("status").textContent="Salvo "+new Date().toLocaleTimeString("pt-BR",{hour:'2-digit',minute:'2-digit',second:'2-digit'});
 }
 
-// faixa de chamada: marca quem veio hoje; a lista de registro passa a mostrar só os presentes
+// faixa de chamada: marca quem veio hoje; a lista de registro passa a mostrar só os presentes.
+// Recolhível: abre sozinha enquanto ninguém foi marcado; depois fica como o professor deixar.
+let chamadaAberta = null; // null = automático
 function renderChamada(){
   const c=ctx(); const turma=alunosDaTurma(c.turma);
   const el=$("chamada"); if(!el) return;
-  if(!turma.length){ el.style.display="none"; el.innerHTML=""; return; }
-  el.style.display="block";
+  if(!turma.length){ el.style.display="none"; $("chamadaTop").innerHTML=""; $("chamadaNomes").innerHTML=""; return; }
+  el.style.display="";
   const pres=presentesValidos(c); const set=new Set(pres||[]);
   if(!pres) mostrarTodos=false; // sem presentes válidos: volta pro modo "todos" (evita ficar preso)
-  const nP=set.size;
-  const chips=turma.map(a=>`<span class="chname ${set.has(a.id)?'on':''}" data-id="${a.id}">${he(a.nome)}</span>`).join("");
-  const toggle = pres ? `<button class="icbtn chtoggle" id="chToggle">${mostrarTodos?'só presentes':'mostrar todos'}</button>` : "";
-  el.innerHTML = `<div class="chtop"><span class="chlbl">Chamada</span>`+
-    `<span class="chcount">${nP} presente${nP===1?'':'s'} · ${turma.length} na turma</span>${toggle}</div>`+
-    `<div class="chnames">${chips}</div>`;
-  el.querySelectorAll(".chname").forEach(ch=>ch.onclick=()=>{ togglePresente(c,ch.dataset.id); renderChamada(); renderPanel(); });
-  const bt=$("chToggle"); if(bt) bt.onclick=()=>{ mostrarTodos=!mostrarTodos; renderChamada(); renderPanel(); };
+  const nP=set.size, aberta = chamadaAberta===null ? !pres : chamadaAberta;
+  el.classList.toggle("open", aberta);
+  const quem=turma.filter(a=>set.has(a.id)).map(a=>a.nome.split(" ")[0]).join(", ");
+  $("chamadaTop").innerHTML = `<button class="chsum" id="chAbre" aria-expanded="${aberta}"><span class="chlbl">Chamada</span>`+
+    `<span class="chcount"><b>${nP}</b> de ${turma.length} presente${nP===1?'':'s'}</span>`+
+    `${quem&&!aberta?`<span class="chwho">${he(quem)}</span>`:""}<span class="chgo"><span class="chgo-t">${aberta?"Recolher":"Ajustar"}</span>${IC("down")}</span></button>`+
+    (pres?`<div class="seg sm" id="chModo"><button data-t="0" class="${mostrarTodos?'':'on'}">Presentes</button><button data-t="1" class="${mostrarTodos?'on':''}">Todos</button></div>`:"");
+  $("chamadaNomes").innerHTML = turma.map(a=>`<button class="chname ${set.has(a.id)?'on':''}" data-id="${a.id}">${IC("check")}${he(a.nome)}</button>`).join("");
+  $("chamadaNomes").querySelectorAll(".chname").forEach(ch=>ch.onclick=()=>{
+    if(chamadaAberta===null) chamadaAberta=true; // começou a chamada: não recolhe sozinha no 1º nome
+    togglePresente(c,ch.dataset.id); renderPanel(); }); // renderPanel já redesenha a chamada
+  $("chAbre").onclick=()=>{ chamadaAberta=!aberta; renderChamada(); };
+  const sm=$("chModo"); if(sm) sm.querySelectorAll("button").forEach(b=>b.onclick=()=>{ mostrarTodos=b.dataset.t==="1"; renderPanel(); });
 }
 function renderPanel(){
   renderChamada();
   const c=ctx(); const q=norm($("busca").value);
   const pres=presentesValidos(c);
-  // se há chamada feita no dia e não estamos em "mostrar todos", filtra pelos presentes
+  // se há chamada feita no dia e não estamos em "Todos", filtra pelos presentes
   const usarPresenca = pres && !mostrarTodos;
   const presSet = usarPresenca ? new Set(pres) : null;
   const lista=alunosDaTurma(c.turma)
@@ -1101,7 +1324,7 @@ function renderPanel(){
     const b=$("usarMesAnt"); if(b) b.onclick=()=>{ $("mes").value=b.dataset.mes; $("mes").dispatchEvent(new Event("change")); }; return; }
   if(!exs.length){ $("panel").innerHTML=`<p class="muted">Este treino não tem exercício com carga para registrar.</p>`; return; }
   if(!alunosDaTurma(c.turma).length){ $("panel").innerHTML=`<p class="muted">Nenhum aluno na turma ${c.turma}. Vá na aba <b>Alunos</b> e marque o horário ${c.turma} pros alunos dela.</p>`; return; }
-  if(!lista.length){ $("panel").innerHTML=`<p class="muted">${usarPresenca?'Nenhum presente marcado na chamada bate com a busca. Marque presentes acima ou use <b>mostrar todos</b>.':'Nenhum aluno encontrado com esse filtro.'}</p>`; return; }
+  if(!lista.length){ $("panel").innerHTML=`<p class="muted">${usarPresenca?'Nenhum presente marcado na chamada bate com a busca. Marque presentes acima ou use <b>Todos</b>.':'Nenhum aluno encontrado com esse filtro.'}</p>`; return; }
   $("panel").innerHTML = lista.map(a=>{
     const visiveis=exs.filter(exSlot=>slotVisivel(exSlot,a.id,c));
     if(!visiveis.length) return ""; // aluno sem nada com carga neste bloco
@@ -1117,63 +1340,61 @@ function renderPanel(){
       const peso=(r.peso!==undefined&&r.peso!==null)?r.peso:"";
       const peso2=(r.peso2!==undefined&&r.peso2!==null)?r.peso2:"";
       const disp = isCarga ? (calcCarga(montagem,qtd,peso,un,peso2,un2,bar).total||'—') : '';
-      const unTog=(dc,cur)=>`<div class="unit"><button class="ubtn ${cur==='kg'?'on':''}" data-c="${dc}" data-v="kg">kg</button><button class="ubtn ${cur==='lb'?'on':''}" data-c="${dc}" data-v="lb">lb</button></div>`;
+      const unTog=(dc,cur)=>`<div class="seg unit"><button class="ubtn ${cur==='kg'?'on':''}" data-c="${dc}" data-v="kg">kg</button><button class="ubtn ${cur==='lb'?'on':''}" data-c="${dc}" data-v="lb">lb</button></div>`;
       let cargaBox;
       if(isElastico){
         const nivel=r.cargaParcial||"";
-        cargaBox=`<div class="cbox elastico" data-tipo="elastico"><span class="ellbl">Elástico</span><div class="elchips">`+
-          NIVEIS_ELASTICO.map(n=>`<button class="elch ${nivel===n?'on':''}" data-nivel="${attrEsc(n)}">${he(n)}</button>`).join("")+`</div></div>`;
+        cargaBox=`<div class="cbox elastico" data-tipo="elastico"><div class="grp"><span class="ellbl">Elástico</span><div class="seg elchips">`+
+          NIVEIS_ELASTICO.map(n=>`<button class="elch ${nivel===n?'on':''}" data-nivel="${attrEsc(n)}">${he(n)}</button>`).join("")+`</div></div></div>`;
       } else if(!isCarga){
-        cargaBox=`<div class="grp"><span>Carga</span><input class="kg" disabled value="${ex.cargaLabel || (ex.tipo==='pc'?'PC':'tempo')}" style="color:var(--muted);font-size:15px;font-weight:600"></div>`;
+        cargaBox=`<div class="grp"><span>Carga</span><span class="fixed">${he(ex.cargaLabel || (ex.tipo==='pc'?'PC':'tempo'))}</span></div>`;
       } else {
-        const mtog = ex.carga==='landmine' ? "" : `<div class="mtog"><button class="mbtn ${montagem==='impl'?'on':''}" data-v="impl">DB</button><button class="mbtn ${montagem==='kb'?'on':''}" data-v="kb">KB</button><button class="mbtn ${montagem==='barra'?'on':''}" data-v="barra">BB</button></div>`;
+        const mtog = ex.carga==='landmine' ? "" : `<div class="seg mtog"><button class="mbtn ${montagem==='impl'?'on':''}" data-v="impl">DB</button><button class="mbtn ${montagem==='kb'?'on':''}" data-v="kb">KB</button><button class="mbtn ${montagem==='barra'?'on':''}" data-v="barra">BB</button></div>`;
         const totT=`<div class="ctot">= <b class="ctotal">${disp}</b> kg</div>`;
+        const pesoIn=lbl=>`<div class="grp"><span>${lbl}</span><input class="cin" data-c="peso" inputmode="decimal" placeholder="0" value="${attrEsc(peso)}"></div>`;
+        const peso2In=`<div class="grp anilha2" style="${peso2?'':'display:none'}"><span>+</span><input class="cin" data-c="peso2" inputmode="decimal" placeholder="0" value="${attrEsc(peso2)}">${unTog('un2',un2)}</div>`;
+        const mais=txt=>`<button class="icbtn ghost addAnilha" style="${peso2?'display:none':''}">${IC("plus")}${txt}</button>`;
+        const barra=`<div class="grp"><span>+ BB</span><input class="cin barra" data-c="bar" inputmode="decimal" value="${attrEsc(bar)}"><small>kg</small></div>`;
         if(isKbLike){
-          cargaBox=`<div class="cbox" data-tipo="${montagem}">${mtog}<div class="grp"><span>Impl.</span><button class="qbtn ${qtd===1?'on':''}" data-c="qtd" data-v="1">1</button><button class="qbtn ${qtd===2?'on':''}" data-c="qtd" data-v="2">2</button></div><div class="grp"><span>Peso</span><input class="cin" data-c="peso" inputmode="decimal" placeholder="0" value="${attrEsc(peso)}"></div>${unTog('un',un)}${totT}</div>`;
+          cargaBox=`<div class="cbox" data-tipo="${montagem}">${mtog}<div class="grp"><span>Impl.</span><div class="seg"><button class="qbtn ${qtd===1?'on':''}" data-c="qtd" data-v="1">1</button><button class="qbtn ${qtd===2?'on':''}" data-c="qtd" data-v="2">2</button></div></div>${pesoIn("Peso")}${unTog('un',un)}${totT}</div>`;
         } else if(montagem==='barra'){
-          cargaBox=`<div class="cbox" data-tipo="barra">${mtog}<div class="grp"><span>Por lado</span><input class="cin" data-c="peso" inputmode="decimal" placeholder="0" value="${attrEsc(peso)}"></div>${unTog('un',un)}<div class="grp anilha2" style="${peso2?'':'display:none'}"><span>+</span><input class="cin" data-c="peso2" inputmode="decimal" placeholder="0" value="${attrEsc(peso2)}">${unTog('un2',un2)}</div><button class="icbtn addAnilha" style="${peso2?'display:none':''}">+ anilha</button><span class="x2">×2</span><div class="grp"><span>+ BB</span><input class="cin barra" data-c="bar" inputmode="decimal" value="${attrEsc(bar)}"><small>kg</small></div>${totT}</div>`;
+          cargaBox=`<div class="cbox" data-tipo="barra">${mtog}${pesoIn("Por lado")}${unTog('un',un)}${peso2In}${mais("anilha")}<span class="x2">×2</span>${barra}${totT}</div>`;
         } else {
-          cargaBox=`<div class="cbox" data-tipo="landmine"><div class="grp"><span>Peso</span><input class="cin" data-c="peso" inputmode="decimal" placeholder="0" value="${attrEsc(peso)}"></div>${unTog('un',un)}<div class="grp anilha2" style="${peso2?'':'display:none'}"><span>+</span><input class="cin" data-c="peso2" inputmode="decimal" placeholder="0" value="${attrEsc(peso2)}">${unTog('un2',un2)}</div><button class="icbtn addAnilha" style="${peso2?'display:none':''}">+ peso</button><div class="grp"><span>+ BB</span><input class="cin barra" data-c="bar" inputmode="decimal" value="${attrEsc(bar)}"><small>kg</small></div>${totT}</div>`;
+          cargaBox=`<div class="cbox" data-tipo="landmine">${pesoIn("Peso")}${unTog('un',un)}${peso2In}${mais("peso")}${barra}${totT}</div>`;
         }
       }
+      const repsBox = ex.repsFixas ? `<div class="grp"><span>Reps</span><span class="fixed" title="Fixo na prescrição">${he(ex.repsFixas)}</span></div>` :
+        `<div class="grp"><span>Reps</span><input class="sm" data-f="reps" inputmode="numeric" placeholder="—" value="${attrEsc(r.reps||"")}"></div>`+
+        `<div class="grp"><span>RR</span><input class="sm" data-f="rr" placeholder="—" value="${attrEsc(r.rr||"")}"></div>`;
       const aTipo = ex.adaptado? ex.tipo : "carga";
       const aImpl = (ex.adaptado&&ex.carga) ? ex.carga : "impl";
       const adaptChip = ex.adaptado? `<span class="adaptado" title="original da turma: ${attrEsc(ex.origNome)}">adaptado</span>` : "";
+      const ab=(k,v,cur,txt)=>`<button class="abtn ${cur===v?'on':''}" data-${k}="${v}">${txt}</button>`;
       const adaptForm = `<div class="adapt-edit">
-          <div class="rowf"><input class="adapt-nome" placeholder="exercício adaptado deste aluno (vira o padrão dele)" value="${ex.adaptado?attrEsc(ex.nome):''}"></div>
-          <div class="adapt-row"><span class="alab">tipo</span><div class="atipo">
-            <button class="abtn ${aTipo==='carga'?'on':''}" data-t="carga">carga</button>
-            <button class="abtn ${aTipo==='pc'?'on':''}" data-t="pc">peso corp.</button>
-            <button class="abtn ${aTipo==='elastico'?'on':''}" data-t="elastico">elástico</button>
-            <button class="abtn ${aTipo==='tempo'?'on':''}" data-t="tempo">tempo</button>
-          </div><div class="aimpl" style="${aTipo==='carga'?'':'display:none'}"><span class="alab">implem.</span>
-            <button class="abtn ${aImpl==='impl'?'on':''}" data-i="impl">DB</button>
-            <button class="abtn ${aImpl==='kb'?'on':''}" data-i="kb">KB</button>
-            <button class="abtn ${aImpl==='barra'?'on':''}" data-i="barra">BB</button>
-          </div></div>
-          <div class="rowf"><button class="btn-primary adapt-salvar">salvar adaptação</button>${ex.adaptado?`<button class="icbtn adapt-voltar">voltar ao original</button>`:""}</div>
+          <input class="adapt-nome" placeholder="Exercício adaptado deste aluno (vira o padrão dele)" value="${ex.adaptado?attrEsc(ex.nome):''}">
+          <div class="adapt-row"><div class="grp"><span>Tipo</span><div class="seg atipo">${ab("t","carga",aTipo,"Carga")}${ab("t","pc",aTipo,"Peso corp.")}${ab("t","elastico",aTipo,"Elástico")}${ab("t","tempo",aTipo,"Tempo")}</div></div>
+            <div class="grp aimpl" style="${aTipo==='carga'?'':'display:none'}"><span>Implemento</span><div class="seg">${ab("i","impl",aImpl,"DB")}${ab("i","kb",aImpl,"KB")}${ab("i","barra",aImpl,"BB")}</div></div></div>
+          <div class="adapt-acts"><button class="btn-primary adapt-salvar">Salvar como padrão do aluno</button>${ex.adaptado?`<button class="ghost adapt-voltar">Voltar ao original</button>`:""}</div>
         </div>`;
       return `<div class="exline" data-aluno="${a.id}" data-ex="${ex.id}" data-slot="${exSlot.id}">
-        <div class="exhead"><span class="ex">${he(ex.nome)}</span>${adaptChip}${ex.presc?`<span class="meta presc">${he(ex.presc)}</span>`:""}<span class="meta">alvo ${ex.alvo}</span></div>
-        <div class="row">
-          ${cargaBox}
-          ${ex.repsFixas ? `<div class="grp"><span>Reps</span><input class="sm" disabled value="${attrEsc(ex.repsFixas)}" title="fixo na prescrição" style="color:var(--muted);font-weight:600"></div>` :
-          `<div class="grp"><span>Reps</span><input class="sm" data-f="reps" inputmode="numeric" placeholder="—" value="${attrEsc(r.reps||"")}"></div>
-          <div class="grp"><span>RR</span><input class="sm" data-f="rr" placeholder="—" value="${attrEsc(r.rr||"")}"></div>`}
-          <button class="icbtn btn-adapt" style="margin-left:auto">⇄ adaptar</button>
-          <button class="icbtn btn-troca">↻ trocar</button>
-          <button class="icbtn btn-dor">⚠ dor</button>
-          <button class="icbtn btn-obs">✎ obs</button>
+        <div class="exhead"><span class="ex">${he(ex.nome)}</span>${adaptChip}${ex.presc?`<span class="presc">${fmtPresc(ex.presc)}</span>`:""}<span class="alvo">alvo ${he(ex.alvo)}</span></div>
+        <div class="exacts">
+          <button class="act btn-troca" title="Trocou só hoje (não vira padrão)">${IC("repeat")}<span>Trocar</span></button>
+          <button class="act btn-dor" title="Anotar dor de hoje">${IC("alert")}<span>Dor</span></button>
+          <button class="act btn-obs" title="Observação de hoje">${IC("note")}<span>Obs</span></button>
+          <span class="asep"></span>
+          <button class="act btn-adapt" title="Adaptar o exercício: vira o padrão deste aluno nas próximas semanas deste treino">${IC("swap")}<span>Adaptar</span></button>
         </div>
+        <div class="row">${cargaBox}<span class="vsep"></span>${repsBox}</div>
         ${adaptForm}
-        <div class="troca-edit"><input data-f="troca" placeholder="trocou só hoje? (anota; não vira padrão)" value="${attrEsc(r.troca||"")}"></div>
-        <div class="dor-edit"><input data-f="dorNota" placeholder="o que foi? (ex: joelho D, amplitude parcial)" value="${attrEsc(r.dorNota||"")}"></div>
-        <div class="obs-edit"><input data-f="obs" placeholder="observação (cansaço, técnica, etc.)" value="${attrEsc(r.obs||"")}"></div>
+        <div class="troca-edit"><input data-f="troca" placeholder="Trocou só hoje? Anote o exercício (não vira padrão)" value="${attrEsc(r.troca||"")}"></div>
+        <div class="dor-edit"><input data-f="dorNota" placeholder="O que foi? (ex: joelho D, amplitude parcial)" value="${attrEsc(r.dorNota||"")}"></div>
+        <div class="obs-edit"><input data-f="obs" placeholder="Observação (cansaço, técnica…)" value="${attrEsc(r.obs||"")}"></div>
         <div class="tags"></div>
         ${histBlock(a.id,ex.id,c.data)}
       </div>`;
     }).join("");
-    return `<div class="scard"><div class="shead"><div class="avatar">${initials(a.nome)}</div><div class="nm">${he(a.nome)}</div><span class="pendbadge"></span><button class="icbtn btn-rename" data-aluno="${a.id}" style="margin-left:auto">✎ nome</button></div>${lines}</div>`;
+    return `<div class="scard"><div class="shead"><div class="avatar">${initials(a.nome)}</div><div class="nm">${he(a.nome)}</div><span class="pendbadge"></span><button class="iconbtn btn-rename" data-aluno="${a.id}" title="Renomear aluno" aria-label="Renomear aluno">${IC("pencil")}</button></div>${lines}</div>`;
   }).join("");
   if(!$("panel").innerHTML.trim()) $("panel").innerHTML=`<p class="muted">Nenhum aluno listado tem exercício com carga neste bloco.</p>`;
   wirePanel(c);
@@ -1185,7 +1406,11 @@ function wirePanel(c){
     const aluno=alunos.find(a=>a.id===aId);
     const exSlot=treinosDo(c.mes)[c.treino].find(e=>e.id===slotId);
     const ex=exEfetivo(exSlot,aId,c); // efetivo; ex.id === exId (adaptado ou prescrito)
-    const tags=()=>{ const r=getRec(c,aId,exId)||{}; let t=""; if(r.dor||r.dorNota)t+=`<span class="tag dor">⚠ ${he(r.dorNota||"dor")}</span>`; if(r.troca)t+=`<span class="tag troca">↻ ${he(r.troca)}</span>`; line.querySelector(".tags").innerHTML=t; };
+    const tags=()=>{ const r=getRec(c,aId,exId)||{}; let t="";
+      if(r.dor||r.dorNota) t+=`<span class="tag dor">${IC("alert")}${he(r.dorNota||"dor")}</span>`;
+      if(r.troca) t+=`<span class="tag troca">${IC("repeat")}${he(r.troca)}</span>`;
+      if(r.obs) t+=`<span class="tag obs">${IC("note")}${he(r.obs)}</span>`;
+      line.querySelector(".tags").innerHTML=t; };
     tags();
     // realça os campos ainda não preenchidos (anti-esquecimento) + selo de pendências no card
     const repsInp=line.querySelector('input[data-f="reps"]');
@@ -1197,7 +1422,7 @@ function wirePanel(c){
       const pesoInp=line.querySelector('.cbox .cin[data-c="peso"]'); if(pesoInp) pesoInp.classList.toggle("faltou", falta.includes("carga"));
       const chips=line.querySelector('.elchips'); if(chips) chips.classList.toggle("faltou", falta.includes("nivel"));
       if(card){ const n=card.querySelectorAll(".exline.pend").length; const b=card.querySelector(".pendbadge");
-        if(b){ b.textContent = n? "⚠ "+n+" pendente"+(n>1?"s":"") : "✓ completo"; b.classList.toggle("ok", n===0); } }
+        if(b){ b.textContent = n? n+" pendente"+(n>1?"s":"") : "completo"; b.classList.toggle("ok", n===0); } }
     };
     flagReps();
     line.querySelectorAll("input[data-f]").forEach(inp=>inp.addEventListener("change",()=>{
@@ -1244,7 +1469,7 @@ function wirePanel(c){
       });
     }
     // adaptação individual: vira o padrão do aluno (reaparece nas próximas semanas)
-    line.querySelector(".btn-adapt").onclick=()=>tog(line,".adapt-edit");
+    line.querySelector(".btn-adapt").onclick=function(){ tog(line,".adapt-edit",this); };
     const adaptEdit=line.querySelector(".adapt-edit");
     if(adaptEdit){
       adaptEdit.querySelectorAll(".atipo .abtn").forEach(b=>b.onclick=()=>{
@@ -1268,13 +1493,13 @@ function wirePanel(c){
       const volta=adaptEdit.querySelector(".adapt-voltar");
       if(volta) volta.onclick=()=>{ if(confirm("Voltar ao exercício original da turma? A adaptação deste aluno sai (o histórico do adaptado continua salvo).")){ saveAdapt(aId,c,slotId,null); renderPanel(); } };
     }
-    line.querySelector(".btn-troca").onclick=()=>tog(line,".troca-edit");
-    line.querySelector(".btn-dor").onclick=()=>tog(line,".dor-edit");
-    line.querySelector(".btn-obs").onclick=()=>tog(line,".obs-edit");
+    line.querySelector(".btn-troca").onclick=function(){ tog(line,".troca-edit",this); };
+    line.querySelector(".btn-dor").onclick=function(){ tog(line,".dor-edit",this); };
+    line.querySelector(".btn-obs").onclick=function(){ tog(line,".obs-edit",this); };
   });
   $("panel").querySelectorAll(".btn-rename").forEach(b=>b.onclick=()=>renameAluno(b.dataset.aluno));
 }
-function tog(line,sel){ const el=line.querySelector(sel); const open=el.style.display==="block"; el.style.display=open?"none":"block"; const i=el.querySelector("input"); if(i&&!open)i.focus(); }
+function tog(line,sel,btn){ const el=line.querySelector(sel); const open=el.style.display==="block"; el.style.display=open?"none":"block"; if(btn) btn.classList.toggle("open",!open); const i=el.querySelector("input"); if(i&&!open)i.focus(); }
 
 function renameAluno(id){
   const a=alunos.find(x=>x.id===id); if(!a)return;
@@ -1317,8 +1542,8 @@ function renderMaster(){
   $("masterList").innerHTML = list.length ? list.map(a=>`
     <div class="mrow">
       <div class="mtop"><span class="mnome">${he(a.nome)}</span>
-        <button class="icbtn" data-act="ren" data-id="${a.id}">✎ nome</button>
-        <button class="icbtn" data-act="del" data-id="${a.id}">✕ excluir</button>
+        <button class="icbtn" data-act="ren" data-id="${a.id}">${IC("pencil")}Renomear</button>
+        <button class="icbtn ghost" data-act="del" data-id="${a.id}">Excluir</button>
       </div>
       <div class="hchips">${TURMAS.map(t=>`<span class="hchip ${a.turmas.includes(t)?'on':''}" data-id="${a.id}" data-t="${t}">${t}</span>`).join("")}</div>
     </div>`).join("") : `<p class="muted">Nenhum aluno encontrado.</p>`;
@@ -1342,7 +1567,7 @@ function setSync(txt, cls){
   const b=$("syncBadge"); if(b){ b.textContent=txt; b.className="syncbadge"+(cls?" "+cls:""); }
   const ban=$("syncBanner"); if(!ban) return;
   if(cls==="warn"){ // não-sincronizado: faixa visível + reassurance + tentar de novo
-    ban.innerHTML = `⚠ ${he(txt)} · seus lançamentos estão salvos no aparelho <button class="icbtn" id="banSync">↻ tentar sincronizar</button>`;
+    ban.innerHTML = `${IC("alert")}<span>${he(txt)} · seus lançamentos estão salvos no aparelho</span><button class="icbtn" id="banSync">${IC("sync")}Tentar sincronizar</button>`;
     ban.style.display="flex";
     const bs=$("banSync"); if(bs) bs.onclick=reconectar;
   } else { ban.style.display="none"; ban.innerHTML=""; }
@@ -1500,13 +1725,15 @@ function gerarPDF(){
 
 document.querySelectorAll(".viewbtn").forEach(b=>b.onclick=()=>setView(b.dataset.v));
 ["mes","treino","turma","semana","data"].forEach(id=>$(id).addEventListener("change",()=>{
-  if(id==="turma"||id==="data") mostrarTodos=false; // novo contexto de chamada começa nos presentes
+  if(id==="turma"||id==="data"){ mostrarTodos=false; chamadaAberta=null; } // novo contexto de chamada começa nos presentes
+  if(id==="data"){ if(!virando) dataAuto=false; ajustarPelaData(); }
+  if(id==="mes"){ const sm=semanaDoCiclo($("mes").value,$("data").value); if(sm) $("semana").value=sm; }
   renderWeek(); renderBlocks(); renderPanel();
 }));
 $("busca").addEventListener("keyup",renderPanel);
 document.querySelectorAll("#modos button").forEach(b=>b.onclick=()=>setModo(b.dataset.m));
-$("btnSemCarga").onclick=()=>{ verSemCarga=!verSemCarga; $("btnSemCarga").classList.toggle("on",verSemCarga);
-  $("btnSemCarga").textContent = verSemCarga ? "só com carga" : "ver sem carga"; renderBlocks(); renderPanel(); };
+$("btnSemCarga").onclick=()=>{ verSemCarga=!verSemCarga; const b=$("btnSemCarga"); b.classList.toggle("on",verSemCarga);
+  b.setAttribute("aria-checked",String(verSemCarga)); renderBlocks(); renderPanel(); };
 $("exportar").onclick=()=>exportCSV();
 $("novoNome").addEventListener("input",renderDup);
 $("novoNome").addEventListener("keydown",e=>{ if(e.key==="Enter") addAluno(); });
@@ -1520,6 +1747,18 @@ $("loginSenha").addEventListener("keydown",e=>{ if(e.key==="Enter") doLogin(); }
 $("btnSync").onclick=()=>DataStore.syncNow();
 $("btnPend").onclick=exportarPendencias;
 $("btnSair").onclick=async()=>{ if(DataStore.sb) await DataStore.sb.auth.signOut(); location.reload(); };
+$("cfgOk").onclick=()=>{ cfgAberta=false; renderCtx(); };
+$("syncBadge").onclick=()=>{ if(DataStore.on) DataStore.syncNow(); };
+// menu "⋯": fecha ao escolher uma ação ou ao clicar fora
+document.querySelectorAll("#menu .mi").forEach(b=>b.addEventListener("click",()=>{ $("menu").open=false; }));
+document.addEventListener("click",e=>{ const m=$("menu"); if(m.open && !m.contains(e.target)) m.open=false; });
+// "Salvo hh:mm:ss" e avisos ⚠ aparecem flutuando embaixo (no rodapé ficavam fora da vista)
+(function(){ const s=$("status"); let tm;
+  new MutationObserver(()=>{ const t=s.textContent.trim(); clearTimeout(tm);
+    if(!t){ s.classList.remove("show"); return; }
+    const w=t.startsWith("⚠"); s.classList.toggle("warn",w); s.classList.add("show");
+    tm=setTimeout(()=>s.classList.remove("show"), w?7000:1800);
+  }).observe(s,{childList:true,characterData:true,subtree:true}); })();
 
 // exporta TUDO que está guardado neste navegador (inclui o que não subiu) — recuperação de dado
 function exportarPendencias(){
@@ -1540,9 +1779,11 @@ function exportarPendencias(){
 }
 
 // modo Supabase: mostra os controles de sync
-if(DataStore.on){ $("syncWrap").style.display="flex"; setSync("conectando…","info"); window.addEventListener("online", reconectar); }
+if(DataStore.on){ $("syncWrap").style.display="flex"; document.body.classList.add("sync-on"); setSync("conectando…","info"); window.addEventListener("online", reconectar); }
 
-fillMes(); fillTurmas(); renderWeek(); renderBlocks(); renderPanel();
+fillMes(); fillTurmas(); ajustarPelaData(); renderWeek(); renderBlocks(); renderPanel();
+document.addEventListener("visibilitychange",()=>{ if(!document.hidden) virarDia(); });
+window.addEventListener("focus",virarDia); setInterval(virarDia,60000);
 DataStore.bootstrap();
 </script>
 </body>
