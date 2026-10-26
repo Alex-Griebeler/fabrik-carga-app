@@ -168,6 +168,13 @@ body:not(.sync-on) .synconly{display:none}
 .pit span{min-width:0; overflow-wrap:anywhere}
 .pit b{font-weight:500; font-size:14px; color:var(--muted); white-space:nowrap}
 .pit.big{padding:7px 0; font-size:17.5px; color:var(--ink)}
+/* vídeo demo: abre o vídeo do exercício numa aba nova */
+.vid{display:inline-flex; align-items:center; gap:4px; height:22px; padding:0 8px 0 6px; margin-left:8px; vertical-align:1px;
+  border:1px solid var(--line2); border-radius:999px; color:var(--accent-ink); font-size:11.5px; font-weight:600; letter-spacing:.02em;
+  text-decoration:none; white-space:nowrap; transition:background .15s, border-color .15s, color .15s}
+.vid .ic{width:11px; height:11px; fill:currentColor; stroke-width:1.4}
+.vid:hover{background:var(--accent-bg); border-color:var(--accent-ink); color:var(--ink)}
+.exhead .vid{margin-left:0; align-self:center}
 .pit.big b{font-size:17.5px; font-weight:700; color:var(--ink)}
 .pblk{margin:6px -14px 0; padding:10px 14px 2px; border-radius:var(--r-lg); cursor:pointer; transition:background .15s}
 .pblk .psec{margin-top:0}
@@ -452,6 +459,7 @@ svg.chart .grid{stroke:var(--line); stroke-width:1}
   <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 11v5"/><path d="M12 8h.01"/></symbol>
   <symbol id="i-sliders" viewBox="0 0 24 24"><path d="M4 7h9"/><path d="M17 7h3"/><circle cx="15" cy="7" r="2"/><path d="M4 17h3"/><path d="M11 17h9"/><circle cx="9" cy="17" r="2"/></symbol>
   <symbol id="i-list" viewBox="0 0 24 24"><path d="M9 6h11"/><path d="M9 12h11"/><path d="M9 18h11"/><path d="M4.5 6h.01"/><path d="M4.5 12h.01"/><path d="M4.5 18h.01"/></symbol>
+  <symbol id="i-play" viewBox="0 0 24 24"><path d="M8 5.5v13l10.5-6.5z"/></symbol>
   <symbol id="i-weight" viewBox="0 0 24 24"><path d="M6.5 6.5v11"/><path d="M17.5 6.5v11"/><path d="M3.5 9v6"/><path d="M20.5 9v6"/><path d="M6.5 12h11"/></symbol>
 </svg>
 <div class="wrap">
@@ -1016,6 +1024,20 @@ const PROGRAMA = {
 // "registro" (só os exercícios com carga). O MacBook lembra o último (não sincroniza).
 let modoTela = load("fabrik_modo_tela","registro")==="treino" ? "treino" : "registro";
 const IC = n=>`<svg class="ic" aria-hidden="true"><use href="#i-${n}"/></svg>`;
+// Vídeos demo: link do álbum compartilhado do iCloud do Alex, pelo nome do exercício como está no programa
+// (vale para qualquer mês com o mesmo nome). Link do iCloud vence: depois de "ate" o botão some sozinho.
+const VIDEOS={
+  "Agachamento lateral c/ troca de base ALT":{url:"https://photos.icloud.com/shared/album/07601xFY9fu-nzfnCJ0_N-1ww/#/i,9FA860B3-90BD-482D-A7A4-2941F3F23A1D,0/", ate:"2026-11-25"},
+  "Couch stretch + dorsiflexão":{url:"https://photos.icloud.com/shared/album/0cfPcQyNcfmQgSiYobeTjTMZQ/#/i,0B735795-61AF-42C4-9F4C-32A0AEDE5A1F,0/", ate:"2026-11-24"},
+  "Mobilização posterior do quadril 3 apoios":{url:"https://photos.icloud.com/shared/album/0cfPcQyNcfmQgSiYobeTjTMZQ/#/i,BC6E018E-3A89-431D-AA4E-A41FDB758616,2/", ate:"2026-11-24"},
+  "Ponte lateral + LLS":{url:"https://photos.icloud.com/shared/album/0cfPcQyNcfmQgSiYobeTjTMZQ/#/i,2E1C2A93-A98A-487D-BCA6-CF73C0720CB2,3/", ate:"2026-11-24"}
+};
+const normNome = n=>String(n||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/\s+/g," ").trim();
+const VIDEOS_N = Object.fromEntries(Object.entries(VIDEOS).map(([k,v])=>[normNome(k),v]));
+function vid(nome){
+  const v=VIDEOS_N[normNome(nome)]; if(!v || (v.ate && today()>v.ate)) return "";
+  return `<a class="vid" href="${attrEsc(v.url)}" target="_blank" rel="noopener" title="Abrir o vídeo demo numa aba nova">${IC("play")}Vídeo</a>`;
+}
 function fmtPresc(v){ return he(String(v||"").replace(/ x /g," × ")); }
 function setModo(m){ modoTela=m; save("fabrik_modo_tela", m); renderBlocks(); renderPanel(); window.scrollTo(0,0); }
 function renderPrograma(){
@@ -1043,7 +1065,7 @@ function renderPrograma(){
   if(!exs.length){ el.innerHTML=`<p class="muted">O Treino ${he(t)} de ${he(mes)} ainda não foi cadastrado.</p>`; return; }
   // coluna 1: aquecimento (todo aberto) + PSE; coluna 2: blocos de trabalho
   const col1 = T ? T.aquec.map(([nome,itens,metodo])=>`<div class="psec"><span>${dash(nome)}</span>${metodo?`<small>${he(metodo)}</small>`:""}</div>`+
-      itens.map(([n,q])=>`<div class="pit"><span>${he(n)}</span><b>${he(q)}</b></div>`).join("")).join("")+
+      itens.map(([n,q])=>`<div class="pit"><span>${he(n)}${vid(n)}</span><b>${he(q)}</b></div>`).join("")).join("")+
     (P&&P.pse?`<details class="ppse"><summary>${IC("right")}PSE · esforço percebido</summary><table>`+
       P.pse.map(([n,d])=>`<tr><td>${he(n)}</td><td>${he(d)}</td></tr>`).join("")+`</table><p>${he(P.pseNota)}</p></details>`:"") : "";
   const col2 = bs.map(b=>{
@@ -1051,7 +1073,7 @@ function renderPrograma(){
     const nome="Bloco "+b2(b)+(meta?" — "+meta[0]:"");
     return `<div class="pblk ${comCarga&&b===selBloco?"on":""} ${comCarga?"":"semcarga"}" data-b="${b}"${comCarga?` role="button" tabindex="0" title="Registrar a carga deste bloco"`:""}>`+
       `<div class="psec"><span>${dash(nome)}</span><small>${he(meta?meta[1]:bx[0].metodo)}${comCarga?`<span class="pgo">${IC("right")}</span>`:""}</small></div>`+
-      bx.map(e=>`<div class="pit big"><span>${he(e.nome)}</span><b>${fmtPresc(e.presc)}</b></div>`).join("")+`</div>`;
+      bx.map(e=>`<div class="pit big"><span>${he(e.nome)}${vid(e.nome)}</span><b>${fmtPresc(e.presc)}</b></div>`).join("")+`</div>`;
   }).join("");
   let h = col1 ? `<div class="pcols"><div class="pcol">${col1}</div><div class="pcol">${col2}</div></div>` : col2;
   if(T) h+=`<div class="pfoot"><details class="psiglas"><summary>${IC("info")}Siglas</summary><div class="psiglas-txt">${he(T.legenda)}</div></details><b>${he(T.fecho)}</b></div>`;
@@ -1059,7 +1081,8 @@ function renderPrograma(){
   // tocar num bloco do treino abre o registro naquele bloco
   el.querySelectorAll(".pblk:not(.semcarga)").forEach(d=>{
     const ir=()=>{ selBloco=Number(d.dataset.b); setModo("registro"); };
-    d.onclick=ir; d.onkeydown=e=>{ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); ir(); } };
+    d.onclick=e=>{ if(!e.target.closest(".vid")) ir(); };
+    d.onkeydown=e=>{ if(e.target.closest(".vid")) return; if(e.key==="Enter"||e.key===" "){ e.preventDefault(); ir(); } };
   });
 }
 function treinosDo(mes){ return MESES[mes] || MESES[Object.keys(MESES)[0]]; }
@@ -1377,7 +1400,7 @@ function renderPanel(){
           <div class="adapt-acts"><button class="btn-primary adapt-salvar">Salvar como padrão do aluno</button>${ex.adaptado?`<button class="ghost adapt-voltar">Voltar ao original</button>`:""}</div>
         </div>`;
       return `<div class="exline" data-aluno="${a.id}" data-ex="${ex.id}" data-slot="${exSlot.id}">
-        <div class="exhead"><span class="ex">${he(ex.nome)}</span>${adaptChip}${ex.presc?`<span class="presc">${fmtPresc(ex.presc)}</span>`:""}<span class="alvo">alvo ${he(ex.alvo)}</span></div>
+        <div class="exhead"><span class="ex">${he(ex.nome)}</span>${vid(ex.nome)}${adaptChip}${ex.presc?`<span class="presc">${fmtPresc(ex.presc)}</span>`:""}<span class="alvo">alvo ${he(ex.alvo)}</span></div>
         <div class="exacts">
           <button class="act btn-troca" title="Trocou só hoje (não vira padrão)">${IC("repeat")}<span>Trocar</span></button>
           <button class="act btn-dor" title="Anotar dor de hoje">${IC("alert")}<span>Dor</span></button>
