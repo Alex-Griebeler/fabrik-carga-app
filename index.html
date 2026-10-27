@@ -1198,14 +1198,17 @@ function ajustarPelaData(){
   const t=TREINO_DO_DIA[new Date(d+"T12:00:00").getDay()]; if(t) $("treino").value=t;
   const s=semanaDoCiclo($("mes").value,d); if(s) $("semana").value=s;
 }
-// computador que fica aberto de um dia pro outro: a data vira pra hoje sozinha, MAS só se ninguém
-// trocou a data na mão e nunca com um campo em edição (redesenhar a tela perderia o que está sendo digitado)
-let dataAuto=true, diaAberto=today(), virando=false;
-function virarDia(){
+// computador que fica aberto de um dia pro outro: no dia novo a data volta pra hoje sozinha, mesmo que na
+// véspera alguém tenha escolhido outra data na mão (data na mão vale só no dia em que foi escolhida).
+// Vira ao voltar pra tela, no 1º clique ou, com a tela parada, em até 1 min. Só espera quem está digitando
+// agora; o campo em edição é salvo antes de redesenhar. (27/10: o campo da última aula ficou em foco a noite
+// toda, a data não virou e o Treino 2 de terça foi gravado com a data de segunda.)
+let diaAberto=today(), ultimaTecla=0;
+function virarDia(origem){
   const h=today(); if(h===diaAberto) return;
-  if(!dataAuto){ diaAberto=h; return; }
-  const a=document.activeElement; if(a && a.matches && a.matches("input,select,textarea")) return; // tenta de novo depois
-  diaAberto=h; virando=true; $("data").value=h; $("data").dispatchEvent(new Event("change")); virando=false;
+  if(origem==="relogio" && Date.now()-ultimaTecla<20000) return; // tenta de novo no próximo minuto
+  const a=document.activeElement; if(a && a.matches && a.matches("input,select,textarea")) a.blur();
+  diaAberto=h; $("data").value=h; $("data").dispatchEvent(new Event("change"));
 }
 function renderWeek(){
   const r=RULES[$("semana").value];
@@ -1749,7 +1752,7 @@ function gerarPDF(){
 document.querySelectorAll(".viewbtn").forEach(b=>b.onclick=()=>setView(b.dataset.v));
 ["mes","treino","turma","semana","data"].forEach(id=>$(id).addEventListener("change",()=>{
   if(id==="turma"||id==="data"){ mostrarTodos=false; chamadaAberta=null; } // novo contexto de chamada começa nos presentes
-  if(id==="data"){ if(!virando) dataAuto=false; ajustarPelaData(); }
+  if(id==="data") ajustarPelaData();
   if(id==="mes"){ const sm=semanaDoCiclo($("mes").value,$("data").value); if(sm) $("semana").value=sm; }
   renderWeek(); renderBlocks(); renderPanel();
 }));
@@ -1806,7 +1809,10 @@ if(DataStore.on){ $("syncWrap").style.display="flex"; document.body.classList.ad
 
 fillMes(); fillTurmas(); ajustarPelaData(); renderWeek(); renderBlocks(); renderPanel();
 document.addEventListener("visibilitychange",()=>{ if(!document.hidden) virarDia(); });
-window.addEventListener("focus",virarDia); setInterval(virarDia,60000);
+window.addEventListener("focus",()=>virarDia());
+document.addEventListener("pointerdown",()=>virarDia(),true);
+document.addEventListener("keydown",()=>{ ultimaTecla=Date.now(); },true);
+setInterval(()=>virarDia("relogio"),60000);
 DataStore.bootstrap();
 </script>
 </body>
