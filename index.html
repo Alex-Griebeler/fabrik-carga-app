@@ -749,11 +749,12 @@ const MESES = {
     "1":[
       {id:"outnov26_t1_hipthrustpress",nome:"Hip thrust + press horizontal 2DB",tipo:"carga",carga:"impl",un:"kg",qtd:2,metodo:"SUPERSET",presc:"4 x 6",alvo:"3-4RR",bloco:1},
       {id:"outnov26_t1_boxjump",nome:"Box jump",tipo:"caixa",repsFixas:"6",metodo:"SUPERSET",presc:"4 x 6",alvo:"potência",bloco:1},
-      {id:"outnov26_t1_nordica",nome:"Flexão nórdica",tipo:"pc",metodo:"TRISET",presc:"3 x 8-5",alvo:"1-2RR",bloco:2},
-      {id:"outnov26_t1_serrote",nome:"Remada serrote",tipo:"carga",carga:"impl",un:"kg",qtd:1,metodo:"TRISET",presc:"3 x 8-5",alvo:"1-2RR",bloco:2},
-      {id:"outnov26_t1_exttoracica",nome:"Extensão torácica AJ c/ bastão",tipo:"pc",repsFixas:"8",metodo:"TRISET",presc:"2 x 8",alvo:"mobilidade",bloco:2},
-      {id:"outnov26_t1_frontsquat",nome:"Front squat BB c/ pausa (3s)",tipo:"carga",carga:"barra",un:"lb",bar:10,metodo:"SUPERSET",presc:"3 x 8-5",alvo:"1-2RR",bloco:3},
-      {id:"outnov26_t1_supinoinc",nome:"Supino inclinado DB",tipo:"carga",carga:"impl",un:"kg",qtd:2,metodo:"SUPERSET",presc:"3 x 8-5",alvo:"1-2RR",bloco:3}
+      {id:"outnov26_t1_nordica",nome:"Flexão nórdica",tipo:"pc",metodo:"CIRCUITO",presc:"3 x 8-5",alvo:"1-2RR",bloco:2},
+      {id:"outnov26_t1_serrote",nome:"Remada serrote",tipo:"carga",carga:"impl",un:"kg",qtd:1,metodo:"CIRCUITO",presc:"3 x 8-5",alvo:"1-2RR",bloco:2},
+      {id:"outnov26_t1_exttoracica",nome:"Extensão torácica AJ c/ bastão",tipo:"pc",repsFixas:"8",metodo:"CIRCUITO",presc:"2 x 8",alvo:"mobilidade",bloco:2},
+      {id:"outnov26_t1_frontsquat",nome:"Front squat BB c/ pausa (3s)",tipo:"carga",carga:"barra",un:"lb",bar:10,metodo:"CIRCUITO",presc:"3 x 8-5",alvo:"1-2RR",bloco:3},
+      {id:"outnov26_t1_supinoinc",nome:"Supino inclinado DB",tipo:"carga",carga:"impl",un:"kg",qtd:2,metodo:"CIRCUITO",presc:"3 x 8-5",alvo:"1-2RR",bloco:3},
+      {id:"outnov26_t1_extpunho",nome:"Extensão de punho AJ",tipo:"pc",repsFixas:"8",metodo:"CIRCUITO",presc:"2 x 8",alvo:"mobilidade",bloco:3}
     ],
     "2":[
       {id:"outnov26_t2_cossack",nome:"Cossack lunge",tipo:"carga",carga:"impl",un:"kg",qtd:1,metodo:"TRISET",presc:"3 x 10-8",alvo:"1-2RR",bloco:1},
@@ -997,7 +998,7 @@ const PROGRAMA = {
         ["Aquecimento 2 — Mobilidade",[["Snow angel reverso","1 × 8"],["Couch stretch + dorsiflexão","1 × 8 cl"]],"Circuito"],
         ["Aquecimento 3 — Estabilidade e ativação",[["Ponte c/ MB joelhos","2 × (20s + 5 + 5)"],["Shoulder taps","2 × 20"],["Agachamento c/ anilha + MB","2 × 5 · 4s EXC / 1s CC"]],"Circuito"]
       ],
-      blocos:{1:["Potência","Superset · 90s"],2:["Força / hipertrofia","Triset · 90s"],3:["Força / hipertrofia","Superset · 90s"]},
+      blocos:{1:["Potência","Superset · 90s"],2:["Força / hipertrofia","Circuito · descanso ativo"],3:["Força / hipertrofia","Circuito · descanso ativo"]},
       legenda:"LMF liberação miofascial · MB miniband · DB halter · BB barra · AJ ajoelhado · cl cada lado · EXC excêntrica · CC concêntrica",
       fecho:"Respiração 4-7-8 · 2 min" },
     "2":{ dia:"02 — Treino 2 · Terça e sexta", titulo:["Força","e hipertrofia."], dur:"50'",
