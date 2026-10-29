@@ -594,6 +594,8 @@ const SUPABASE_CONFIG = {
 const TURMAS = ["06:00","07:00","08:00","09:00","10:00","11:00","12:30","16:30","17:30","18:30"];
 // níveis de resistência de elástico (superband/miniband) — ordinal, não é kg
 const NIVEIS_ELASTICO = ["Leve","Média","Forte","Extra"];
+// caixas de salto da Fabrik (cm): a pequena tem 35/40/45, a grande 50/60/75
+const ALTURAS_CAIXA = [["pequena",[35,40,45]],["grande",[50,60,75]]];
 
 const RULES = {
   "1":{txt:"Deload — reduz carga e volume, recupera.", cls:"ok"},
@@ -746,7 +748,7 @@ const MESES = {
   "Out-Nov 26": {
     "1":[
       {id:"outnov26_t1_hipthrustpress",nome:"Hip thrust + press horizontal 2DB",tipo:"carga",carga:"impl",un:"kg",qtd:2,metodo:"SUPERSET",presc:"4 x 6",alvo:"3-4RR",bloco:1},
-      {id:"outnov26_t1_boxjump",nome:"Box jump",tipo:"pc",repsFixas:"6",metodo:"SUPERSET",presc:"4 x 6",alvo:"potência",bloco:1},
+      {id:"outnov26_t1_boxjump",nome:"Box jump",tipo:"caixa",repsFixas:"6",metodo:"SUPERSET",presc:"4 x 6",alvo:"potência",bloco:1},
       {id:"outnov26_t1_nordica",nome:"Flexão nórdica",tipo:"pc",metodo:"TRISET",presc:"3 x 8-5",alvo:"1-2RR",bloco:2},
       {id:"outnov26_t1_serrote",nome:"Remada serrote",tipo:"carga",carga:"impl",un:"kg",qtd:1,metodo:"TRISET",presc:"3 x 8-5",alvo:"1-2RR",bloco:2},
       {id:"outnov26_t1_exttoracica",nome:"Extensão torácica AJ c/ bastão",tipo:"pc",repsFixas:"8",metodo:"TRISET",presc:"2 x 8",alvo:"mobilidade",bloco:2},
@@ -1086,9 +1088,9 @@ function renderPrograma(){
   });
 }
 function treinosDo(mes){ return MESES[mes] || MESES[Object.keys(MESES)[0]]; }
-// Registro (lado direito) mostra só o que tem carga a anotar: carga e elástico (o nível é a carga).
-// Peso corporal e tempo aparecem só no treino (lado esquerdo). Decide pelo prescrito da turma.
-function registraCarga(e){ return e.tipo==="carga" || e.tipo==="elastico"; }
+// Registro (lado direito) mostra só o que tem carga a anotar: carga, elástico (o nível é a carga) e
+// caixa (a altura do salto). Peso corporal e tempo aparecem só no treino. Decide pelo prescrito da turma.
+function registraCarga(e){ return e.tipo==="carga" || e.tipo==="elastico" || e.tipo==="caixa"; }
 // Exercício sem carga adaptado pra um com carga continua no registro (só pro aluno adaptado).
 // "ver sem carga" mostra o bloco inteiro de novo, pra o professor conseguir adaptar na hora.
 let verSemCarga = false;
@@ -1136,6 +1138,7 @@ function adaptDeRecords(aId,c,slotId){
   if(!rs.length) return null;
   const r=rs[0]; let tipo="pc", carga, un, qtd, bar;
   if(r.montagem==="elastico") tipo="elastico";
+  else if(r.montagem==="caixa") tipo="caixa";
   else if(["impl","kb","barra","landmine"].includes(r.montagem)){ tipo="carga"; carga=r.montagem; un=r.un||"kg"; qtd=Number(r.qtd)||1; bar=r.bar; }
   else if(String(r.cargaTotal||"").trim()!==""){ tipo="carga"; carga="impl"; un=r.un||"kg"; qtd=Number(r.qtd)||1; }
   return { nome:r.exercicioNome, tipo, carga, un, qtd, bar };
@@ -1263,6 +1266,7 @@ function faltando(ex,r){
   const f=[]; const temReps=!!ex.repsFixas || String(r.reps||"").trim()!=="";
   if(ex.tipo==="carga"){ if(String(r.cargaTotal||"").trim()==="") f.push("carga"); if(!temReps) f.push("reps"); }
   else if(ex.tipo==="elastico"){ if(String(r.cargaParcial||"").trim()==="") f.push("nivel"); if(!temReps) f.push("reps"); }
+  else if(ex.tipo==="caixa"){ if(String(r.cargaParcial||"").trim()==="") f.push("altura"); if(!temReps) f.push("reps"); }
   else if(ex.tipo==="pc"){ if(!temReps) f.push("reps"); }
   return f; // tempo: nada obrigatório
 }
@@ -1372,6 +1376,10 @@ function renderPanel(){
         const nivel=r.cargaParcial||"";
         cargaBox=`<div class="cbox elastico" data-tipo="elastico"><div class="grp"><span class="ellbl">Elástico</span><div class="seg elchips">`+
           NIVEIS_ELASTICO.map(n=>`<button class="elch ${nivel===n?'on':''}" data-nivel="${attrEsc(n)}">${he(n)}</button>`).join("")+`</div></div></div>`;
+      } else if(ex.tipo==="caixa"){
+        const alt=r.cargaParcial||"";
+        cargaBox=`<div class="cbox caixa">`+ALTURAS_CAIXA.map(([nome,hs])=>`<div class="grp"><span>Caixa ${nome}</span><div class="seg cxchips">`+
+          hs.map(h=>`<button class="cxch ${alt===h+" cm"?'on':''}" data-alt="${h} cm">${h}</button>`).join("")+`</div></div>`).join("")+`<small>cm</small></div>`;
       } else if(!isCarga){
         cargaBox=`<div class="grp"><span>Carga</span><span class="fixed">${he(ex.cargaLabel || (ex.tipo==='pc'?'PC':'tempo'))}</span></div>`;
       } else {
@@ -1447,6 +1455,7 @@ function wirePanel(c){
       if(repsInp) repsInp.classList.toggle("faltou", falta.includes("reps"));
       const pesoInp=line.querySelector('.cbox .cin[data-c="peso"]'); if(pesoInp) pesoInp.classList.toggle("faltou", falta.includes("carga"));
       const chips=line.querySelector('.elchips'); if(chips) chips.classList.toggle("faltou", falta.includes("nivel"));
+      line.querySelectorAll('.cxchips').forEach(x=>x.classList.toggle("faltou", falta.includes("altura")));
       if(card){ const n=card.querySelectorAll(".exline.pend").length; const b=card.querySelector(".pendbadge");
         if(b){ b.textContent = n? n+" pendente"+(n>1?"s":"") : "completo"; b.classList.toggle("ok", n===0); } }
     };
@@ -1491,6 +1500,14 @@ function wirePanel(c){
       line.querySelectorAll(".elch").forEach(b=>b.onclick=()=>{
         line.querySelectorAll(".elch").forEach(x=>x.classList.toggle("on", x===b));
         upsert(c,aluno,ex,{montagem:"elastico",cargaParcial:b.dataset.nivel,cargaTotal:""});
+        flagReps();
+      });
+    }
+    if(ex.tipo==="caixa"){
+      // altura da caixa (cm, não é carga): guarda em cargaParcial ("45 cm"), sem cargaTotal
+      line.querySelectorAll(".cxch").forEach(b=>b.onclick=()=>{
+        line.querySelectorAll(".cxch").forEach(x=>x.classList.toggle("on", x===b));
+        upsert(c,aluno,ex,{montagem:"caixa",cargaParcial:b.dataset.alt,cargaTotal:""});
         flagReps();
       });
     }
