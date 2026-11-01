@@ -201,6 +201,40 @@ tr.stop td:first-child{box-shadow:inset 3px 0 0 var(--accent)}
   h2{font-size:27px}
 }
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+/* relatório do aluno: uma tela do app por cima da ficha, com a mesma barra, o mesmo bloco de resultado e a mesma tabela;
+   imprime sozinho, na regra de papel branco da ficha (ver @media print) */
+body.rel-aberto{overflow:hidden}
+#relatorio{position:fixed;inset:0;z-index:60;overflow:auto;overscroll-behavior:contain;padding:0 var(--gutter) 48px;background-color:var(--bg);
+  background-image:radial-gradient(ellipse 70% 50% at 50% 112%,rgba(209,90,69,.13),transparent 70%);background-attachment:fixed}
+.rel-acoes{flex-wrap:wrap}
+.rel-wrap{max-width:1040px;margin:0 auto}
+#rel-faltas:empty{display:none}
+#rel-faltas ul{margin:6px 0 0;padding-left:18px;font-weight:500}
+.rel-dica{margin:0 0 18px}
+.rel-aviso{margin:0 0 14px;font-size:13.5px;font-weight:600;color:var(--ink2)}
+.rel-aviso:empty{display:none}
+#rel-texto{margin:0 0 18px}
+.rel-cab{padding:6px 0 4px}
+.rel-cab h2{font-size:40px}
+.rel-cab .lead{margin-top:6px}
+.rel-sec{margin-top:28px}
+.rel-sec>h3{margin-bottom:10px}
+.rel-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:14px 24px;padding:18px 20px;border:1px solid var(--line);border-radius:var(--r-lg);background:var(--surface)}
+.rel-stats b{display:block;font-size:22px;font-weight:600;line-height:1.2;letter-spacing:-.01em}
+.rel-stats span{font-size:12.5px;color:var(--muted)}
+.rel-grid{display:grid;grid-template-columns:320px minmax(0,1fr);gap:20px;align-items:start}
+.rel-nota{margin:0}
+#rel-folha td{padding:9px 12px}
+#rel-folha th{padding:10px 12px}
+#rel-folha td:nth-child(n+3),#rel-folha th:nth-child(n+3){text-align:right}
+.rel-explica{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.rel-explica .decision{font-size:14px}
+.rel-explica strong{display:block;margin-bottom:4px;color:var(--ink);font-weight:600}
+.rel-explica p{margin:0}
+.rel-recado-papel{display:none;margin:0;white-space:pre-wrap}
+.rel-rodape{display:flex;justify-content:space-between;flex-wrap:wrap;gap:4px 16px;margin-top:28px;padding-top:14px;border-top:1px solid var(--line);font-size:13px;color:var(--muted)}
+@media screen and (max-width:820px){.rel-grid,.rel-explica{grid-template-columns:minmax(0,1fr)}}
+@media screen and (max-width:600px){.rel-acoes{width:100%;margin-left:0}.rel-acoes .btn{flex:1 1 auto}#rel-print{order:-1;flex-basis:100%}.rel-cab h2{font-size:32px}#rel-folha th:nth-child(2),#rel-folha td:nth-child(2){display:none}#rel-folha td,#rel-folha th{padding:8px 8px}}
 /* impressão (Cmd+P): papel branco e texto escuro, mesmo sem "imprimir planos de fundo"; como a impressão do Registro de Carga */
 @media print{
   :root{--bg:#fff;--solid:#fff;--raised:#fff;--surface:#fff;--surface2:#f4f3f1;--surface3:#ebe8e3;
@@ -217,6 +251,37 @@ tr.stop td:first-child{box-shadow:inset 3px 0 0 var(--accent)}
   .tab[aria-selected="true"] small{color:var(--muted)}
   .tablebox,.saved .tablebox{overflow:visible;max-height:none}
   .result,.tablebox,.alerts li,.decision{break-inside:avoid}
+  /* com o relatório aberto, a impressão (e o PDF) sai só com o relatório, na mesma regra de papel branco da ficha;
+     no papel, o resultado vira uma faixa (número à esquerda, dados à direita) e a tabela vem embaixo, na largura toda */
+  body.rel-aberto>*:not(#relatorio){display:none!important}
+  body.rel-aberto{overflow:visible}
+  body.rel-aberto #relatorio{position:static;overflow:visible;padding:0;background:none}
+  #relatorio .appbar{min-height:0;margin:0 0 10px;padding:0 0 8px}
+  #relatorio .brand img{height:28px}
+  .rel-acoes,.rel-dica,.rel-aviso,#rel-faltas,#rel-texto{display:none!important}
+  #rel-folha{font-size:13.5px}
+  .rel-cab{padding:0}
+  .rel-cab h2{font-size:30px}
+  .rel-sec{margin-top:12px}
+  .rel-sec>h3{margin-bottom:7px}
+  .rel-stats{grid-template-columns:repeat(4,minmax(0,1fr));padding:10px 16px}
+  .rel-stats b{font-size:18px}
+  .rel-grid{grid-template-columns:minmax(0,1fr);gap:10px}
+  .rel-grid .result{display:grid;grid-template-columns:200px minmax(0,1fr);gap:8px 28px;padding:14px 18px}
+  .rel-grid .big{grid-row:span 2}
+  .rel-grid .big .v{font-size:40px}
+  .rel-grid .rel-nota,.rel-grid .kv{grid-column:2}
+  .rel-grid .kv{grid-template-columns:repeat(4,max-content);justify-content:start;gap:4px 14px;font-size:13px}
+  .rel-grid .kv dd{margin-right:18px;white-space:nowrap}
+  #rel-folha th{padding:6px 12px}
+  #rel-folha td{padding:4px 12px}
+  .rel-explica{gap:10px}
+  .rel-explica .decision{padding:9px 13px;font-size:12px;line-height:1.45}
+  .rel-teste,.rel-como,.rel-recado-sec{break-inside:avoid}
+  #rel-recado{display:none}
+  .rel-recado-papel{display:block}
+  .rel-recado-sec.vazio{display:none}
+  .rel-rodape{margin-top:12px;padding-top:8px;font-size:11.5px}
 }
 </style>
 </head>
@@ -260,6 +325,7 @@ tr.stop td:first-child{box-shadow:inset 3px 0 0 var(--accent)}
 
   </fieldset>
   <div class="actions">
+    <button class="btn primary" id="btn-rel" type="button">Relatório do aluno</button>
     <button class="btn" id="btn-copy" type="button">Copiar resumo</button>
     <span class="msg" id="msg" role="status"></span>
   </div>
@@ -276,6 +342,23 @@ tr.stop td:first-child{box-shadow:inset 3px 0 0 var(--accent)}
     <button class="btn primary" id="loginBtn" type="button">Entrar</button>
     <button class="btn" id="loginDepois" type="button">Continuar sem entrar</button>
     <p id="loginErro" role="status"></p>
+  </div>
+</div>
+<div id="relatorio" hidden role="dialog" aria-modal="true" aria-labelledby="rel-titulo">
+  <header class="appbar">
+    <div class="brand"><img src="../img/fabrik-logo.png" alt="Fabrik"><h1>Avaliação VO<sub>2</sub></h1></div>
+    <div class="appright rel-acoes">
+      <button class="btn" id="rel-fechar" type="button">Fechar</button>
+      <button class="btn" id="rel-msg" type="button">Mensagem para o aluno</button>
+      <button class="btn primary" id="rel-print" type="button">Imprimir ou salvar PDF</button>
+    </div>
+  </header>
+  <div class="rel-wrap">
+    <div class="banner warn" id="rel-faltas"></div>
+    <p class="note rel-dica">Para enviar por WhatsApp ou e-mail: salve o PDF e anexe junto com a mensagem. No iPad, a tela de impressão tem o botão Compartilhar.</p>
+    <p class="rel-aviso" id="rel-aviso" role="status"></p>
+    <textarea class="copyfall" id="rel-texto" hidden readonly aria-label="Mensagem para o aluno"></textarea>
+    <article id="rel-folha"></article>
   </div>
 </div>
 <template id="tpl-review">
@@ -327,7 +410,7 @@ tr.stop td:first-child{box-shadow:inset 3px 0 0 var(--accent)}
     <div class="decision"><strong>Corrida submáxima · estágios de 3 min + conta do ACSM.</strong> O teste de corrida submáxima com equação própria que encontrei (George 1993) foi feito com 129 pessoas treinadas de 18 a 29 anos; num estudo independente com 32 universitários, a correlação com o VO₂ medido foi de r = 0,50 (McNaughton 1998). O ACSM diz que não há protocolo submáximo específico para esteira. A proposta segue o método do ACSM: estágios de 3 min ou mais, FC entre 110 bpm e 85% da FCmáx prevista, reta prolongada até a FCmáx prevista. Na bike, esse método superestimou o VO₂ máx em 25,7% em média (Greiwe 1995); não há esse número para a corrida. Por isso o dado mais útil aqui é a FC na mesma velocidade de uma avaliação para a outra.</div>
     <div class="decision"><strong>Corrida máxima · rampa + FRIEND.</strong> A equação FRIEND foi feita com 7.983 adultos saudáveis com VO₂ medido em teste máximo, usando a velocidade e a inclinação do fim do teste. Erro relativo global de 5,1%, contra 21,4% das equações do ACSM. A ficha usa a velocidade do degrau em que o teste terminou. A rampa (1 km/h por minuto, 0%, velocidade inicial pela regra da casa) é proposta da Fabrik; não encontrei validação específica dela. Os 8–12 min vêm do ACSM.</div>
     <div class="decision"><strong>Bike máxima · FRIEND também.</strong> A FRIEND da bike (5.100 pessoas, feita com a potência no fim de teste máximo) teve viés de 0,5%, contra 15,5% da fórmula do ACSM que a Fabrik usa hoje. Num grupo independente de 1.255 pessoas com idade média de 62 anos, o viés ficou abaixo de 1% (Boulay 2025). A ficha mostra as duas lado a lado, com os watts do último estágio registrado.</div>
-    <div class="decision"><strong>Queda da FC em 1 min.</strong> Cole 1999 considerou anormal a queda de 12 bpm ou menos, com recuperação ativa a 2,4 km/h e 2,5%. A Fabrik usa 3 km/h e 0% (esteira) ou 25 W (bike), então o corte serve de referência, sem validação neste protocolo. As faixas Excelente (≥ 30), Muito boa (20–29) e Moderada (13–19) são da casa, sem fonte.</div>
+    <div class="decision"><strong>Queda da FC em 1 min.</strong> Cole 1999 considerou anormal a queda de 12 bpm ou menos, com recuperação ativa a 2,4 km/h e 2,5%. A Fabrik usa 3 km/h e 0% (esteira) ou 25 W (bike), então o corte serve de referência, sem validação neste protocolo. As faixas Excelente (≥ 30), Muito boa (20–29) e Moderada (13–19) são da casa, sem fonte. Na ficha, a classificação e o corte de 12 bpm aparecem só nos testes máximos; nos submáximos, só o número.</div>
   </section>
 
   <section>
@@ -458,7 +541,7 @@ const P=[
    Onde os dados ficam (mesmo esquema do Registro de Carga):
    1) no aparelho, na hora: cada avaliação com alteração ainda não confirmada fica numa chave DA ABA
       ("fichaVO2.doc.<id>.<aba>"). Uma aba nunca grava nem apaga a chave de outra aba aberta;
-      a chave de uma aba que foi fechada é assumida pela próxima.
+      a chave de uma aba que foi fechada é assumida pela próxima (menos a da avaliação aberta na tela, enviada da chave dela).
    2) no banco do Registro de Carga (tabela avaliacoes_vo2), SÓ pela função salvar_avaliacao_vo2:
       ela compara a versão do servidor (rev) que esta aba conhecia; se outra aba/aparelho gravou antes,
       salva uma CÓPIA em vez de sobrescrever. Reenvio do mesmo envio não duplica.
@@ -493,6 +576,9 @@ function pendenciasDe(id){return pendencias().filter(x=>x.id===id).sort((a,b)=>S
 function adotarOrfas(){
   pendencias().forEach(x=>{
     if(abaViva(x.tab))return;
+    // a da avaliação aberta na tela fica na chave dela: a tela tem outro conteúdo e o save desta aba a apagaria.
+    // Ela é enviada assim mesmo (o flush envia as pendências de abas fechadas). No boot L.docId ainda é null.
+    if(x.id===L.docId)return;
     if(!lsGet(minhaKey(x.id))){if(lsSet(minhaKey(x.id),JSON.stringify(x.ent)))lsDel(x.key)}
     // se esta aba já tem pendência da mesma avaliação, a órfã fica onde está e é enviada mesmo assim (vira cópia se preciso)
   });
@@ -727,10 +813,16 @@ function compute(p){
   const test=rows.filter(r=>!r.warm);
   const done=test.filter(r=>r.fc!=null);
   const last=done.length?done[done.length-1]:null;
+  // fim do teste (bike e esteira máx): último estágio com carga e com FC ou PSE anotado. A velocidade da esteira
+  // já nasce preenchida, então só a FC ou a PSE da linha mostram que o estágio foi feito.
+  const usaFim=p.id==="bsub"||p.id==="bmax"||p.id==="emax";
+  const carga=r=>p.kind==="bike"?n(r.w):n(r.vel);
+  const fimI=usaFim?test.map((r,i)=>carga(r)!=null&&(r.fc!=null||r.pse!=null)?i:-1).filter(i=>i>=0).pop():undefined;
+  const fim=fimI==null?null:test[fimI];
   const fcs=rows.map(r=>r.fc).filter(x=>x!=null);
   const fcpico=n(st.fcpico)??(fcs.length?Math.max(...fcs):null);
   const fc1=n(st.fc1);const drop=(fcpico!=null&&fc1!=null)?fcpico-fc1:null;
-  const out={rows,main:null,mainLabel:"",mainNote:"",kv:[],al,fcpico,fc1,drop};
+  const out={rows,main:null,mainLabel:"",mainNote:"",kv:[],al,fcpico,fc1,drop,fim};
   if(a.idade==null&&!a.medOk)al.push(["bad","Preencha a idade: a FCmáx prevista depende dela."]);
   if(a.fcmed!=null&&!a.medOk)al.push(["bad","FCmáx medida fora de "+FCMED_MIN+"–"+FCMED_MAX+" bpm: confira o número. Enquanto isso, a ficha usa a prevista."]);
   if(a.medOk)al.push(["ok","Usando a FCmáx medida ("+f0(a.fcmed)+" bpm)"+(a.fcprev?" no lugar da prevista ("+f0(a.fcprev)+" bpm).":".")]);
@@ -739,24 +831,29 @@ function compute(p){
   if(a.med)al.push(["bad","Remédio que altera a FC: as estimativas que usam a FC podem não valer para este aluno (o ACSM exclui esse caso no método submáximo). Decida com o Alex."]);
   if(!a.cinta)al.push(["warn","Use a cinta de FC no peito (padrão Fabrik; nos testes do console, o manual exige ou recomenda monitor de FC)."]);
   if(!a.parq&&(p.id==="bmax"||p.id==="emax"))al.push(["warn","PAR-Q não está em dia. Confirme com o Alex antes de um teste máximo."]);
+  if(usaFim){
+    const fora=test.filter((r,i)=>(fimI==null||i>fimI)&&(r.fc!=null||r.pse!=null||(p.kind==="bike"&&n(r.w)!=null))).map(r=>r.t+" min");
+    if(fora.length)al.push(["warn",(fora.length>1?"Os estágios "+fora.join(", ")+" têm":"O estágio "+fora[0]+" tem")+" dado incompleto (falta carga ou FC/PSE) e "+(fora.length>1?"ficaram":"ficou")+" fora da conta: confira."]);
+    if(fim&&fim.fc==null)al.push(["warn","O último estágio ("+fim.t+" min) não tem FC anotada: o resultado usa a carga dele; a FC pico vem dos outros estágios."]);
+  }
 
   if(p.id==="bsub"){
-    const w=last?n(last.w):null;
-    out.main=last?F.bikeACSM(w,a.peso):null;out.mainLabel="VO₂ no último estágio";out.mainNote="Valor do esforço em que o aluno parou. Não é o VO₂ máximo.";
+    const w=fim?n(fim.w):null;
+    out.main=fim?F.bikeACSM(w,a.peso):null;out.mainLabel="VO₂ no último estágio";out.mainNote="Valor do esforço em que o aluno parou. Não é o VO₂ máximo.";
     const pts=test.filter(r=>r.fc!=null&&r.vo2!=null&&r.fc>=110&&a.fcmax&&r.fc<=0.85*a.fcmax).map(r=>({fc:r.fc,vo2:r.vo2}));
     const ex=F.extrap(pts,a.fcmax);
-    out.kv=[["Último estágio",last?last.plan+" · "+f0(w)+" W":"—"],["% da FCmáx "+a.fonte,pct(last?last.pf:null)],["Estimativa do máximo (extrapolação ACSM)",f1(ex)],["Estágios usados na extrapolação",String(pts.length)]];
+    out.kv=[["Último estágio",fim?fim.plan+" · "+f0(w)+" W":"—"],["% da FCmáx "+a.fonte,pct(fim?fim.pf:null)],["Estimativa do máximo (extrapolação ACSM)",f1(ex)],["Estágios usados na extrapolação",String(pts.length)]];
     if(pts.length<2&&done.length)al.push(["warn","Extrapolação precisa de 2 estágios com FC entre 110 bpm e 85% da FCmáx "+a.fonte+"."]);
     if(ex!=null)al.push(["warn","A extrapolação superestimou o VO₂ máx em 25,7% em média (Greiwe 1995). Use para comparar o aluno com ele mesmo."]);
     if(done.length)al.push(["warn","Estágios de 2 min: o ACSM pede 3 min ou mais para a FC estabilizar."]);
   }
   if(p.id==="bmax"){
-    const w=last?n(last.w):null;
+    const w=fim?n(fim.w):null;
     const acsm=F.bikeACSM(w,a.peso),fr=F.bikeFRIEND(w,a.peso);
     out.main=acsm;out.mainLabel="VO₂ máx estimado · fórmula atual (ACSM)";out.mainNote="Watts do último estágio registrado (fim do teste).";
-    out.kv=[["Estágio final",last?last.plan+" · "+f0(w)+" W":"—"],["VO₂ pela equação FRIEND (proposta)",f1(fr)],["Diferença FRIEND × ACSM",(acsm!=null&&fr!=null)?f1(fr-acsm):"—"],["FC pico · % da "+a.fonte,fcpico!=null?f0(fcpico)+" · "+pct(a.fcmax?fcpico/a.fcmax:null):"—"],["PSE final",last&&last.pse!=null?f0(last.pse):"—"]];
+    out.kv=[["Estágio final",fim?fim.plan+" · "+f0(w)+" W":"—"],["VO₂ pela equação FRIEND (proposta)",f1(fr)],["Diferença FRIEND × ACSM",(acsm!=null&&fr!=null)?f1(fr-acsm):"—"],["FC pico · % da "+a.fonte,fcpico!=null?f0(fcpico)+" · "+pct(a.fcmax?fcpico/a.fcmax:null):"—"],["PSE final",fim&&fim.pse!=null?f0(fim.pse):"—"]];
     if(w!=null&&(w<50||w>200))al.push(["warn","Watts fora de 50–200 W: fora da faixa de precisão declarada pelo ACSM para esta equação."]);
-    if(last&&last.pse!=null&&last.pse<10)al.push(["warn","PSE final abaixo de 10: o teste pode não ter chegado ao máximo."]);
+    if(fim&&fim.pse!=null&&fim.pse<10)al.push(["warn","PSE final abaixo de 10: o teste pode não ter chegado ao máximo."]);
   }
   if(p.id==="ecam"){
     const r1=rows[0],r2=rows[1];const v=n(r1.vel);
@@ -779,16 +876,18 @@ function compute(p){
     if(test.some(r=>r.fc!=null&&n(r.vel)!=null&&n(r.vel)<8))al.push(["warn","A equação de corrida do ACSM é mais precisa acima de 8 km/h."]);
   }
   if(p.id==="emax"){
-    const v=last?n(last.vel):null,g=last?n(last.incl):null;
+    const v=fim?n(fim.vel):null,g=fim?n(fim.incl):null;
     const fr=(v!=null&&g!=null)?F.runFRIEND(v,g):null,ac=(v!=null&&g!=null)?F.runACSM(v,g):null;
     out.main=fr;out.mainLabel="VO₂ máx estimado (FRIEND)";out.mainNote="Velocidade e inclinação do degrau em que o teste terminou (pico).";
-    const durMin=done.length*1;
-    out.kv=[["Degrau final (pico)",v!=null?f1(v)+" km/h · "+f1(g)+"%":"—"],["Duração da rampa",done.length?durMin+" min":"—"],["VO₂ pela equação ACSM (comparação)",f1(ac)],["FC pico · % da "+a.fonte,fcpico!=null?f0(fcpico)+" · "+pct(a.fcmax?fcpico/a.fcmax:null):"—"],["PSE final",last&&last.pse!=null?f0(last.pse):"—"]];
-    if(done.length&&(durMin<8||durMin>12))al.push(["warn","Rampa de "+durMin+" min. O ideal é 8–12 min: na próxima, ajuste a velocidade inicial."]);
-    if(last&&last.pse!=null&&last.pse<10)al.push(["warn","PSE final abaixo de 10: o teste pode não ter chegado ao máximo."]);
+    const durMin=fim?(fimI+1)*p.dur:null;   // posição do degrau final na rampa, não a contagem de degraus com FC
+    out.kv=[["Degrau final (pico)",v!=null?f1(v)+" km/h · "+f1(g)+"%":"—"],["Duração da rampa",fim?durMin+" min":"—"],["VO₂ pela equação ACSM (comparação)",f1(ac)],["FC pico · % da "+a.fonte,fcpico!=null?f0(fcpico)+" · "+pct(a.fcmax?fcpico/a.fcmax:null):"—"],["PSE final",fim&&fim.pse!=null?f0(fim.pse):"—"]];
+    if(fim&&(durMin<8||durMin>12))al.push(["warn","Rampa de "+durMin+" min. O ideal é 8–12 min: na próxima, ajuste a velocidade inicial."]);
+    if(fim&&fim.pse!=null&&fim.pse<10)al.push(["warn","PSE final abaixo de 10: o teste pode não ter chegado ao máximo."]);
   }
-  const rc=recovClass(drop);
+  // ---------- M3: a classificação e o corte de Cole vêm de testes até o máximo: só nos máximos; nos submáximos, só o número
+  const rc=(p.id==="bmax"||p.id==="emax")?recovClass(drop):null;
   if(rc)out.kv.push(["Queda da FC em 1 min",f0(drop)+" bpm · "+rc[0]]);
+  else if(drop!=null)out.kv.push(["Queda da FC em 1 min",f0(drop)+" bpm"]);
   if(rc)al.push([rc[1]==="bad"?"bad":"warn",(rc[1]==="bad"?"Queda de 12 bpm ou menos: no estudo de Cole 1999 esse valor foi considerado anormal, com recuperação a 2,4 km/h e 2,5%; a Fabrik usa outra recuperação, então o corte é uma referência, não validado aqui. ":"")+"As faixas Excelente, Muito boa e Moderada são classificação da casa, sem fonte."]);
   return out;
 }
@@ -862,14 +961,24 @@ function summary(){
   L.push("FICHA VO₂ FABRIK");
   L.push(`Aluno: ${a.nome||"—"} · Data: ${a.data||"—"} · Avaliador: ${a.aval||"—"}`);
   L.push(`Idade: ${a.idade||"—"} · Peso: ${a.peso||"—"} kg · Sexo: ${a.sexo==="m"?"M":a.sexo==="f"?"F":"—"} · FCmáx prevista: ${A0.fcprev?f0(A0.fcprev):"—"}${A0.medOk?" · FCmáx medida: "+f0(A0.fcmed)+" (usada nas contas)":""} · FC repouso: ${a.fcrep||"—"}`);
-  P.filter(p=>!p.review&&S.p[p.id]).forEach(p=>{
-    const o=compute(p);if(!o.rows.some(r=>r.fc!=null))return;
+  const sn=v=>v?"sim":"não",tem=v=>String(v??"").trim()!=="";
+  L.push(`PAR-Q em dia: ${sn(a.parq)} · Cinta de FC: ${sn(a.cinta)} · Remédio que altera a FC: ${sn(a.med)}`);
+  // entra todo teste com algum dado anotado (velocidade e inclinação da esteira já nascem preenchidas: não contam)
+  const ps=P.filter(p=>!p.review&&S.p[p.id]).filter(p=>{const st=S.p[p.id];return st.rows.some(r=>tem(r.fc)||tem(r.pse)||tem(r.w))||tem(st.fcpico)||tem(st.fc1)||tem(st.obs)});
+  const os=ps.map(p=>compute(p)),at=o=>o.al.filter(x=>x[0]!=="ok").map(x=>x[1]);
+  // com mais de um teste, os alertas de texto igual em todos (idade, peso, remédio, cinta) saem uma vez só, aqui
+  const comuns=os.length>1?at(os[0]).filter(t=>os.every(o=>at(o).includes(t))):[];
+  comuns.forEach(t=>L.push("Atenção: "+t));
+  ps.forEach((p,k)=>{
+    const o=os[k];
     L.push("");L.push("— "+p.titulo+(p.status==="proposta"?" (proposta)":""));
-    o.rows.forEach(r=>{if(r.fc==null&&r.pse==null)return;
+    o.rows.forEach(r=>{if(r.fc==null&&r.pse==null&&n(r.w)==null)return;
       const load=p.kind==="bike"?`${r.plan}${n(r.w)!=null?" ("+r.w+" W)":""}`:`${r.vel||S.p[p.id].rows[0].vel} km/h ${r.incl}%`;
       L.push(`  ${r.t} min · ${load} · FC ${r.fc??"—"} · PSE ${r.pse??"—"} · VO₂ ${f1(r.vo2)}`)});
     L.push(`  ${o.mainLabel}: ${f1(o.main)} ml/kg/min`);
     o.kv.forEach(([k,v])=>L.push(`  ${k}: ${v}`));
+    L.push(`  FC pico: ${o.fcpico!=null?f0(o.fcpico)+" bpm":"—"} · FC após 1 min: ${o.fc1!=null?f0(o.fc1)+" bpm":"—"}`);
+    at(o).filter(t=>!comuns.includes(t)).forEach(t=>L.push("  Atenção: "+t));
     if(S.p[p.id].obs)L.push("  Obs.: "+S.p[p.id].obs);
   });
   return L.join("\n");
@@ -928,6 +1037,119 @@ window.addEventListener("storage",e=>{
   Sync.banner("warn","Esta avaliação também está aberta em outra aba e foi alterada lá. Nada se perde: as duas versões serão salvas (se forem diferentes, uma vira cópia). Feche uma das abas e continue em uma só.");
 });
 
+/* ---------- relatório do aluno ----------
+   Folha para entregar no fim do teste: mostra os mesmos números da ficha (compute), em linguagem simples.
+   Só lê S; não grava nada. O recado do avaliador é digitado no próprio relatório e não fica salvo. */
+const REL={
+  bsub:{nome:"Bike · teste submáximo",rotulo:"Consumo de oxigênio no último estágio",
+    nota:"Mostra o esforço em que você parou. O teste submáximo não vai até o limite, então este número não é o seu máximo."},
+  bmax:{nome:"Bike · teste máximo",rotulo:"VO₂ máximo estimado"},
+  ecam:{nome:"Esteira · caminhada",rotulo:"VO₂ máximo estimado",nota:"A fórmula deste teste tem margem de cerca de 5 ml/kg/min, para mais ou para menos."},
+  esub:{nome:"Esteira · corrida submáxima",rotulo:"VO₂ máximo estimado",nota:"É uma estimativa com margem grande. Na reavaliação, o que mais conta é a sua frequência cardíaca na mesma velocidade."},
+  emax:{nome:"Esteira · corrida máxima",rotulo:"VO₂ máximo estimado"}
+};
+let relTituloAntes=document.title,relChave=null;
+const relRecados={};
+const dataBR=d=>/^\d{4}-\d{2}-\d{2}$/.test(d||"")?d.split("-").reverse().join("/"):(d||"");
+const f01=x=>x==null?"—":x.toLocaleString("pt-BR",{maximumFractionDigits:1});
+// testes com FC registrada ou com estágio final; só os que têm resultado principal entram na folha e na mensagem
+function relTestes(){return P.filter(p=>!p.review&&S.p[p.id]).map(p=>({p,o:compute(p)})).filter(x=>x.o.rows.some(r=>r.fc!=null)||x.o.fim)}
+// estágio final: o mesmo da ficha (o.fim na bike e na esteira máx); na esteira submáx, o último com FC
+function relUltimo(p,o){if(p.id==="bsub"||p.id==="bmax"||p.id==="emax")return o.fim;const done=o.rows.filter(r=>!r.warm&&r.fc!=null);return done[done.length-1]||null}
+function relNota(p,o){
+  const last=relUltimo(p,o);
+  if((p.id==="bmax"||p.id==="emax")&&last&&last.pse!=null&&last.pse<10)
+    return "O teste terminou com esforço percebido "+f01(last.pse)+" de 10, então este número pode estar abaixo do seu máximo.";
+  return REL[p.id].nota||"";
+}
+function relTeste(p,o,a){
+  const R=REL[p.id],last=relUltimo(p,o),nota=relNota(p,o);
+  const vel=r=>n(r.mirror?o.rows[0].vel:r.vel);
+  const kv=[];
+  if(p.kind==="bike"){if(last&&n(last.w)!=null)kv.push(["Carga final",f0(n(last.w))+" W"])}
+  else if(p.kind==="walk"){if(vel(o.rows[0])!=null)kv.push(["Velocidade da caminhada",f1(vel(o.rows[0]))+" km/h"])}
+  else if(last&&vel(last)!=null)kv.push(["Velocidade final",f1(vel(last))+" km/h"]);
+  if(o.fcpico!=null){kv.push(["FC pico",f0(o.fcpico)+" bpm"]);if(a.fcmax)kv.push(["% da FC máxima "+a.fonte,pct(o.fcpico/a.fcmax)])}
+  // a classificação da queda (Cole) vem de testes até o máximo; nos submáximos, só o número
+  const rc=(p.id==="bmax"||p.id==="emax")?recovClass(o.drop):null;
+  if(o.drop!=null)kv.push(["Queda da FC em 1 min",f0(o.drop)+" bpm"]);
+  if(rc)kv.push(["Recuperação",rc[0].replace(/ \(.*\)$/,"")]);
+  const linhas=o.rows.filter(r=>r.fc!=null||r.pse!=null).map(r=>{
+    const cg=p.kind==="bike"?(n(r.w)!=null?f0(n(r.w))+" W":"—"):(vel(r)!=null?f1(vel(r))+" km/h · "+f01(n(r.incl)??0)+"%":"—");
+    return `<tr><td class="num">${esc(r.t)}</td><td>${esc(r.fase)}</td><td class="num">${cg}</td><td class="num">${r.fc!=null?f0(r.fc):"—"}</td><td class="num">${f01(r.pse)}</td></tr>`}).join("");
+  return `<section class="rel-sec rel-teste"><h3>${esc(R.nome)}</h3>
+    <div class="rel-grid">
+      <div class="result">
+        <div class="big"><span class="u">${esc(R.rotulo)}</span><span class="v num">${f1(o.main)}</span><span class="u">ml/kg/min</span></div>
+        ${nota?`<p class="note rel-nota">${esc(nota)}</p>`:""}
+        ${kv.length?`<dl class="kv">${kv.map(([k,v])=>`<dt>${esc(k)}</dt><dd class="num">${esc(v)}</dd>`).join("")}</dl>`:""}
+      </div>
+      <div class="tablebox"><table><thead><tr><th>Tempo (min)</th><th>Fase</th><th>${p.kind==="bike"?"Carga":"Velocidade · inclinação"}</th><th>FC (bpm)</th><th>Esforço (0–10)</th></tr></thead><tbody>${linhas}</tbody></table></div>
+    </div>
+  </section>`;
+}
+function relFolha(T){
+  const s=S.aluno,a=A(),nome=(s.nome||"").trim();
+  const dados=[[a.idade!=null?f01(a.idade)+" anos":"","idade"],[a.peso!=null?f01(a.peso)+" kg":"","peso"],[n(s.fcrep)!=null?f0(n(s.fcrep))+" bpm":"","FC de repouso"],[a.fcmax?f0(a.fcmax)+" bpm":"","FC máxima "+a.fonte]].filter(x=>x[0]);
+  const quando=[dataBR(s.data),s.aval?"avaliação feita por "+s.aval:""].filter(Boolean).join(" · ");
+  return `<header class="rel-cab"><h3>Avaliação cardiorrespiratória</h3><h2 id="rel-titulo">${esc(nome||"Aluno")}</h2>${quando?`<p class="lead">${esc(quando)}</p>`:""}</header>
+    ${dados.length?`<section class="rel-sec"><h3>Dados do aluno</h3><div class="rel-stats">${dados.map(([v,k])=>`<div><b class="num">${esc(v)}</b><span>${k}</span></div>`).join("")}</div></section>`:""}
+    ${T.map(({p,o})=>relTeste(p,o,a)).join("")}
+    ${a.med?`<ul class="alerts rel-sec"><li class="warn">Você usa remédio que altera a frequência cardíaca. Os números que dependem da FC servem para comparar você com você mesmo, nas mesmas condições.</li></ul>`:""}
+    <section class="rel-sec rel-como"><h3>Como ler</h3><div class="rel-explica">
+      <div class="decision"><strong>O que é o VO₂</strong><p>É a quantidade de oxigênio que o corpo consegue usar por minuto, para cada quilo de peso. Coração, pulmões e músculos trabalham juntos para chegar a esse número. Quanto maior, mais fôlego para sustentar esforço.</p></div>
+      <div class="decision"><strong>Como ler este resultado</strong><p>É uma estimativa calculada por fórmula a partir do que você fez no teste, não uma medida de laboratório. O valor mais útil é a comparação com você mesmo: na reavaliação, repetimos o mesmo teste, nas mesmas condições.</p></div>
+      <div class="decision"><strong>Recuperação da FC</strong><p>É quanto a frequência cardíaca cai no primeiro minuto depois do esforço. Em geral, uma queda maior indica uma recuperação melhor.</p></div>
+    </div></section>
+    <section class="rel-sec rel-recado-sec"><h3 id="rel-recado-rot">Recado do avaliador</h3><textarea id="rel-recado" rows="3" aria-labelledby="rel-recado-rot" placeholder="Opcional. Sai no PDF; não fica salvo na ficha."></textarea><p class="rel-recado-papel" id="rel-recado-papel"></p></section>
+    <footer class="rel-rodape"><span>Fabrik · Studio Boutique · Lago Sul, Brasília</span><span>${esc(dataBR(s.data))}</span></footer>`;
+}
+function relMensagem(T){
+  const s=S.aluno,pn=((s.nome||"").trim().split(/\s+/)[0])||"",d=dataBR(s.data);
+  const res=T.map(({p,o})=>`${REL[p.id].nome}: ${f1(o.main)} ml/kg/min (${p.id==="bsub"?"consumo de oxigênio no último estágio":REL[p.id].rotulo}).`).join("\n");
+  return `Olá${pn?", "+pn:""}. Aqui está o resultado da sua avaliação cardiorrespiratória${d?" de "+d:""}.\n${res}\nO relatório completo vai em PDF. Na reavaliação, repetimos o mesmo teste e comparamos você com você mesmo. Qualquer dúvida, é só responder aqui.`;
+}
+const relComResultado=()=>relTestes().filter(x=>x.o.main!=null);
+function abrirRelatorio(){
+  if(!$("#relatorio").hidden)return;
+  const todos=relTestes(),T=todos.filter(x=>x.o.main!=null);
+  if(!T.length){$("#msg").textContent=todos.length?"Ainda não há resultado para o relatório: confira peso, idade e sexo do aluno e a FC dos estágios.":"Preencha a FC de pelo menos um teste para gerar o relatório.";return}
+  const faltas=[];
+  if(!(S.aluno.nome||"").trim())faltas.push("Falta o nome do aluno.");
+  if(!dataBR(S.aluno.data))faltas.push("Falta a data do teste.");
+  todos.filter(x=>x.o.main==null).forEach(({p})=>faltas.push(REL[p.id].nome+": sem resultado (faltam dados), fica fora do relatório."));
+  T.forEach(({p,o})=>{
+    if(p.status==="proposta")faltas.push(REL[p.id].nome+": protocolo ainda em proposta (aguarda o Alex).");
+    o.al.filter(x=>x[0]==="bad"||/^(PSE final abaixo|Watts fora|O estágio|Os estágios|O último estágio|Uma FC deste teste passou)/.test(x[1])).forEach(x=>faltas.push(REL[p.id].nome+": "+x[1]))});
+  $("#rel-faltas").innerHTML=faltas.length?`Antes de entregar, confira:<ul>${faltas.map(t=>`<li>${esc(t)}</li>`).join("")}</ul>`:"";
+  $("#rel-folha").innerHTML=relFolha(T);
+  relChave=L.docId||"nova";$("#rel-recado").value=relRecados[relChave]||"";relRecadoPapel();
+  $("#rel-aviso").textContent="";$("#rel-texto").hidden=true;
+  relTituloAntes=document.title;
+  document.title="Avaliação VO₂ · "+((S.aluno.nome||"").trim()||"aluno")+(dataBR(S.aluno.data)?" · "+dataBR(S.aluno.data).replace(/\//g,"-"):"");
+  document.querySelectorAll("body>header,body>main").forEach(el=>el.inert=true);
+  $("#relatorio").hidden=false;$("#relatorio").scrollTop=0;document.body.classList.add("rel-aberto");$("#rel-print").focus();
+}
+function fecharRelatorio(){
+  if($("#relatorio").hidden)return;
+  relRecados[relChave]=$("#rel-recado").value.trim();
+  $("#relatorio").hidden=true;document.body.classList.remove("rel-aberto");document.title=relTituloAntes;
+  document.querySelectorAll("body>header,body>main").forEach(el=>el.inert=false);$("#btn-rel").focus();
+}
+$("#btn-rel").addEventListener("click",abrirRelatorio);
+$("#rel-fechar").addEventListener("click",fecharRelatorio);
+$("#rel-print").addEventListener("click",()=>window.print());
+document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!$("#relatorio").hidden)fecharRelatorio()});
+// o recado sai no papel como texto (o campo não imprime bem); sem recado, a seção não sai
+function relRecadoPapel(){const v=$("#rel-recado").value.trim();$("#rel-recado-papel").textContent=v;$(".rel-recado-sec").classList.toggle("vazio",!v)}
+$("#rel-folha").addEventListener("input",e=>{if(e.target.id==="rel-recado")relRecadoPapel()});
+$("#rel-msg").addEventListener("click",async()=>{
+  const txt=relMensagem(relComResultado()),av=$("#rel-aviso"),ta=$("#rel-texto");
+  ta.hidden=true;av.textContent="";
+  if(navigator.share){try{await navigator.share({text:txt});return}catch(e){}}
+  try{await navigator.clipboard.writeText(txt);av.textContent="Mensagem copiada. Cole no WhatsApp ou no e-mail e anexe o PDF."}
+  catch(e){ta.value=txt;ta.hidden=false;ta.focus();ta.select();av.textContent="A mensagem está selecionada abaixo: copie e cole no WhatsApp ou no e-mail."}
+});
 if(!S.aluno.data){S.aluno.data=hoje()}
 loadAluno();renderTabs();renderPanel();renderSaved();Sync.paint();Sync.init();
 })();
