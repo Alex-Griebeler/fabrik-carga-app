@@ -1,0 +1,486 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Sala HIIT Fabrik</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&display=swap">
+<style>
+/* Identidade Fabrik, a mesma do Registro de Carga (aprovada pelo Alex em 25/10 e na TV da sala em 30/10):
+   quase preto com brilho terracota embaixo, creme e terracota; Inter nos textos e Instrument Serif nos títulos.
+   Computador e tablet (sem versão de celular). */
+:root{
+  --bg:#131210;--solid:#1b1916;--raised:#221f1b;
+  --surface:rgba(241,236,228,.035);--surface2:rgba(241,236,228,.07);--surface3:rgba(241,236,228,.12);
+  --ink:#F1ECE4;--ink2:rgba(241,236,228,.84);--muted:rgba(241,236,228,.64);--faint:rgba(241,236,228,.36);
+  --line:rgba(241,236,228,.085);--line2:rgba(241,236,228,.16);--line3:rgba(241,236,228,.28);
+  --accent:#D15A45;--accent-ink:#EE8C75;--accent-bg:rgba(209,90,69,.14);--accent-bg2:rgba(209,90,69,.24);
+  /* etapas da aula na linha do tempo: estímulo em terracota, o resto em creme apagado (igual à TV) */
+  --w:rgba(241,236,228,.16);--x:#D15A45;--r:rgba(241,236,228,.34);
+  --serif:"Instrument Serif",Georgia,serif;--sans:"Inter",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --r-sm:8px;--r-md:10px;--r-lg:14px;--r-xl:18px;--h:44px;--h-sm:40px;--gutter:28px;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{margin:0;padding:0 var(--gutter) 48px;background-color:var(--bg);
+  background-image:radial-gradient(ellipse 70% 50% at 50% 112%,rgba(209,90,69,.13),transparent 70%);background-attachment:fixed;
+  color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.5;font-variant-numeric:tabular-nums;-webkit-font-smoothing:antialiased}
+[hidden]{display:none!important}
+:focus-visible{outline:2px solid var(--accent-ink);outline-offset:2px}
+.wrap{max-width:1360px;margin:0 auto}
+/* barra do app: logo + abas + quem entrou (a mesma barra do Registro de Carga) */
+.appbar{display:flex;align-items:center;gap:32px;height:60px;margin:0 calc(-1*var(--gutter)) 22px;padding:0 var(--gutter);border-bottom:1px solid var(--line);
+  position:sticky;top:0;z-index:30;background:var(--bg)}
+.brand{display:flex;align-items:center;gap:14px}
+.brand img{height:34px;display:block}
+.brand span{font-family:var(--serif);font-size:26px;line-height:1}
+.tabs{display:flex;align-self:stretch;gap:2px}
+.tab{position:relative;height:100%;padding:0 14px;border:0;background:none;color:var(--muted);font-family:var(--sans);font-size:14.5px;font-weight:500;cursor:pointer}
+.tab:hover{color:var(--ink)}
+.tab[aria-current]{color:var(--ink);font-weight:600}
+.tab[aria-current]::after{content:"";position:absolute;left:14px;right:14px;bottom:-1px;height:2px;border-radius:2px;background:var(--accent)}
+.tab .cont{display:inline-grid;place-items:center;min-width:20px;height:20px;padding:0 6px;margin-left:8px;border-radius:99px;background:var(--accent);color:#fff;font-size:11.5px;font-weight:700}
+.tab .cont:empty{display:none}
+.quem{margin-left:auto;display:flex;align-items:center;gap:12px;font-size:13px;color:var(--muted)}
+h1{font-family:var(--serif);font-weight:400;font-size:42px;line-height:.95;letter-spacing:-.015em;margin:0}
+h2{font-family:var(--serif);font-weight:400;font-size:30px;line-height:1;letter-spacing:-.01em;margin:0 0 6px}
+h3{display:flex;align-items:center;gap:6px;font-size:11.5px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin:28px 0 10px}
+.muted{color:var(--muted)}
+.num{font-variant-numeric:tabular-nums}
+label{display:flex;flex-direction:column;gap:6px;font-size:10.5px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}
+input,select{font:inherit;font-size:15px;letter-spacing:0;text-transform:none;height:var(--h);padding:0 12px;color:var(--ink);background:rgba(241,236,228,.04);
+  border:1px solid var(--line2);border-radius:var(--r-md);min-width:0;width:100%;transition:border-color .15s,box-shadow .15s}
+input:hover,select:hover{border-color:var(--line3)}
+input:focus,select:focus{outline:none;border-color:var(--accent-ink);box-shadow:0 0 0 3px var(--accent-bg)}
+input::placeholder{color:var(--faint)}
+select{appearance:none;-webkit-appearance:none;padding-right:34px;cursor:pointer;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23F1ECE4' stroke-opacity='.6' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 12px center}
+select option{background:var(--solid);color:var(--ink)}
+/* botão padrão = contorno; principal = terracota (como no Registro de Carga) */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;height:var(--h);padding:0 18px;font-family:var(--sans);font-size:14px;font-weight:600;border-radius:var(--r-md);
+  border:1px solid var(--line2);background:transparent;color:var(--ink);cursor:pointer;white-space:nowrap;transition:background-color .15s,border-color .15s}
+.btn:hover{background:var(--surface2);border-color:var(--line3)}
+.btn:active{transform:translateY(1px)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn.primary:hover{background:#bf4f3b;border-color:#bf4f3b}
+.btn.primary:active{background:#a9452f}
+.btn.sm{height:var(--h);padding:0 14px;font-size:13.5px;border-radius:var(--r-sm)}
+.btn.ghost{border-color:transparent;color:var(--muted)}
+.btn.ghost:hover{color:var(--ink);background:var(--surface2)}
+.btn:disabled{opacity:.4;cursor:default;transform:none}
+.panel{padding-block:4px}
+.dois{display:grid;grid-template-columns:minmax(260px,320px) minmax(0,1fr);gap:28px;align-items:start}
+@media (max-width:1100px){.dois{grid-template-columns:minmax(220px,260px) minmax(0,1fr);gap:20px}}
+/* tablet em pé: a lista fica em cima (rolável) e o aluno ocupa a largura toda */
+@media (max-width:900px){.dois{grid-template-columns:minmax(0,1fr)}.dois .lado{position:static}.dois .lista{max-height:260px}}
+.lado{position:sticky;top:82px}
+.lista{border:1px solid var(--line);border-radius:var(--r-lg);overflow:hidden;max-height:calc(100vh - 230px);overflow-y:auto;background:var(--surface)}
+.lista button{display:grid;grid-template-columns:1fr auto;gap:2px 8px;width:100%;text-align:left;background:none;border:0;border-bottom:1px solid var(--line);padding:11px 14px;font:inherit;color:var(--ink);cursor:pointer}
+.lista button:last-child{border-bottom:0}
+.lista button:hover{background:var(--surface2)}
+.lista button[aria-current="true"]{background:var(--surface3);box-shadow:inset 3px 0 0 var(--accent)}
+.lista button>span:first-child{font-size:15.5px;font-weight:600}
+.lista small{grid-column:1/-1;color:var(--muted);font-size:12.5px}
+.chip{display:inline-flex;align-items:center;height:24px;padding:0 10px;font-size:12px;font-weight:600;border-radius:99px;background:var(--surface2);color:var(--ink2);white-space:nowrap;vertical-align:middle}
+.chip.ok{background:rgba(241,236,228,.09);color:var(--ink)}
+.chip.warn{background:var(--accent-bg);color:var(--accent-ink)}
+.grade{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px}
+.checks{display:flex;flex-direction:column;gap:10px;margin-top:14px}
+.checks label{flex-direction:row;align-items:center;gap:10px;font-size:14px;font-weight:500;letter-spacing:0;text-transform:none;color:var(--ink);cursor:pointer}
+.checks input{width:22px;height:22px;padding:0;accent-color:var(--accent)}
+.filtros{display:flex;flex-direction:column;gap:8px;margin:12px 0}
+.filtros label{flex-direction:row;align-items:center;gap:10px;font-size:13.5px;font-weight:500;letter-spacing:0;text-transform:none;color:var(--ink2);cursor:pointer}
+.filtros input{width:20px;height:20px;accent-color:var(--accent)}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th,td{text-align:left;padding:11px 14px;border-bottom:1px solid var(--line);vertical-align:middle}
+tbody tr:last-child td{border-bottom:0}
+tbody tr:hover td{background:var(--surface2)}
+th{font-size:10.5px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);background:var(--surface)}
+.tablebox{border:1px solid var(--line);border-radius:var(--r-lg);overflow:hidden;overflow-x:auto;background:var(--surface)}
+.caixa{border:1px solid var(--line);border-radius:var(--r-lg);padding:18px 20px;background:var(--surface)}
+.kv{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:14px}
+.kv div{display:flex;flex-direction:column;gap:2px}.kv b{font-size:24px;font-weight:600;letter-spacing:-.02em}
+.kv span{font-size:12.5px;color:var(--muted)}
+.linha{display:flex;flex-wrap:wrap;gap:10px;align-items:end}
+.linha label{width:auto}
+.prescr td{white-space:nowrap}
+.prescr .nova{display:flex;gap:8px;align-items:center;justify-content:flex-end}
+.prescr .nova input{width:96px;height:var(--h-sm)}
+.prescr td:last-child{text-align:right}
+.prescr tr.editando td{background:var(--surface2);padding-block:10px;box-shadow:inset 3px 0 0 var(--accent)}
+.prescr tr.editando .nova input{width:120px}
+.tl{display:flex;height:8px;border-radius:99px;overflow:hidden;gap:2px;min-width:180px}
+.tl i{display:block;height:100%}.tl i.w,.tl i.c{background:var(--w)}.tl i.x{background:var(--x)}.tl i.r{background:var(--r)}
+.info{display:inline-grid;place-items:center;width:44px;height:44px;margin:-6px 0;border:0;border-radius:50%;background:none;color:var(--muted);cursor:pointer;font-family:var(--sans);font-size:16px;letter-spacing:0;padding:0}
+.info:hover{background:var(--surface2);color:var(--ink)}
+.dica{font-size:14px;color:var(--ink2);background:var(--surface);border-left:3px solid var(--accent);border-radius:0 var(--r-md) var(--r-md) 0;padding:10px 14px;margin:0 0 12px;max-width:72ch}
+.barra-alvo{display:flex;align-items:center;gap:10px}
+.barra-alvo i{display:block;width:70px;height:6px;border-radius:99px;background:var(--surface3);overflow:hidden}
+.barra-alvo i b{display:block;height:100%;background:var(--accent-ink)}
+.estimulos{font-size:13px;color:var(--muted);margin-top:6px}
+.estimulos b{color:var(--ink2);font-weight:600}
+#toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);padding:12px 18px;font-size:14px;font-weight:600;z-index:60;max-width:90vw;
+  background:var(--raised);border:1px solid var(--line2);border-left:4px solid var(--ink);border-radius:var(--r-md);box-shadow:0 14px 40px rgba(0,0,0,.5)}
+#toast.bad{border-left-color:var(--accent);color:var(--accent-ink)}#toast.ok{color:var(--ink)}
+#loginOverlay{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;padding:16px;z-index:50}
+.loginbox{background:var(--raised);border:1px solid var(--line2);border-radius:var(--r-xl);padding:30px;width:min(400px,100%);display:flex;flex-direction:column;gap:14px}
+.loginbox img{height:56px;align-self:center}
+.loginbox h2{text-align:center}
+#loginErro{margin:0;font-size:13px;color:var(--accent-ink);min-height:1em}
+.aviso{padding:12px 16px;background:var(--accent-bg);border:1px solid var(--accent);border-radius:var(--r-lg);color:var(--ink);font-weight:600;margin-top:14px}
+/* aulas dos próximos dias: uma caixa só, um dia por faixa */
+.dias{border:1px solid var(--line);border-radius:var(--r-lg);overflow:hidden;background:var(--surface)}
+.dia{border-top:1px solid var(--line)}
+.dia:first-child{border-top:0}
+.dia header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 16px}
+.dia header b{font-size:15.5px;font-weight:600}.dia header span.muted{font-size:12.5px;font-weight:600;margin-left:10px;color:var(--accent-ink)}
+.dia .aula{display:grid;grid-template-columns:72px minmax(0,1fr) auto;gap:12px;align-items:center;padding:10px 16px;border-top:1px solid var(--line)}
+.dia .aula .h{font-weight:600;font-size:19px;line-height:1;letter-spacing:-.01em}
+.dia .aula.cancelada{opacity:.5}
+.dia .novo{display:grid;grid-template-columns:140px minmax(0,1fr) auto auto;gap:10px;align-items:center;padding:12px 16px;border-top:1px dashed var(--line3);background:var(--surface2)}
+.vazio{padding:12px 16px;border-top:1px solid var(--line);font-size:13.5px;color:var(--faint)}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<header class="appbar">
+  <div class="brand"><img src="img/fabrik-logo.png" alt="Fabrik"><span>Sala HIIT</span></div>
+  <nav class="tabs" id="abas" aria-label="Seções" hidden>
+    <button class="tab" data-aba="alunos" aria-current="page">Alunos</button>
+    <button class="tab" data-aba="testes" title="testes sem aluno">Testes<span class="cont" id="cTestes"></span></button>
+    <button class="tab" data-aba="aulas">Aulas</button>
+    <button class="tab" data-aba="protocolos">Protocolos</button>
+  </nav>
+  <div class="quem"><span id="quem"></span><button class="btn sm ghost" id="sair" type="button" hidden>Sair</button></div>
+</header>
+<main class="wrap">
+  <div id="semAcesso" class="aviso" hidden></div>
+  <section class="panel" id="painel"></section>
+</main>
+<div id="toast" role="status" aria-live="polite" hidden></div>
+<div id="loginOverlay" hidden>
+  <div class="loginbox" role="dialog" aria-modal="true" aria-labelledby="loginTit">
+    <img src="img/fabrik-logo.png" alt="Fabrik"><h2 id="loginTit">Sala HIIT</h2>
+    <label>E-mail<input id="loginEmail" type="email" autocomplete="username"></label>
+    <label>Senha<input id="loginSenha" type="password" autocomplete="current-password"></label>
+    <button class="btn primary" id="loginBtn" type="button">Entrar</button>
+    <p id="loginErro"></p>
+  </div>
+</div>
+<script src="../vendor/supabase.js"></script>
+<script src="regras.js"></script>
+<script>
+(function(){
+"use strict";
+// Banco do Registro de Carga. A anon key é pública por design; a segurança é a RLS + a lista da equipe (hiit_equipe).
+const SUPABASE_CONFIG={url:"https://xmyqwniiaicflfcvjiyj.supabase.co",anonKey:"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhteXF3bmlpYWljZmxmY3ZqaXlqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEwNTU3MDQsImV4cCI6MjA5NjYzMTcwNH0.bDlxgkZEZa7I_lpqzmjgLH0HT2d5MV8nwz_Grz5hj7M"};
+const H=window.HiitRegras;
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const f1=x=>x==null?"—":Number(x).toLocaleString("pt-BR",{minimumFractionDigits:1,maximumFractionDigits:1});
+const f0=x=>x==null?"—":Math.round(x).toLocaleString("pt-BR");
+const mmss=s=>Math.floor(s/60)+":"+String(s%60).padStart(2,"0");
+const hoje=()=>new Intl.DateTimeFormat("en-CA",{timeZone:"America/Sao_Paulo"}).format(new Date());   // dia de Brasília, como o banco e a sala
+const maisDias=(iso,n)=>{const d=new Date(iso+"T12:00:00");d.setDate(d.getDate()+n);return d.toISOString().slice(0,10)};
+const dataBR=iso=>iso?iso.slice(8,10)+"/"+iso.slice(5,7)+"/"+iso.slice(0,4):"—";
+const DIA=["dom","seg","ter","qua","qui","sex","sáb"];
+const NIVEL={ini:"Iniciante",int:"Intermediário",ava:"Avançado"},TIPO={curto:"Curto",longo:"Longo",limiar:"Limiar"},MOD={bike:"Bike",esteira:"Esteira"};
+const MAQ={bike1:"Bike 1",bike2:"Bike 2",esteira1:"Esteira 1",esteira2:"Esteira 2"};
+const ORIGEM={teste:"do teste",treinador:"treinador",sugestao_aceita:"sugestão aceita","recebida_ant+":"da bike",confirmada:"confirmada",ajustada:"ajustada",presumida_prescrita:"presumida",ausente:"—"};
+
+let sb=null,S={papel:null,email:"",alunos:[],perfis:{},avals:[],protos:[],versoes:{},aulas:[],presc:[]},aba="alunos",alunoSel=null,filtro="",soSala=false,semTeste=false,ocupado=false;
+let prescEdit=null,diaAberto=null,abertas=new Set();   // linha de prescrição em edição; dia com "incluir aula" aberto; aulas do histórico abertas
+const NOME_TESTE={bmax:"Bike máx",bsub:"Bike submáx",emax:"Esteira máx",esub:"Esteira submáx",ecam:"Caminhada"};
+const testesTxt=ps=>(ps||[]).map(k=>NOME_TESTE[k]||k).join(" · ");
+
+// com a tela de login aberta (sessão caiu no meio de um clique), o erro técnico do clique não aparece por cima
+function toast(t,tipo){if(!$("#loginOverlay").hidden&&tipo!=="ok")return;const e=$("#toast");e.textContent=t;e.className=tipo||"bad";e.hidden=false;clearTimeout(toast.t);toast.t=setTimeout(()=>e.hidden=true,4500)}
+function msgErro(e){return String((e&&(e.message||e.msg))||e||"erro").replace(/^conflito: /,"")}
+async function todos(tabela,cols,ordem,filtros){
+  let out=[],de=0;const PAG=500;
+  for(;;){let q=sb.from(tabela).select(cols);for(const [c,v] of (filtros||[]))q=q[v[0]](c,v[1]);
+    // ordem: "coluna", [coluna, asc] ou uma lista de [coluna, asc] (desempate na mesma ordem do banco)
+    if(ordem){const lista=Array.isArray(ordem)&&Array.isArray(ordem[0])?ordem:[Array.isArray(ordem)?ordem:[ordem,true]];
+      for(const [c,asc] of lista)q=q.order(c,{ascending:asc!==false})}
+    const {data,error}=await q.range(de,de+PAG-1);if(error)throw error;out=out.concat(data);if(data.length<PAG)return out;de+=PAG}
+}
+// filtro "in" em lotes de 100 (a lista inteira num endereço só passa do tamanho que o servidor aceita)
+async function emLotes(tabela,cols,coluna,ids,extra){let out=[];for(let i=0;i<ids.length;i+=100)
+  out=out.concat(await todos(tabela,cols,null,[[coluna,["in",ids.slice(i,i+100)]],...(extra||[])]));return out}
+async function rpc(fn,args){const {data,error}=await sb.rpc(fn,args);if(error)throw error;return data}
+
+async function carregar(){
+  carregarHistorico.forcar=true;
+  const papel=await rpc("hiit_meu_papel");
+  S.papel=papel;
+  if(!papel){$("#semAcesso").hidden=false;$("#semAcesso").textContent="Seu login não está na equipe da sala HIIT. Peça ao Alex para incluir.";$("#abas").hidden=true;$("#painel").innerHTML="";return}
+  $("#semAcesso").hidden=true;$("#abas").hidden=false;
+  const [alunos,perfis,avals,protos,versoes,aulas,presc]=await Promise.all([
+    todos("alunos","id,nome,ativo","nome",[["ativo",["eq",true]]]),
+    todos("hiit_perfis","*"),
+    // dois testes no mesmo dia: vale o gravado por último na Ficha, como na cópia do dia da sala (ligar não muda essa ordem)
+    todos("avaliacoes_vo2","id,aluno_id,aluno_nome,data_teste,dados,atualizado_em,copia_de,protocolos",[["data_teste",false],["atualizado_em",false],["id",true]]),
+    todos("hiit_protocolos","*","id"),
+    todos("hiit_protocolos_versoes","protocolo_id,versao,etapas","versao"),
+    todos("hiit_aulas_planejadas","*","data",[["data",["gte",maisDias(hoje(),-1)]],["data",["lte",maisDias(hoje(),30)]]]),
+    todos("hiit_prescricoes","*",["criado_em",false])]);
+  S.alunos=alunos;S.perfis=Object.fromEntries(perfis.map(p=>[p.aluno_id,p]));S.avals=avals;S.protos=protos;S.aulas=aulas;S.presc=presc;
+  S.versoes={};for(const v of versoes)S.versoes[v.protocolo_id]=v;   // ordenado por versão: fica a mais nova
+  desenhar();
+}
+// avaliação que vale para o aluno: a mais recente já feita, que não é cópia de conflito (mesma regra da cópia do dia da sala)
+function avalDe(id){return S.avals.find(a=>a.aluno_id===id&&!a.copia_de&&a.data_teste&&a.data_teste<=hoje())||null}
+// vale a mais nova que já começou, feita com um teste que ainda é deste aluno (religado a outro, a prescrição sai, como na sala)
+function prescVigente(id,mod,tipo){return S.presc.filter(p=>p.aluno_id===id&&p.modalidade===mod&&p.tipo_estimulo===tipo&&p.vigente_desde<=hoje()
+    &&S.avals.some(a=>a.id===p.avaliacao_id&&a.aluno_id===id))
+  .sort((a,b)=>a.vigente_desde<b.vigente_desde?1:a.vigente_desde>b.vigente_desde?-1:(a.criado_em<b.criado_em?1:-1))[0]||null}
+function cargaTxt(c,mod){if(!c)return"—";return mod==="bike"||c.watts!=null?f0(c.watts)+" W":f1(c.vel_kmh)+" km/h · "+f0(c.incl_pct)+"%"}
+function faixaTxt(f){if(!f)return"—";return f.watts?f.watts[0]+"–"+f.watts[1]+" W":f1(f.vel_kmh[0])+"–"+f1(f.vel_kmh[1])+" km/h"}
+
+function desenharAluno(){const y=window.scrollY;desenhar();window.scrollTo(0,y)}
+function desenhar(){
+  document.querySelectorAll(".tab").forEach(t=>t.toggleAttribute("aria-current",t.dataset.aba===aba));
+  const naSala=S.alunos.filter(a=>S.perfis[a.id]);
+  const semAluno=S.avals.filter(a=>!a.aluno_id&&!a.copia_de).length;$("#cTestes").textContent=semAluno||"";
+  $("#painel").innerHTML=aba==="alunos"?telaAlunos():aba==="testes"?telaTestes():aba==="aulas"?telaAulas():telaProtocolos();
+  ligar();
+  if(aba==="alunos"&&alunoSel&&S.perfis[alunoSel])carregarHistorico(alunoSel);
+}
+
+// ───────── Alunos ─────────
+function telaAlunos(){
+  const termo=filtro.trim().toLowerCase();
+  const lista=S.alunos.filter(a=>(!soSala||S.perfis[a.id])&&(!semTeste||(S.perfis[a.id]&&!avalDe(a.id)))&&(!termo||a.nome.toLowerCase().includes(termo)));
+  const nSemTeste=S.alunos.filter(a=>S.perfis[a.id]&&!avalDe(a.id)).length;
+  let h=`<div class="dois"><div class="lado"><input id="busca" value="${esc(filtro)}" placeholder="Buscar aluno" aria-label="Buscar aluno">
+  <div class="filtros"><label><input type="checkbox" id="soSala" ${soSala?"checked":""}> Só quem está na sala HIIT</label>
+    <label><input type="checkbox" id="semTeste" ${semTeste?"checked":""}> Na sala e sem teste (${nSemTeste})</label></div><div class="lista">`;
+  for(const a of lista){const p=S.perfis[a.id],av=avalDe(a.id);
+    h+=`<button data-aluno="${esc(a.id)}" aria-current="${a.id===alunoSel}"><span>${esc(a.nome)}</span><span>${p&&!av?'<span class="chip warn">sem teste</span>':""}</span>
+      <small>${p?(av?"teste de "+dataBR(av.data_teste):p.idade!=null?"na sala · FC máx. pela idade":"na sala · sem idade"):"fora da sala HIIT"}${p&&!p.optin_dados?" · sem consentimento":""}</small></button>`}
+  h+=`</div></div><div>${alunoSel?telaAluno(alunoSel):'<p class="muted" style="margin-top:8px">Escolha um aluno na lista.</p>'}</div></div>`;
+  return h}
+function telaAluno(id){
+  const a=S.alunos.find(x=>x.id===id);if(!a)return"";const p=S.perfis[id]||{},novo=!S.perfis[id],av=avalDe(id),R=H.referencias(av,p);
+  let h=`<h1>${esc(a.nome)}</h1><p class="muted" style="margin:6px 0 0">${novo?"Fora da sala HIIT":NIVEL[p.nivel||"int"]+(p.sem_corrida?" · sem corrida":"")+(av?" · teste de "+dataBR(av.data_teste):" · sem teste")}</p>
+  <h3>Perfil na sala <button class="info" data-dica="perfil" title="O que é">ⓘ</button></h3><div class="dica" id="dica-perfil" hidden>Nível, limites e consentimento valem para a TV e para o registro das aulas. O computador da sala só recebe alunos com perfil. Idade e FC de repouso só completam o teste: sem teste máximo, a FC máxima sai de 208 − 0,7 × idade (como no HTML de prescrição) e a TV mostra "falta teste".</div>
+  <div class="caixa"><div class="grade">
+    <label>Apelido na TV<input id="p-apelido" maxlength="24" value="${esc(p.apelido||"")}"></label>
+    <label>Nível<select id="p-nivel">${["ini","int","ava"].map(n=>`<option value="${n}" ${(p.nivel||"int")===n?"selected":""}>${NIVEL[n]}</option>`).join("")}</select></label>
+    <label>Idade (anos)<input id="p-idade" inputmode="numeric" value="${esc(p.idade??"")}"></label>
+    <label>FC de repouso (bpm)<input id="p-fcrep" inputmode="numeric" value="${esc(p.fcrep??"")}"></label>
+    <label>Velocidade máx. (km/h)<input id="p-vel" inputmode="decimal" value="${esc(p.vel_max_kmh??"")}"></label>
+    <label>Inclinação máx. (%)<input id="p-incl" inputmode="decimal" value="${esc(p.incl_max_pct??"")}"></label>
+    <label>Cinta padrão<input id="p-cinta" maxlength="40" value="${esc(p.cinta_padrao||"")}" placeholder="ex.: ANT43139"></label></div>
+  <div class="checks"><label><input type="checkbox" id="p-semcorrida" ${p.sem_corrida?"checked":""}> Sem corrida (dor em joelho, quadril ou lombar)</label>
+    <label><input type="checkbox" id="p-dados" ${p.optin_dados?"checked":""}> Autorizou guardar FC e cargas das aulas (termo LGPD assinado)</label>
+    <label><input type="checkbox" id="p-tv" ${p.optin_tv?"checked":""}> Autorizou aparecer na TV com o nome</label>
+    <label><input type="checkbox" id="p-foto" ${p.optin_foto?"checked":""}> Autorizou a foto na TV</label></div>
+  <div class="linha" style="margin-top:12px"><button class="btn primary" id="salvarPerfil">${novo?"Pôr na sala HIIT":"Salvar perfil"}</button></div></div>`;
+  h+=`<h3>Teste</h3><div class="caixa">`;
+  const fcmaxTxt=`<div><b>${f0(R.fcmax)}</b><span>FC máxima${R.fcmax_fonte==="idade"?" · pela idade ("+f0(R.idade)+" anos)":""}</span></div>`;
+  const fcrepTxt=`<div><b>${f0(R.fcrep)}</b><span>FC de repouso${R.fontes.fcrep==="perfil"?" · do perfil":""}</span></div>`;
+  if(!av&&R.fcmax)h+=`<div class="kv">${fcmaxTxt}${fcrepTxt}</div><div class="dica">Falta teste. Na aula, a faixa de FC sai da idade e a TV mostra "falta teste"; carga só depois do teste. Ligue o teste em <b>Testes</b>.${R.fcrep==null?" Anote também a FC de repouso no perfil: sem ela, só o limiar e o iniciante têm faixa.":""}</div>`;
+  else if(!av)h+=`<p class="muted">Sem teste e sem idade no perfil: na aula, o aluno aparece só com os batimentos. Anote a idade e a FC de repouso no perfil ou ligue um teste em <b>Testes</b>.</p>`;
+  else h+=`<div class="kv"><div><b>${dataBR(av.data_teste)}</b><span>data do teste</span></div>${fcmaxTxt}
+    ${fcrepTxt}<div><b>${R.bike_w?f0(R.bike_w)+" W":"—"}</b><span>bike${R.fontes.bike?" · "+esc(R.fontes.bike):""}</span></div>
+    <div><b>${R.esteira_kmh?f1(R.esteira_kmh)+" km/h":"—"}</b><span>esteira${R.fontes.esteira?" · "+esc(R.fontes.esteira):""}</span></div></div>
+    ${R.avisos.length?`<div class="dica">${R.avisos.map(esc).join(" · ")}</div>`:""}`;
+  h+=`</div>`;
+  if(!novo&&!av)h+=`<h3>Carga prescrita <button class="info" data-dica="semteste" title="Por quê">ⓘ</button></h3><div class="dica" id="dica-semteste" hidden>A carga e a faixa de carga saem do teste. Sem teste, a aula guia pela FC: a FC máxima sai da idade (208 − 0,7 × idade) e a TV mostra "falta teste".</div><p class="muted">Sem teste ligado. Ligue em <b>Testes</b>.</p><h3>Últimas aulas</h3><div id="historico"><p class="muted">Carregando…</p></div>`;
+  if(!novo&&av){
+    const nivel=p.nivel||"int";
+    h+=`<h3>Carga prescrita <button class="info" data-dica="presc" title="O que é">ⓘ</button></h3><div class="dica" id="dica-presc" hidden>A carga que o aluno começa cada estímulo. Sem prescrição, a sala usa a do teste (curto 110%, longo 90%, limiar 85% da referência); iniciante não recebe carga do teste, só a prescrita. A faixa é o alvo da página HIIT. Sem corrida: esteira só em caminhada, até 6,9 km/h.</div>
+    <div class="tablebox"><table class="prescr"><thead><tr><th>Estímulo</th><th>Vale hoje</th><th>Faixa</th><th></th></tr></thead><tbody>`;
+    for(const t of ["curto","longo","limiar"])for(const m of ["bike","esteira"]){
+      const v=prescVigente(id,m,t),doTeste=H.cargaDoTeste(t,m,R,nivel),faixa=H.faixaCarga(t,nivel,m,R);
+      const atual=v?cargaTxt(v,m)+` <span class="chip">${esc(ORIGEM[v.origem]||v.origem)} · ${dataBR(v.vigente_desde)}</span>`:doTeste?cargaTxt(doTeste,m)+' <span class="chip">do teste</span>':'<span class="muted">sem carga</span>';
+      const bloq=m==="esteira"&&p.sem_corrida&&nivel!=="ini";
+      const k=t+"-"+m,editando=prescEdit===k;
+      const ent=bloq?'<span class="muted">sem corrida</span>':!editando?`<button class="btn sm" data-editar="${k}">Alterar</button>`:`<span class="nova">`+(m==="bike"?`<input data-campo="watts" data-k="${k}" inputmode="decimal" placeholder="W" aria-label="watts">`
+        :`<input data-campo="vel_kmh" data-k="${k}" inputmode="decimal" placeholder="${p.sem_corrida?"até 6,9":"km/h"}" aria-label="velocidade"><input data-campo="incl_pct" data-k="${k}" inputmode="decimal" placeholder="%" aria-label="inclinação">`)
+        +`<button class="btn sm primary" data-prescrever="${k}">Prescrever</button><button class="btn sm ghost" data-editar="">Cancelar</button></span>`;
+      h+=`<tr><td>${TIPO[t]} · ${MOD[m]}</td><td>${atual}</td><td class="num">${nivel==="ini"?"pela FC":faixaTxt(faixa)}</td><td>${editando?"":ent}</td></tr>`;
+      if(editando)h+=`<tr class="editando"><td colspan="4">${ent}</td></tr>`}
+    h+=`</tbody></table></div><h3>Últimas aulas</h3><div id="historico"><p class="muted">Carregando…</p></div>`;
+  }
+  return h}
+let histCache={id:null,html:null};
+function ligarHistorico(){document.querySelectorAll("[data-abrir]").forEach(b=>b.onclick=()=>{const id=b.dataset.abrir;abertas.has(id)?abertas.delete(id):abertas.add(id);
+  histCache.id=null;carregarHistorico(alunoSel)})}
+async function carregarHistorico(id){
+  const box=$("#historico");if(!box)return;
+  if(histCache.id===id&&histCache.html&&!carregarHistorico.forcar){box.innerHTML=histCache.html;ligarHistorico();return}
+  carregarHistorico.forcar=false;
+  try{
+    const parts=await todos("hiit_participacoes","id,sessao_id,maquina,tempo_alvo_s,tempo_valido_s,fc_media,fc_max,zona_conferida",null,[["aluno_id",["eq",id]]]);
+    if(!parts.length){box.innerHTML='<p class="muted">Nenhuma aula registrada.</p>';histCache={id,html:box.innerHTML};return}
+    const ses=await emLotes("hiit_sessoes","id,data,protocolo_id,iniciada_em","id",parts.map(p=>p.sessao_id));
+    const sMap=Object.fromEntries(ses.map(s=>[s.id,s]));
+    const linhas=parts.map(p=>({p,s:sMap[p.sessao_id]})).filter(x=>x.s).sort((a,b)=>a.s.iniciada_em<b.s.iniciada_em?1:-1).slice(0,15);
+    const et=await emLotes("hiit_etapas_feitas","participacao_id,etapa_idx,tipo,carga,carga_origem,fc_media_ult_min,tempo_alvo_s,tempo_valido_s",
+      "participacao_id",linhas.map(x=>x.p.id),[["tipo",["eq","x"]]]);
+    // uma linha por aula; os estímulos abrem ao tocar
+    const resumo=xs=>{if(!xs.length)return"—";const mod=e=>e.carga&&e.carga.watts!=null?"bike":"esteira";
+      const cs=xs.map(e=>cargaTxt(e.carga,mod(e))),igual=cs.every(c=>c===cs[0]);
+      const fcs=xs.map(e=>e.fc_media_ult_min).filter(x=>x!=null);
+      return `${xs.length}× ${igual?cs[0]:cs[0]+" → "+cs[cs.length-1]}${fcs.length?" · FC "+Math.min(...fcs)+"–"+Math.max(...fcs):""}`};
+    box.innerHTML=`<div class="tablebox"><table><thead><tr><th>Data</th><th>Protocolo</th><th>Máquina</th><th>No alvo</th><th>FC média / máx</th><th>Estímulos</th></tr></thead><tbody>`+
+      linhas.map(({p,s})=>{const xs=et.filter(e=>e.participacao_id===p.id).sort((a,b)=>a.etapa_idx-b.etapa_idx);
+        const pr=S.protos.find(x=>x.id===s.protocolo_id),pct=p.tempo_valido_s?Math.round(p.tempo_alvo_s/p.tempo_valido_s*100):null,aberta=abertas.has(p.id);
+        return `<tr><td>${dataBR(s.data)}</td><td>${esc(pr?pr.nome:s.protocolo_id)}</td><td>${esc(MAQ[p.maquina]||p.maquina)}</td>
+        <td><span class="barra-alvo">${pct==null?"—":`<i><b style="width:${pct}%"></b></i>${pct}%`}${p.zona_conferida===false?' <span class="chip" title="O teste foi editado ou religado depois da aula, ou o nível mudou: o banco não conseguiu conferir a faixa. Não use esta aula para ajustar carga.">não conferida</span>':""}</span></td>
+        <td class="num">${f0(p.fc_media)} / ${f0(p.fc_max)}</td>
+        <td>${resumo(xs)}${xs.length?` <button class="btn sm ghost" data-abrir="${esc(p.id)}">${aberta?"fechar":"ver"}</button>`:""}
+          ${aberta?`<div class="estimulos">${xs.map((e,i)=>`<div>${i+1}. <b>${cargaTxt(e.carga,e.carga&&e.carga.watts!=null?"bike":"esteira")}</b> · ${esc(ORIGEM[e.carga_origem]||e.carga_origem||"")} · FC ${f0(e.fc_media_ult_min)}</div>`).join("")}</div>`:""}</td></tr>`}).join("")+`</tbody></table></div>`;
+    histCache={id,html:box.innerHTML};ligarHistorico();
+  }catch(e){box.innerHTML=`<p class="muted">Não consegui carregar o histórico: ${esc(msgErro(e))}</p>`}
+}
+
+// ───────── Testes ─────────
+function telaTestes(){
+  const sem=S.avals.filter(a=>!a.aluno_id&&!a.copia_de),com=S.avals.filter(a=>a.aluno_id&&!a.copia_de);
+  const ops=sel=>'<option value="">— aluno —</option>'+S.alunos.map(a=>`<option value="${esc(a.id)}" ${a.id===sel?"selected":""}>${esc(a.nome)}</option>`).join("");
+  const nomeDe=id=>(S.alunos.find(a=>a.id===id)||{}).nome||id;
+  let h=`<h1>Testes</h1><h3>Testes sem aluno <button class="info" data-dica="testes" title="O que é">ⓘ</button></h3><div class="dica" id="dica-testes" hidden>A Ficha VO₂ guarda o nome digitado. Para a sala usar o teste, escolha aqui o aluno do cadastro. Nada é ligado automaticamente pelo nome.</div>`;
+  h+=sem.length?`<div class="tablebox"><table><thead><tr><th>Nome digitado</th><th>Data</th><th>Testes</th><th>Aluno do cadastro</th><th></th></tr></thead><tbody>`+
+    sem.map(a=>`<tr><td>${esc(a.aluno_nome||"(sem nome)")}</td><td>${dataBR(a.data_teste)}</td><td>${esc(testesTxt(a.protocolos))}</td><td><select data-ligar-sel="${esc(a.id)}">${ops("")}</select></td><td><button class="btn sm primary" data-ligar="${esc(a.id)}">Ligar</button></td></tr>`).join("")+`</tbody></table></div>`
+    :'<p class="muted">Nenhum teste sem aluno.</p>';
+  h+=`<h3>Testes ligados</h3>`+(com.length?`<div class="tablebox"><table><thead><tr><th>Aluno</th><th>Data</th><th>Testes</th><th>Trocar para</th><th></th></tr></thead><tbody>`+
+    com.map(a=>`<tr><td>${esc(nomeDe(a.aluno_id))}${a.aluno_nome&&a.aluno_nome.trim().toLowerCase()!==String(nomeDe(a.aluno_id)).toLowerCase()?`<div class="muted" style="font-size:12.5px">digitado: ${esc(a.aluno_nome)}</div>`:""}</td><td>${dataBR(a.data_teste)}</td><td>${esc(testesTxt(a.protocolos))}</td><td><select data-ligar-sel="${esc(a.id)}">${ops(a.aluno_id)}</select></td><td><button class="btn sm" data-ligar="${esc(a.id)}">Trocar</button></td></tr>`).join("")+`</tbody></table></div>`
+    :'<p class="muted">Nenhum teste ligado ainda.</p>');
+  return h}
+
+// ───────── Aulas ─────────
+function protosAtivos(){return S.protos.filter(p=>p.ativo&&S.versoes[p.id])}
+// etapas viram classe e estilo CSS: só os 4 tipos conhecidos e duração numérica
+function tl(etapas){return `<span class="tl">${etapas.map(e=>`<i class="${["w","x","r","c"].includes(e.k)?e.k:"w"}" style="flex:${Number.isFinite(Number(e.dur))?Math.max(0,Number(e.dur)):0}"></i>`).join("")}</span>`}
+function telaAulas(){
+  const ops=sel=>{const atual=sel&&S.protos.find(p=>p.id===sel&&!p.ativo);
+    return (sel?"":'<option value="">— protocolo —</option>')+(atual?`<option value="${esc(atual.id)}" selected>${esc(atual.nome)} (arquivado)</option>`:"")
+      +protosAtivos().map(p=>`<option value="${esc(p.id)}" ${p.id===sel?"selected":""}>${esc(p.nome)}</option>`).join("")};
+  let h=`<h1>Próximos 14 dias</h1><h3>Aulas planejadas <button class="info" data-dica="aulas" title="O que é">ⓘ</button></h3><div class="dica" id="dica-aulas" hidden>O computador da sala baixa as aulas do dia antes da primeira turma. Mudança feita durante uma aula vale para a seguinte. Cancelar não apaga.</div>`;
+  h+=`<div class="dias">`;
+  for(let i=0;i<14;i++){const d=maisDias(hoje(),i),dow=new Date(d+"T12:00:00").getDay();
+    const doDia=S.aulas.filter(a=>a.data===d).sort((a,b)=>a.horario<b.horario?-1:1);
+    h+=`<div class="dia"><header><div><b>${DIA[dow]} ${dataBR(d).slice(0,5)}</b>${i===0?'<span class="muted">hoje</span>':""}</div>
+      ${diaAberto===d?"":`<button class="btn sm" data-abrir-dia="${d}">+ Incluir aula</button>`}</header>`;
+    for(const a of doDia){h+=`<div class="aula ${a.cancelada?"cancelada":""}"><span class="h">${esc(a.horario)}</span><span class="linha" style="align-items:center"><select data-troca-p="${esc(a.id)}" style="max-width:420px">${ops(a.protocolo_id)}</select>${a.cancelada?' <span class="chip warn">cancelada</span>':""}</span>
+      <span class="linha"><button class="btn sm primary" data-troca="${esc(a.id)}" hidden>Salvar</button><button class="btn sm ghost" data-cancela="${esc(a.id)}">${a.cancelada?"Reativar":"Cancelar"}</button></span></div>`}
+    if(!doDia.length&&diaAberto!==d)h+=`<div class="vazio">Sem aula</div>`;
+    if(diaAberto===d)h+=`<div class="novo"><input type="time" data-novo-h="${d}" step="300" aria-label="Horário"><select data-novo-p="${d}" aria-label="Protocolo">${ops("")}</select>
+      <button class="btn sm primary" data-novo="${d}">Incluir</button><button class="btn sm ghost" data-abrir-dia="">Cancelar</button></div>`;
+    h+=`</div>`}
+  return h+`</div>`}
+
+// ───────── Protocolos ─────────
+function telaProtocolos(){
+  let h=`<h1>Protocolos</h1><h3>Novo protocolo <button class="info" data-dica="proto" title="O que é">ⓘ</button></h3><div class="dica" id="dica-proto" hidden>Aquecimento de 5:00 e volta à calma de 5:00 entram sozinhos. Regras da turma: a aula inteira cabe em 30 min, e no curto o estímulo tem 1 min ou mais.</div>
+  <div class="caixa"><div class="grade"><label style="grid-column:span 2">Nome<input id="n-nome" maxlength="80" placeholder="ex.: Longo 6 × 2:00 / 1:00"></label>
+    <label>Tipo<select id="n-tipo"><option value="longo">Longo</option><option value="curto">Curto</option><option value="limiar">Limiar</option></select></label>
+    <label>Estímulos<input id="n-n" inputmode="numeric" value="6"></label><label>Estímulo (m:ss)<input id="n-e" value="2:00"></label><label>Recuperação (m:ss)<input id="n-r" value="1:00"></label></div>
+    <div class="linha" style="margin-top:12px"><span class="muted" id="n-total"></span><button class="btn primary" id="criarProto">Criar protocolo</button></div></div>
+  <h3>Todos os protocolos</h3><div class="tablebox"><table><thead><tr><th>Protocolo</th><th>Tipo</th><th>Linha do tempo</th><th>Duração</th><th></th></tr></thead><tbody>`;
+  const ord=[...S.protos].sort((a,b)=>(b.ativo-a.ativo)||a.tipo.localeCompare(b.tipo)||a.nome.localeCompare(b.nome,"pt-BR",{numeric:true}));
+  for(const p of ord){const v=S.versoes[p.id];if(!v)continue;const tot=v.etapas.reduce((s,e)=>s+e.dur,0);
+    h+=`<tr style="${p.ativo?"":"opacity:.55"}"><td>${esc(p.nome)}${p.id.includes("-t-")?' <span class="chip">do treinador</span>':""}</td><td>${TIPO[p.tipo]}</td><td>${tl(v.etapas)}</td><td class="num">${mmss(tot)}</td>
+    <td><button class="btn sm" data-arquivar="${esc(p.id)}" data-ativo="${p.ativo?0:1}">${p.ativo?"Arquivar":"Reativar"}</button></td></tr>`}
+  return h+`</tbody></table></div>`}
+const seg=t=>{const m=String(t||"").trim().match(/^(\d{1,2}):([0-5]\d)$/);return m?+m[1]*60+ +m[2]:(/^\d+$/.test(String(t).trim())?+t:null)};
+function totalNovo(){const n=+$("#n-n").value,e=seg($("#n-e").value),r=seg($("#n-r").value);const el=$("#n-total");
+  if(!(n>0)||e==null||r==null){el.textContent="Preencha estímulos e tempos.";return}
+  const t=600+n*(e+r);el.textContent="Aula de "+mmss(t)+(t>1800?" · passa de 30:00":"")}
+
+// ───────── ações ─────────
+async function acao(fn,msgOk){if(ocupado)return;ocupado=true;const y=window.scrollY;
+  try{await fn();if(msgOk)toast(msgOk,"ok");await carregar();window.scrollTo(0,y)}catch(e){toast(msgErro(e))}finally{ocupado=false}}
+function ligar(){
+  document.querySelectorAll(".tab").forEach(t=>t.onclick=()=>{aba=t.dataset.aba;desenhar()});
+  document.querySelectorAll("[data-dica]").forEach(b=>b.onclick=()=>{const d=$("#dica-"+b.dataset.dica);if(d)d.hidden=!d.hidden});
+  const busca=$("#busca");if(busca){busca.oninput=()=>{filtro=busca.value;const pos=busca.selectionStart;desenhar();const b=$("#busca");b.focus();b.setSelectionRange(pos,pos)}}
+  const so=$("#soSala");if(so)so.onchange=()=>{soSala=so.checked;desenhar()};
+  const st=$("#semTeste");if(st)st.onchange=()=>{semTeste=st.checked;desenhar()};
+  document.querySelectorAll("[data-aluno]").forEach(b=>b.onclick=()=>{alunoSel=b.dataset.aluno;prescEdit=null;desenhar()});
+  document.querySelectorAll("[data-editar]").forEach(b=>b.onclick=()=>{prescEdit=b.dataset.editar||null;desenharAluno();
+    const i=prescEdit&&document.querySelector(`[data-k="${prescEdit}"]`);if(i)i.focus()});
+  document.querySelectorAll("[data-abrir-dia]").forEach(b=>b.onclick=()=>{diaAberto=b.dataset.abrirDia||null;desenhar()});
+  // aula cancelada não tem Salvar: o protocolo escolhido vale ao reativar
+  document.querySelectorAll("[data-troca-p]").forEach(sel=>sel.onchange=()=>{const a=S.aulas.find(x=>x.id===sel.dataset.trocaP);
+    document.querySelector(`[data-troca="${sel.dataset.trocaP}"]`).hidden=a.cancelada||sel.value===a.protocolo_id});
+  const sp=$("#salvarPerfil");if(sp)sp.onclick=()=>acao(async()=>{
+    const p=S.perfis[alunoSel];
+    // idade e FC de repouso: vazio ou inteiro possível (os mesmos limites da sala e do HTML de prescrição)
+    const inteiro=(sel,lo,hi,nome)=>{const v=$(sel).value.trim();if(v==="")return"";const n=Number(v.replace(",","."));
+      if(!Number.isInteger(n)||n<lo||n>hi)throw new Error(`${nome}: número inteiro de ${lo} a ${hi}, ou vazio.`);return String(n)};
+    const idade=inteiro("#p-idade",14,95,"Idade"),fcrep=inteiro("#p-fcrep",30,110,"FC de repouso");
+    await rpc("hiit_salvar_perfil",{p:{aluno_id:alunoSel,apelido:$("#p-apelido").value.trim(),nivel:$("#p-nivel").value,sem_corrida:$("#p-semcorrida").checked,idade,fcrep,
+      optin_tv:$("#p-tv").checked,optin_foto:$("#p-foto").checked,optin_dados:$("#p-dados").checked,vel_max_kmh:$("#p-vel").value.trim().replace(",","."),
+      incl_max_pct:$("#p-incl").value.trim().replace(",","."),cinta_padrao:$("#p-cinta").value.trim()},p_base_rev:p?p.rev:null})},"Perfil salvo.");
+  document.querySelectorAll("[data-prescrever]").forEach(b=>b.onclick=()=>{
+    const [t,m]=b.dataset.prescrever.split("-"),val=c=>{const e=document.querySelector(`[data-k="${t}-${m}"][data-campo="${c}"]`);return e?e.value.trim().replace(",","."):""};
+    const av=avalDe(alunoSel),p={aluno_id:alunoSel,modalidade:m,tipo_estimulo:t,avaliacao_id:av?av.id:null};
+    if(m==="bike"){if(!val("watts"))return toast("Digite os watts.");p.watts=val("watts")}else{if(!val("vel_kmh"))return toast("Digite a velocidade.");p.vel_kmh=val("vel_kmh");p.incl_pct=val("incl_pct")||"0"}
+    prescEdit=null;acao(()=>rpc("hiit_prescrever",{p}),"Carga prescrita.")});
+  document.querySelectorAll("[data-ligar]").forEach(b=>b.onclick=()=>{const id=b.dataset.ligar,al=document.querySelector(`[data-ligar-sel="${id}"]`).value;
+    if(!al)return toast("Escolha o aluno.");
+    const av=S.avals.find(x=>x.id===id);
+    if(av&&av.aluno_id&&av.aluno_id!==al){const de=(S.alunos.find(x=>x.id===av.aluno_id)||{}).nome||"o aluno";
+      if(!confirm(`Trocar o teste de ${de} para outro aluno? As cargas prescritas de ${de} com este teste deixam de valer.`))return}
+    else if(av&&av.aluno_id===al)return toast("O teste já é deste aluno.");
+    // vai junto o dono que esta tela conhece: se outra pessoa ligou o teste nesse meio-tempo, o banco recusa
+    acao(()=>rpc("hiit_ligar_avaliacao",{p_avaliacao_id:id,p_aluno_id:al,p_aluno_antes:av?av.aluno_id:null}),"Teste ligado ao aluno.")});
+  document.querySelectorAll("[data-novo]").forEach(b=>b.onclick=()=>{const d=b.dataset.novo,h=document.querySelector(`[data-novo-h="${d}"]`).value,p=document.querySelector(`[data-novo-p="${d}"]`).value;
+    if(!h||!p)return toast("Escolha horário e protocolo.");
+    const ja=S.aulas.find(x=>x.data===d&&x.horario===h);   // o banco recusaria como conflito; aqui dá para dizer o que fazer
+    if(ja)return toast(`Já existe aula às ${h}: ${ja.cancelada?"reative a aula":"troque o protocolo na aula"} que está na lista.`);
+    diaAberto=null;acao(()=>rpc("hiit_planejar_aula",{p_data:d,p_horario:h,p_protocolo_id:p,p_base_rev:null}),"Aula incluída.")});
+  document.querySelectorAll("[data-troca]").forEach(b=>b.onclick=()=>{const a=S.aulas.find(x=>x.id===b.dataset.troca),p=document.querySelector(`[data-troca-p="${a.id}"]`).value;
+    acao(()=>rpc("hiit_planejar_aula",{p_data:a.data,p_horario:a.horario,p_protocolo_id:p,p_base_rev:a.rev,p_cancelar:false}),"Aula salva.")});
+  document.querySelectorAll("[data-cancela]").forEach(b=>b.onclick=()=>{const a=S.aulas.find(x=>x.id===b.dataset.cancela);
+    if(!a.cancelada&&!confirm("Cancelar a aula das "+a.horario+"? Ela some da sala, mas fica registrada."))return;
+    const p=a.cancelada?document.querySelector(`[data-troca-p="${a.id}"]`).value:a.protocolo_id;   // reativa com o protocolo escolhido
+    acao(()=>rpc("hiit_planejar_aula",{p_data:a.data,p_horario:a.horario,p_protocolo_id:p,p_base_rev:a.rev,p_cancelar:!a.cancelada}),a.cancelada?"Aula reativada.":"Aula cancelada.")});
+  const np=$("#n-n");if(np){["#n-n","#n-e","#n-r"].forEach(s=>$(s).oninput=totalNovo);totalNovo();
+    $("#criarProto").onclick=()=>{const e=seg($("#n-e").value),r=seg($("#n-r").value);if(e==null||r==null)return toast("Tempos no formato m:ss.");
+      acao(()=>rpc("hiit_criar_protocolo",{p_nome:$("#n-nome").value.trim(),p_tipo:$("#n-tipo").value,p_n:+$("#n-n").value,p_estimulo_s:e,p_recuperacao_s:r}),"Protocolo criado.")}}
+  document.querySelectorAll("[data-arquivar]").forEach(b=>b.onclick=()=>(b.dataset.ativo==="1"||confirm("Arquivar este protocolo? Ele sai da lista de aulas novas; as aulas antigas continuam."))&&acao(()=>rpc("hiit_arquivar_protocolo",{p_id:b.dataset.arquivar,p_ativo:b.dataset.ativo==="1"}),b.dataset.ativo==="1"?"Protocolo reativado.":"Protocolo arquivado."));
+}
+
+// ───────── login ─────────
+function mostrarLogin(){$("#loginOverlay").hidden=false;setTimeout(()=>$("#loginEmail").focus(),50)}
+async function entrar(){
+  const email=$("#loginEmail").value.trim(),pw=$("#loginSenha").value;
+  if(!email||!pw){$("#loginErro").textContent="Preencha e-mail e senha.";return}
+  $("#loginErro").textContent="Entrando…";
+  const {error}=await sb.auth.signInWithPassword({email,password:pw});
+  if(error){$("#loginErro").textContent=error.message||"Não foi possível entrar.";return}
+  $("#loginSenha").value="";$("#loginErro").textContent="";$("#loginOverlay").hidden=true;await iniciar();
+}
+async function iniciar(){
+  const {data}=await sb.auth.getSession();const s=data&&data.session;
+  if(!s){mostrarLogin();return}
+  $("#quem").textContent=s.user&&s.user.email||"";$("#sair").hidden=false;
+  try{await carregar()}catch(e){toast("Não consegui carregar: "+msgErro(e))}
+}
+$("#loginBtn").onclick=entrar;$("#loginSenha").onkeydown=e=>{if(e.key==="Enter")entrar()};
+// sem rede o servidor pode não responder: espera até 4 s e tira a sessão deste aparelho de qualquer jeito
+// (só as chaves do /hiit/; a sessão do Registro de Carga e da Ficha fica)
+let saindo=false;
+$("#sair").onclick=async()=>{$("#sair").disabled=true;saindo=true;
+  try{await Promise.race([sb.auth.signOut({scope:"local"}),new Promise(r=>setTimeout(r,4000))])}catch(e){}
+  try{Object.keys(localStorage).filter(k=>k.startsWith("hiit.fabrik.auth")).forEach(k=>localStorage.removeItem(k))}catch(e){}
+  location.reload()};
+if(!window.supabase||!SUPABASE_CONFIG.url){$("#semAcesso").hidden=false;$("#semAcesso").textContent="Sem conexão com o banco. Confira a internet e recarregue.";return}
+sb=window.supabase.createClient(SUPABASE_CONFIG.url,SUPABASE_CONFIG.anonKey,{auth:{persistSession:true,autoRefreshToken:true,storageKey:"hiit.fabrik.auth"}});
+// sessão encerrada por fora (o "Sair" do Registro vale para todos os aparelhos do login): volta ao login em vez de seguir com a tela velha
+sb.auth.onAuthStateChange(ev=>{if(ev!=="SIGNED_OUT")return;$("#abas").hidden=true;$("#painel").innerHTML="";$("#semAcesso").hidden=true;
+  $("#quem").textContent="";$("#sair").hidden=true;$("#toast").hidden=true;
+  if(!saindo)$("#loginErro").textContent="Sua sessão terminou. Entre de novo.";mostrarLogin()});
+iniciar();
+})();
+</script>
+</body>
+</html>
