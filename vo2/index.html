@@ -11,7 +11,7 @@
 /* Identidade Fabrik, a mesma do Registro de Carga e da Sala HIIT: quase preto com brilho terracota embaixo, creme e terracota;
    Inter nos textos e números, Instrument Serif nos títulos. Terracota cheio = protocolo aberto e ação principal.
    Alertas sem cor nova: terracota cheio de fundo = parar ou falta dado; só a borda terracota = atenção; borda creme = ok.
-   Layout: barra com o logo e o salvamento, dados do aluno, abas dos 5 protocolos; em cada aba a tabela de estágios ao lado do resultado. */
+   Layout: barra com o logo e o salvamento, dados do aluno, menu dos 5 protocolos; em cada protocolo a tabela de estágios ao lado do resultado. */
 :root{
   --bg:#131210;--solid:#1b1916;--raised:#221f1b;
   --surface:rgba(241,236,228,.035);--surface2:rgba(241,236,228,.07);--surface3:rgba(241,236,228,.12);
@@ -109,18 +109,17 @@ fieldset.ro{border:0;margin:0;padding:0;min-width:0}
 .checks{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:4px 28px}
 .checks label{flex-direction:row;align-items:center;gap:10px;min-height:var(--h);font-size:14px;font-weight:500;letter-spacing:0;text-transform:none;color:var(--ink);cursor:pointer}
 .checks input{flex:0 0 auto;width:22px;height:22px;padding:0;margin:0;accent-color:var(--accent)}
-/* abas dos protocolos: a aberta fica em terracota cheio, como o bloco atual no Registro de Carga */
-.tabs{display:flex;flex-wrap:wrap;gap:8px;padding-top:22px}
-.tab{flex:0 0 auto;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:1px;min-height:50px;padding:6px 18px;
-  font-family:var(--sans);font-size:14.5px;font-weight:600;line-height:1.25;text-align:left;color:var(--ink2);background:transparent;
-  border:1px solid var(--line2);border-radius:var(--r-md);cursor:pointer;transition:background-color .15s,border-color .15s}
-.tab small{font-size:11.5px;font-weight:500;color:var(--muted)}
-.tab:hover{background:var(--surface2);border-color:var(--line3)}
-.tab[aria-selected="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
-.tab[aria-selected="true"] small{color:rgba(255,255,255,.82)}
+/* menu dos protocolos: o nome do protocolo aberto faz as vezes de título; o ⓘ ao lado abre Para quem e Como fazer */
+.proto{display:flex;flex-wrap:wrap;align-items:flex-end;gap:10px 12px;padding-top:22px}
+.proto-sel{flex:0 1 460px;min-width:0}
+#sel-proto{height:52px;font-size:17px;font-weight:600}
+.info.solo{margin:0 0 4px;border:1px solid var(--line2);font-size:18px}
+.info[aria-expanded="true"]{background:var(--accent-bg);border-color:var(--accent);color:var(--ink)}
+.proto .chip{margin-bottom:13px}
+.proto-info{margin-top:12px;padding:16px 20px;border:1px solid var(--line);border-radius:var(--r-lg);background:var(--surface)}
+.proto-info .facts{margin:0}
 /* protocolo aberto */
-.panel{padding-block:26px 8px}
-.ptop{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;margin-bottom:16px}
+.panel{padding-block:18px 8px}
 .chip{display:inline-flex;align-items:center;min-height:26px;padding:3px 11px;font-size:12px;font-weight:600;line-height:1.3;border-radius:999px}
 .chip.atual{background:rgba(241,236,228,.09);color:var(--ink)}
 .chip.proposta{background:var(--accent-bg);color:var(--accent-ink)}
@@ -164,12 +163,26 @@ tr.stop td:first-child{box-shadow:inset 3px 0 0 var(--accent)}
 .alerts .bad{background:var(--accent-bg2);border-color:var(--accent);color:var(--ink);font-weight:500}
 .alerts .warn{border-color:var(--accent-ink)}
 .alerts .ok{border-color:var(--ink2)}
+.alerts:empty{display:none}
+/* Detalhes do resultado: o que complementa o número (nota, conta, notas de método), recolhido */
+.det-btn{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;min-height:var(--h);padding:0 14px;font:inherit;font-size:13.5px;font-weight:600;
+  color:var(--ink2);background:transparent;border:1px solid var(--line2);border-radius:var(--r-md);cursor:pointer;transition:background-color .15s,border-color .15s}
+.det-btn:hover{background:var(--surface2);border-color:var(--line3)}
+.det-btn::after,.linkbtn::after{content:"";flex:none;width:7px;height:7px;border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:translateY(-2px) rotate(45deg)}
+.det-btn[aria-expanded="true"]::after,.linkbtn[aria-expanded="true"]::after{transform:translateY(2px) rotate(-135deg)}
+.det{display:flex;flex-direction:column;gap:12px}
+.det .note{margin:0}
 /* rodapé: copiar resumo */
 .actions{display:flex;flex-wrap:wrap;gap:10px 14px;align-items:center;padding-top:20px;border-top:1px solid var(--line);margin-top:12px}
 .actions .msg{font-size:13px;color:var(--muted)}
 .copyfall{width:100%;min-height:160px;margin-top:12px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12.5px}
-/* aba "Decisões da esteira" */
-.review{max-width:80ch;display:flex;flex-direction:column;gap:26px}
+/* Decisões da esteira: acesso discreto no fim da página, recolhido */
+.decisoes{margin-top:6px}
+.linkbtn{display:inline-flex;align-items:center;gap:10px;min-height:var(--h);padding:0;font:inherit;font-size:13.5px;font-weight:500;color:var(--muted);
+  background:none;border:0;cursor:pointer;text-decoration:underline;text-decoration-color:var(--line3);text-underline-offset:3px}
+.linkbtn:hover{color:var(--ink)}
+.review{max-width:80ch;display:flex;flex-direction:column;gap:22px;margin-top:10px}
+.review>p{margin:0}
 .review section{display:flex;flex-direction:column;gap:10px}
 .review p,.review li{font-size:15px;color:var(--ink2)}
 .review section>p{margin:0}
@@ -247,8 +260,9 @@ body.rel-aberto{overflow:hidden}
   input,select,textarea{background:#fff}
   select{background-image:none}
   tr.warm td,tr.rec td{background:var(--surface2)}
-  .tab[aria-selected="true"]{background:none;border:2px solid var(--ink);color:var(--ink)}
-  .tab[aria-selected="true"] small{color:var(--muted)}
+  /* no papel sai o que a tela recolhe: Para quem, Como fazer e os detalhes do resultado */
+  #proto-info[hidden],#r-det[hidden]{display:block!important}
+  #btn-proto-info,#btn-det,#btn-dec{display:none!important}
   .tablebox,.saved .tablebox{overflow:visible;max-height:none}
   .result,.tablebox,.alerts li,.decision{break-inside:avoid}
   /* com o relatório aberto, a impressão (e o PDF) sai só com o relatório, na mesma regra de papel branco da ficha;
@@ -312,16 +326,21 @@ body.rel-aberto{overflow:hidden}
     <label>FCmáx prevista<input id="a-fcmax" readonly title="208 − 0,7 × idade"></label>
     <label for="a-fcmed"><span class="lbl">FCmáx medida<button type="button" class="info" data-dica="fcmed" title="O que é">ⓘ</button></span><input id="a-fcmed" inputmode="numeric" placeholder="opcional"></label>
     <label>FC de repouso<input id="a-fcrep" inputmode="numeric"></label>
-    <div class="dica" id="dica-fcmed" hidden>Preencha só com a FC mais alta medida com a cinta num teste máximo (bike máx ou esteira corrida máx, terminado com PSE 10). Com ela preenchida, a ficha usa esse valor no lugar da fórmula (208 − 0,7 × idade) no limite de parada, na faixa da caminhada e na conta do VO₂. Vazio, continua a fórmula. A fórmula erra cerca de 10 bpm para mais ou para menos de pessoa para pessoa (Tanaka 2001).</div>
+    <div class="dica" id="dica-fcmed" hidden>Preencha só com a FC mais alta medida com o frequencímetro num teste máximo (bike máx ou esteira corrida máx, terminado com PSE 10). Com ela preenchida, a ficha usa esse valor no lugar da fórmula (208 − 0,7 × idade) no limite de parada, na faixa da caminhada e na conta do VO₂. Vazio, continua a fórmula. A fórmula erra cerca de 10 bpm para mais ou para menos de pessoa para pessoa (Tanaka 2001).</div>
     <div class="checks">
       <label><input type="checkbox" id="a-parq"> PAR-Q em dia</label>
-      <label><input type="checkbox" id="a-cinta"> Cinta de FC no peito</label>
+      <label><input type="checkbox" id="a-cinta"> Frequencímetro no peito</label>
       <label><input type="checkbox" id="a-med"> Usa remédio que altera a FC (ex.: betabloqueador)</label>
     </div>
   </section>
 
-  <nav class="tabs" role="tablist" id="tabs"></nav>
-  <div id="panel" class="panel" role="tabpanel"></div>
+  <section class="proto" aria-label="Protocolo">
+    <label class="proto-sel">Protocolo<select id="sel-proto"></select></label>
+    <button type="button" class="info solo" id="btn-proto-info" aria-expanded="false" aria-controls="proto-info" aria-label="Para quem e como fazer" title="Para quem e como fazer">ⓘ</button>
+    <span class="chip" id="proto-chip"></span>
+  </section>
+  <div class="proto-info" id="proto-info" hidden></div>
+  <div id="panel" class="panel"></div>
 
   </fieldset>
   <div class="actions">
@@ -330,6 +349,63 @@ body.rel-aberto{overflow:hidden}
     <span class="msg" id="msg" role="status"></span>
   </div>
   <textarea class="copyfall" id="copyfall" hidden readonly aria-label="Resumo para copiar"></textarea>
+  <section class="decisoes" aria-label="Decisões da esteira">
+    <button type="button" class="linkbtn" id="btn-dec" aria-expanded="false" aria-controls="dec">Decisões da esteira · base dos protocolos e fontes</button>
+    <div class="review" id="dec" hidden>
+      <p class="note">Revisão de 14/10/2026, aprovada em 01/11/2026: os 3 protocolos de esteira desta ficha e a parada da corrida submáxima em 85% da FCmáx prevista.</p>
+      <section>
+        <h3>Como a esteira entra</h3>
+        <ul>
+          <li>A esteira conduz o teste e a ficha calcula, com equações publicadas; a base e a validação de cada uma estão abaixo. O "max VO2" que o console mostra não vira resultado: o manual não diz a fórmula.</li>
+          <li>Caminhada submáxima no Multiestágio; corrida submáxima e corrida máxima no Teste máximo customizado. Os outros testes do console não são usados.</li>
+          <li>Bruce do console, não: o ACSM diz que os degraus são grandes (2 a 3 METs a cada 3 min) e que estimar a capacidade pelo tempo ou pela carga pode superestimá-la muito; no console, ele para em 15 min. O ACSM recomenda chegar ao máximo em 8 a 12 min.</li>
+        </ul>
+      </section>
+      <section>
+        <h3>Base de cada teste</h3>
+        <ul>
+          <li><strong>Caminhada submáxima:</strong> equação de Ebbeling (139 adultos de 20 a 59 anos; erro típico de 4,85 ml/kg/min), com a FC do fim dos 4 min a 5%. Faixa de FC de 50–70% da FCmáx (Waddoups 2008); nos extremos da faixa, o teste errou cerca de 3,5 ml/kg/min (para menos em 50%, para mais em 70%). O estudo não diz qual FCmáx usou; a ficha usa 208 − 0,7 × idade (Tanaka 2001), até 6 bpm diferente de 220 − idade. A etapa a 0% antes é rotina da Fabrik para acertar a velocidade. Em mulheres de 45 a 65 anos repetiu bem, mas acompanhou pouco o VO₂ medido (Mitros 2010).</li>
+          <li><strong>Corrida submáxima:</strong> não foi encontrado teste validado para 40 a 60 anos. Segue o método do ACSM: estágios de 3 min, FC entre 110 bpm e 85% da FCmáx prevista, reta prolongada até a FCmáx prevista. Na bike, esse método superestimou o VO₂ máx em 25,7% em média (Greiwe 1995). O dado mais útil é a FC na mesma velocidade de uma avaliação para a outra.</li>
+          <li><strong>Corrida máxima:</strong> rampa de 8–12 min com a equação FRIEND (7.983 adultos; erro de 5,1%, contra 21,4% das equações do ACSM), com a velocidade do degrau em que o teste terminou. A rampa de 1 km/h por minuto é proposta da Fabrik, sem validação específica.</li>
+          <li><strong>Bike máxima:</strong> a FRIEND da bike (viés de 0,5%, contra 15,5% da fórmula do ACSM; abaixo de 1% em 1.255 pessoas com média de 62 anos, Boulay 2025) aparece ao lado da fórmula atual.</li>
+          <li><strong>Queda da FC em 1 min:</strong> o corte de 12 bpm é de Cole 1999, com outra recuperação; aqui é referência, sem validação neste protocolo. As faixas Excelente, Muito boa e Moderada são da casa. A classificação sai só nos testes máximos.</li>
+        </ul>
+      </section>
+      <section>
+        <h3>Em aberto</h3>
+        <ol>
+          <li>Bike máxima: trocar a fórmula da ACSM pela FRIEND? Muda os números antigos (cerca de 4 ml/kg/min a menos na faixa de 150 W com 70 kg).</li>
+          <li>Bike submáxima: vale watts (planilha, 25 a 200 W) ou níveis do console (app, 2 a 9)? A troca pelo Ekblom-Bak espera os watts de cada nível a 60 rpm.</li>
+          <li>Antes do primeiro aluno: conferir na esteira da Fabrik se o Multiestágio e o Máximo customizado aparecem como no manual Live e se a volta à calma aceita 3 km/h e 0%.</li>
+          <li>Levar os protocolos de esteira para o app (hoje o app guarda o protocolo de esteira só como texto livre).</li>
+        </ol>
+      </section>
+      <section>
+        <h3>Não usar</h3>
+        <p>A coluna de VO₂ da tabela de esteira do "Manual Fabrik de Avaliação Cardiovascular": não bate com as equações do ACSM (4 km/h a 0% dá 10,2; o manual diz 14,3).</p>
+      </section>
+      <section>
+        <h3>Fontes</h3>
+        <ul class="src">
+          <li>ACSM's Guidelines for Exercise Testing and Prescription, 8ª ed., 2010 (acervo): equações metabólicas (tab. 7.2), método submáximo (cap. 4), protocolos e duração de 8–12 min (cap. 5).</li>
+          <li>Ebbeling CB et al. Med Sci Sports Exerc 1991;23(8):966-73. PMID 1956273.</li>
+          <li>Waddoups L et al. J Sports Sci 2008;26(5):491-7. <a href="https://doi.org/10.1080/02640410701591425" target="_blank" rel="noopener">DOI</a></li>
+          <li>Mitros M et al. Eur J Appl Physiol 2010;111(1):47-56. <a href="https://doi.org/10.1007/s00421-010-1615-3" target="_blank" rel="noopener">DOI</a></li>
+          <li>George JD et al. Med Sci Sports Exerc 1993;25(5):643-7. PMID 8492693.</li>
+          <li>McNaughton L et al. Percept Mot Skills 1998;87(2):575-84. <a href="https://doi.org/10.2466/pms.1998.87.2.575" target="_blank" rel="noopener">DOI</a></li>
+          <li>Greiwe JS et al. Med Sci Sports Exerc 1995;27(9):1315-20. PMID 8531631.</li>
+          <li>Kokkinos P et al. (FRIEND esteira) Am J Cardiol 2017;120(4):688-692. <a href="https://doi.org/10.1016/j.amjcard.2017.05.037" target="_blank" rel="noopener">DOI</a></li>
+          <li>Kokkinos P et al. (FRIEND bike) Eur J Prev Cardiol 2018;25(10):1077-1082. <a href="https://doi.org/10.1177/2047487318772667" target="_blank" rel="noopener">DOI</a></li>
+          <li>Boulay P et al. Med Sci Sports Exerc 2025;57(10):2207-2215. <a href="https://doi.org/10.1249/MSS.0000000000003761" target="_blank" rel="noopener">DOI</a></li>
+          <li>Cole CR et al. NEJM 1999;341:1351-7 (acervo). <a href="https://doi.org/10.1056/NEJM199910283411804" target="_blank" rel="noopener">DOI</a></li>
+          <li>Tanaka H et al. J Am Coll Cardiol 2001;37(1):153-6. <a href="https://doi.org/10.1016/S0735-1097(00)01054-8" target="_blank" rel="noopener">DOI</a></li>
+          <li>Technogym, ARTIS Cardio · Excite · Unity User Manual (testes de Run); Technogym, LIVE · Excite &amp; Artis User Manual (Multiestágio e Máximo customizado de Run); folha de especificação Excite Live Run (pasta Expansão Fabrik 2024).</li>
+          <li>Fabrik: planilhas Bike Ride máximo e submáximo; "Testes de VO2 Fabrik" (critérios de escolha e segurança).</li>
+        </ul>
+        <p class="note">Li o resumo dos artigos no PubMed, não o texto completo. FCmáx prevista = 208 − 0,7 × idade, a mesma das planilhas Fabrik.</p>
+      </section>
+    </div>
+  </section>
 </main>
 
 <div id="loginOverlay" hidden>
@@ -361,96 +437,6 @@ body.rel-aberto{overflow:hidden}
     <article id="rel-folha"></article>
   </div>
 </div>
-<template id="tpl-review">
-<div class="review">
-  <div class="ptop"><h2>Como fazer os testes de esteira</h2><span class="chip atual">Revisão de 14/10/2026 · aprovada em 01/11/2026</span></div>
-
-  <section>
-    <h3>Resumo</h3>
-    <ul>
-      <li><strong>Proposta: o VO₂ que o console da Technogym mostra não vira resultado oficial.</strong> O console mostra "max VO2" em alguns testes (Teste de fitness, por exemplo), mas o manual não diz a fórmula de nenhum. Sem saber a conta, não dá para defender o número nem comparar com a bike. Isso é decisão da Fabrik, não algo que o manual afirma.</li>
-      <li><strong>Usar a esteira para conduzir o teste e a ficha para calcular</strong>, com equações publicadas e validadas contra VO₂ medido.</li>
-      <li><strong>Caminhada submáxima:</strong> teste de Ebbeling (a etapa que entra na conta é a de 4 min a 5%). Roda no modo Multiestágio do console.</li>
-      <li><strong>Corrida submáxima:</strong> nesta revisão não identifiquei teste validado para a faixa de 40 a 60 anos. Proposta: estágios de 3 min com a conta do ACSM, usada para comparar o aluno com ele mesmo. Roda no Teste máximo customizado do console (degraus de 3 min), com o treinador apertando STOP no limite de FC.</li>
-      <li><strong>Corrida máxima:</strong> rampa de 8–12 min no Teste máximo customizado, com a equação FRIEND. Não recomendo o Bruce do console.</li>
-    </ul>
-  </section>
-
-  <section>
-    <h3>O que o console oferece</h3>
-    <p>A folha de especificação da esteira da Fabrik (Excite Live Run) lista 4 testes submáximos e 9 máximos. Os detalhes abaixo vêm do manual do console Unity (linha Artis/Excite). Em 01/11/2026 conferi o Multiestágio e o Máximo customizado no manual do console Live (o da esteira da Fabrik): funcionam como descrito abaixo. Ainda falta ver no aparelho, porque o manual avisa que as funções podem variar conforme a versão.</p>
-    <div class="tablebox"><table>
-      <thead><tr><th>Teste do console</th><th>Como funciona (manual Unity)</th><th>Uso na Fabrik</th></tr></thead>
-      <tbody>
-        <tr><td>Teste de fitness</td><td>90 s a 3,5 km/h; 3 min a 60% (ou 65%) da FCmáx; 4 min a 75%. A esteira ajusta a carga pela FC. Mostra "max VO2" no fim.</td><td>Não. Fórmula não informada.</td></tr>
-        <tr><td>Estágio único</td><td>90 s de aquecimento + 5 min na velocidade e inclinação escolhidas.</td><td>Não.</td></tr>
-        <tr><td>Multiestágio</td><td>90 s + 2 etapas de 4 min com velocidade e inclinação escolhidas. Caminhada até 6,9 km/h; corrida a partir de 7,0 km/h.</td><td>Sim, para conduzir o Ebbeling.</td></tr>
-        <tr><td>Teste inteligente</td><td>A intensidade sobe até a pessoa dizer que está "forte".</td><td>Não.</td></tr>
-        <tr><td>Máximo Technogym</td><td>15 min de aquecimento guiado pela FC (65, 70 e 75%); depois a velocidade sobe a cada minuto a 0%.</td><td>Não. Aquecimento longo demais.</td></tr>
-        <tr><td>Máximo customizado</td><td>Você define a velocidade inicial, o incremento e a duração do degrau. Não tem aquecimento e termina quando se aperta STOP; depois o console faz 3 min de volta à calma com carga menor.</td><td>Sim, para a corrida máxima e a corrida submáxima.</td></tr>
-        <tr><td>Bruce</td><td>5 degraus de 3 min, de 2,7 km/h e 10% a 8,0 km/h e 18%. Termina em 15 min.</td><td>Não (ver abaixo).</td></tr>
-        <tr><td>Bruce modificado, Naughton, Balke &amp; Ware</td><td>Caminhada com a inclinação subindo. O manual indica o Bruce modificado para qualquer pessoa e para alto risco, o Naughton para cardiopatas ou alto risco e o Balke &amp; Ware para qualquer pessoa. O ACSM indica Naughton e Balke-Ware para pessoas mais velhas ou descondicionadas.</td><td>Não. São caminhada, não corrida.</td></tr>
-        <tr><td>Åstrand modificado, Costill &amp; Fox</td><td>Corrida a 8–13 km/h ou fixa em 14,3 km/h, com a inclinação subindo.</td><td>Não. São para pessoas muito treinadas.</td></tr>
-      </tbody>
-    </table></div>
-  </section>
-
-  <section>
-    <h3>Por que não usar o Bruce do console</h3>
-    <ul>
-      <li>O ACSM diz que os degraus do Bruce são grandes (2 a 3 METs a cada 3 min) e que estimar a capacidade pelo tempo ou pela carga pode superestimá-la muito. Para pessoas mais velhas ou destreinadas, o ACSM indica degraus menores (Naughton, Balke-Ware) ou rampa.</li>
-      <li>No console, o Bruce para em 15 min. Quem aguenta mais termina sem chegar ao máximo, e o próprio manual manda fazer um teste mais forte nesse caso.</li>
-      <li>O ACSM recomenda um protocolo que dure de 8 a 12 min até o esforço máximo. A rampa com velocidade inicial ajustada ao aluno atende isso; o Bruce fixo, não.</li>
-    </ul>
-  </section>
-
-  <section>
-    <h3>Base de cada proposta</h3>
-    <div class="decision"><strong>Caminhada · Ebbeling.</strong> Estudo com 139 adultos de 20 a 59 anos: equação feita com 117 e validada em 22. A equação usa a FC dos 4 min a 5%, a velocidade, a idade e o sexo. Explicou 86% da variação, com erro típico de 4,85 ml/kg/min; na validação, 90,9% ficaram dentro de ±5. A faixa de FC de 50–70% da FCmáx prevista é a descrita para o teste em Waddoups 2008; a etapa a 0% antes dela é rotina proposta pela Fabrik para acertar a velocidade (o resumo do artigo original não detalha isso). Ressalvas: com FC em 50%, o teste subestimou 3,5 ml/kg/min; em 70%, superestimou 3,5 (Waddoups 2008). Em mulheres de 45 a 65 anos repetiu muito bem (ICC 0,95), mas a associação com o VO₂ medido foi fraca (ρ = 0,48; Mitros 2010). A ficha usa FCmáx prevista = 208 − 0,7 × idade (Tanaka 2001); não sei qual fórmula o estudo original usou para a faixa, e a diferença para 220 − idade é de até 6 bpm.</div>
-    <div class="decision"><strong>Corrida submáxima · estágios de 3 min + conta do ACSM.</strong> O teste de corrida submáxima com equação própria que encontrei (George 1993) foi feito com 129 pessoas treinadas de 18 a 29 anos; num estudo independente com 32 universitários, a correlação com o VO₂ medido foi de r = 0,50 (McNaughton 1998). O ACSM diz que não há protocolo submáximo específico para esteira. A proposta segue o método do ACSM: estágios de 3 min ou mais, FC entre 110 bpm e 85% da FCmáx prevista, reta prolongada até a FCmáx prevista. Na bike, esse método superestimou o VO₂ máx em 25,7% em média (Greiwe 1995); não há esse número para a corrida. Por isso o dado mais útil aqui é a FC na mesma velocidade de uma avaliação para a outra.</div>
-    <div class="decision"><strong>Corrida máxima · rampa + FRIEND.</strong> A equação FRIEND foi feita com 7.983 adultos saudáveis com VO₂ medido em teste máximo, usando a velocidade e a inclinação do fim do teste. Erro relativo global de 5,1%, contra 21,4% das equações do ACSM. A ficha usa a velocidade do degrau em que o teste terminou. A rampa (1 km/h por minuto, 0%, velocidade inicial pela regra da casa) é proposta da Fabrik; não encontrei validação específica dela. Os 8–12 min vêm do ACSM.</div>
-    <div class="decision"><strong>Bike máxima · FRIEND também.</strong> A FRIEND da bike (5.100 pessoas, feita com a potência no fim de teste máximo) teve viés de 0,5%, contra 15,5% da fórmula do ACSM que a Fabrik usa hoje. Num grupo independente de 1.255 pessoas com idade média de 62 anos, o viés ficou abaixo de 1% (Boulay 2025). A ficha mostra as duas lado a lado, com os watts do último estágio registrado.</div>
-    <div class="decision"><strong>Queda da FC em 1 min.</strong> Cole 1999 considerou anormal a queda de 12 bpm ou menos, com recuperação ativa a 2,4 km/h e 2,5%. A Fabrik usa 3 km/h e 0% (esteira) ou 25 W (bike), então o corte serve de referência, sem validação neste protocolo. As faixas Excelente (≥ 30), Muito boa (20–29) e Moderada (13–19) são da casa, sem fonte. Na ficha, a classificação e o corte de 12 bpm aparecem só nos testes máximos; nos submáximos, só o número.</div>
-  </section>
-
-  <section>
-    <h3>O que você precisa decidir</h3>
-    <p>Aprovado em 01/11/2026: os 3 protocolos de esteira desta ficha e a parada da corrida submáxima em 85% da FCmáx prevista.</p>
-    <ol>
-      <li>Trocar a fórmula da bike máxima da ACSM para a FRIEND. Isso muda os números antigos: na faixa de 150 W com 70 kg, o resultado cai cerca de 4 ml/kg/min.</li>
-      <li>Bike submáxima: a planilha usa watts (25 a 200 W) e o app usa níveis do console (2 a 9). Qual vale? A troca pelo teste de Ekblom-Bak segue esperando os watts de cada nível a 60 rpm.</li>
-      <li>Antes do primeiro aluno, testar na esteira da Fabrik se o Multiestágio e o Máximo customizado aparecem como no manual Live, e se na volta à calma dá para pôr 3 km/h e 0%.</li>
-      <li>Depois de aprovado, levar os protocolos de esteira para o app: hoje o app guarda o protocolo de esteira só como texto livre.</li>
-    </ol>
-  </section>
-
-  <section>
-    <h3>Números que não devem ser usados</h3>
-    <p>O "Manual Fabrik de Avaliação Cardiovascular" traz uma tabela de esteira (4 a 11 km/h, 0 a 7%) com uma coluna de VO₂ estimado. Esses valores não batem com as equações do ACSM (4 km/h a 0% dá 10,2 pela equação de caminhada; o manual diz 14,3). O texto termina com uma pergunta de assistente de IA, sinal de que não foi revisado.</p>
-  </section>
-
-  <section>
-    <h3>Fontes</h3>
-    <ul class="src">
-      <li>ACSM's Guidelines for Exercise Testing and Prescription, 8ª ed., 2010 (acervo): equações metabólicas (tab. 7.2), método submáximo (cap. 4), protocolos e duração de 8–12 min (cap. 5).</li>
-      <li>Ebbeling CB et al. Med Sci Sports Exerc 1991;23(8):966-73. PMID 1956273.</li>
-      <li>Waddoups L et al. J Sports Sci 2008;26(5):491-7. <a href="https://doi.org/10.1080/02640410701591425" target="_blank" rel="noopener">DOI</a></li>
-      <li>Mitros M et al. Eur J Appl Physiol 2010;111(1):47-56. <a href="https://doi.org/10.1007/s00421-010-1615-3" target="_blank" rel="noopener">DOI</a></li>
-      <li>George JD et al. Med Sci Sports Exerc 1993;25(5):643-7. PMID 8492693.</li>
-      <li>McNaughton L et al. Percept Mot Skills 1998;87(2):575-84. <a href="https://doi.org/10.2466/pms.1998.87.2.575" target="_blank" rel="noopener">DOI</a></li>
-      <li>Greiwe JS et al. Med Sci Sports Exerc 1995;27(9):1315-20. PMID 8531631.</li>
-      <li>Kokkinos P et al. (FRIEND esteira) Am J Cardiol 2017;120(4):688-692. <a href="https://doi.org/10.1016/j.amjcard.2017.05.037" target="_blank" rel="noopener">DOI</a></li>
-      <li>Kokkinos P et al. (FRIEND bike) Eur J Prev Cardiol 2018;25(10):1077-1082. <a href="https://doi.org/10.1177/2047487318772667" target="_blank" rel="noopener">DOI</a></li>
-      <li>Boulay P et al. Med Sci Sports Exerc 2025;57(10):2207-2215. <a href="https://doi.org/10.1249/MSS.0000000000003761" target="_blank" rel="noopener">DOI</a></li>
-      <li>Cole CR et al. NEJM 1999;341:1351-7 (acervo). <a href="https://doi.org/10.1056/NEJM199910283411804" target="_blank" rel="noopener">DOI</a></li>
-      <li>Tanaka H et al. J Am Coll Cardiol 2001;37(1):153-6. <a href="https://doi.org/10.1016/S0735-1097(00)01054-8" target="_blank" rel="noopener">DOI</a></li>
-      <li>Technogym, ARTIS Cardio · Excite · Unity User Manual (testes de Run); Technogym, LIVE · Excite &amp; Artis User Manual (Multiestágio e Máximo customizado de Run); folha de especificação Excite Live Run (pasta Expansão Fabrik 2024).</li>
-      <li>Fabrik: planilhas Bike Ride máximo e submáximo; "Testes de VO2 Fabrik" (critérios de escolha e segurança).</li>
-    </ul>
-    <p class="note">Li o resumo dos artigos no PubMed, não o texto completo. FCmáx prevista = 208 − 0,7 × idade, a mesma das planilhas Fabrik.</p>
-  </section>
-</div>
-</template>
 <script src="../vendor/supabase.js"></script>
 <script>
 (function(){
@@ -468,7 +454,7 @@ const f0=x=>x==null?"—":Math.round(x).toLocaleString("pt-BR");
 const pct=x=>x==null?"—":Math.round(x*100)+"%";
 const virg=v=>String(v??"").replace(".",",");   // velocidade/inclinação na tela com vírgula; o dado guardado não muda
 
-/* ---------- fórmulas (fontes na aba Decisões) ---------- */
+/* ---------- fórmulas (fontes em "Decisões da esteira", no fim da página) ---------- */
 const F={
   fcmax:idade=>idade==null?null:208-0.7*idade,                                   // Tanaka, usada nas planilhas Fabrik
   bikeACSM:(w,kg)=>(w==null||!kg)?null:10.8*w/kg+7,                              // ACSM, bike de pernas
@@ -492,7 +478,7 @@ function recovClass(drop){if(drop==null)return null;
 const range=(a,b)=>{const r=[];for(let i=a;i<=b;i++)r.push(i);return r};
 const P=[
 { id:"bsub", tab:"Bike submáx", sub:"Bike Ride", status:"atual", kind:"bike",
-  titulo:"Bike Ride · teste submáximo",
+  titulo:"Bike Ride · Teste submáximo",
   indicacao:"Iniciantes, intermediários, retorno ao treino, limitação articular, primeira avaliação.",
   passos:["Cadência 70–90 rpm o teste inteiro.","Aquecimento 2 min a 25 W.","Sobe 25 W a cada 2 min (carga da planilha Fabrik).","No fim de cada estágio: watts que o console mostra, FC e PSE (0–10).","Ao parar: 1 min de recuperação ativa a 25 W e anote a FC no fim desse minuto."],
   parada:"Parar com PSE 9 ou FC entre 90% e 95% da FCmáx prevista.",
@@ -501,7 +487,7 @@ const P=[
   rows:[{t:"0–2",fase:"Aquecimento",plan:"25 W",warm:1}].concat([50,75,100,125,150,175,200].map((w,i)=>({t:(2+2*i)+"–"+(4+2*i),fase:"Teste",plan:w+" W"})))
 },
 { id:"bmax", tab:"Bike máx", sub:"Bike Ride", status:"atual", kind:"bike",
-  titulo:"Bike Ride · teste máximo",
+  titulo:"Bike Ride · Teste máximo",
   indicacao:"Alunos treinados, sem limitação clínica, foco em performance. Pré-requisito: já ter feito o submáximo.",
   passos:["Cadência 80–90 rpm.","Aquecimento 2 min no nível 2.","Começa no nível 3 e sobe a cada 2 min (3, 4, 5, 7, 9, 11, 13).","No fim de cada estágio: watts que o console mostra, FC e PSE.","Ao parar: 1 min no nível 2 e anote a FC no fim desse minuto."],
   parada:"Parar com PSE 10 ou quando a cadência mínima não se sustenta.",
@@ -510,7 +496,7 @@ const P=[
   rows:[{t:"0–2",fase:"Aquecimento",plan:"nível 2",warm:1}].concat([3,4,5,7,9,11,13].map((l,i)=>({t:(2+2*i)+"–"+(4+2*i),fase:"Teste",plan:"nível "+l})))
 },
 { id:"ecam", tab:"Esteira caminhada", sub:"Submáx", status:"atual", kind:"walk",
-  titulo:"Esteira · caminhada submáxima (Ebbeling)",
+  titulo:"Esteira · Caminhada submáxima",
   indicacao:"Iniciantes, sobrepeso, baixa aptidão, quem não corre ou está em reabilitação. Equação feita com adultos de 20 a 59 anos.",
   passos:["No console: Multiestágio, no modo caminhada. O console faz sozinho 90 s de aquecimento na metade da velocidade, a 0%; as etapas abaixo começam depois disso.","Escolha uma velocidade de caminhada entre 3,2 e 7,2 km/h (no console, o modo caminhada vai até 6,9 km/h).","Etapa 1 (proposta Fabrik, para acertar a velocidade): 4 min a 0%. A FC no fim deve ficar entre 50% e 70% da FCmáx prevista, a faixa descrita para este teste; se não ficar, ajuste a velocidade e recomece.","Etapa 2 (a que entra na equação): 4 min a 5%, mesma velocidade. Anote a FC no fim do 4º minuto.","Sem agarrar o corrimão.","Recuperação: 1 min a 3 km/h e 0%; anote a FC."],
   parada:"Teste curto, sem critério de exaustão. Interrompa por qualquer sinal de segurança abaixo.",
@@ -518,7 +504,7 @@ const P=[
   rows:[{t:"0–4",fase:"Etapa 1 · 0%",vel:"5",incl:"0",lockIncl:1},{t:"4–8",fase:"Etapa 2 · 5%",vel:"",incl:"5",lockIncl:1,mirror:1}]
 },
 { id:"esub", tab:"Esteira corrida submáx", sub:"Submáx", status:"atual", kind:"run",
-  titulo:"Esteira · corrida submáxima",
+  titulo:"Esteira · Corrida submáxima",
   indicacao:"Intermediários já adaptados à corrida, sem dor ou limitação.",
   passos:["Antes de iniciar o teste no console: 2 min caminhando a 3,5 km/h e 0% (o teste do console não tem aquecimento).","No console: Teste máximo customizado com velocidade inicial 7 km/h, incremento 1 km/h e degrau de 3 min (a 0%).","No fim de cada estágio: FC e PSE.","Sem segurar no corrimão.","Ao chegar no ponto de parada abaixo, aperte STOP. O console entra na volta à calma: ponha 3 km/h e 0% se ele deixar e anote a FC depois de 1 min."],
   parada:"Parar quando a FC chegar a 85% da FCmáx prevista (ponto final do ACSM para esta conta; aprovado em 01/11/2026), ou antes, se a PSE chegar a 9.",
@@ -527,15 +513,14 @@ const P=[
   startSpeed:7, step:1, dur:3, count:7, incl:0
 },
 { id:"emax", tab:"Esteira corrida máx", sub:"Máx", status:"atual", kind:"runmax",
-  titulo:"Esteira · corrida máxima (rampa)",
+  titulo:"Esteira · Corrida máxima (rampa)",
   indicacao:"Alunos treinados, alta tolerância ao esforço, sem limitação articular ou clínica. Pré-requisito: já ter feito um submáximo.",
   passos:["Antes de iniciar o teste no console: 2 min caminhando a 3,5 km/h e 0% (o teste do console não tem aquecimento).","No console: Teste máximo customizado (velocidade inicial, incremento e duração do degrau).","Degraus de 1 min a 0%, subindo 1 km/h por degrau (proposta Fabrik).","Velocidade inicial: escolha para o teste durar de 8 a 12 min, como o ACSM recomenda (regra prática da casa: velocidade final esperada menos 9 km/h).","Anote FC e PSE no fim de cada degrau. Se o aluno parar no meio de um degrau, anote na linha desse degrau: a conta usa a velocidade em que o teste terminou.","Ao parar, aperte STOP. O console entra na volta à calma: ponha 3 km/h e 0% se ele deixar e anote a FC depois de 1 min."],
   parada:"Parar com PSE 10 ou quando o aluno não sustenta a velocidade.",
   stop:(r)=>(r.pse!=null&&r.pse>=10),
   near:(r)=>(r.pse!=null&&r.pse>=9),
   startSpeed:7, step:1, dur:1, count:12, incl:0
-},
-{ id:"rev", tab:"Decisões da esteira", sub:"Revisão", review:true }
+}
 ];
 
 /* ---------- estado e salvamento ----------
@@ -601,7 +586,7 @@ function temDados(st){const a=(st&&st.aluno)||{};if(["nome","idade","peso","fcme
 function hasContent(){return temDados(S)}
 function newId(){return "av-"+hoje()+"-"+rid()}
 function persistLocal(){if(!lsSet(LS_ATUAL,JSON.stringify({S,L})))bloquear()}
-function protocolosPreenchidos(st){return P.filter(p=>!p.review&&st.p&&st.p[p.id]&&st.p[p.id].rows.some(r=>String(r.fc||"").trim()!=="")).map(p=>p.id)}
+function protocolosPreenchidos(st){return P.filter(p=>st.p&&st.p[p.id]&&st.p[p.id].rows.some(r=>String(r.fc||"").trim()!=="")).map(p=>p.id)}
 function rowAtual(){
   const a=S.aluno||{};
   return {id:L.docId,aluno_nome:String(a.nome||"").trim(),data_teste:/^\d{4}-\d{2}-\d{2}$/.test(a.data||"")?a.data:null,
@@ -619,7 +604,7 @@ function save(){
   }
   persistLocal();if(!$("#saved").hidden)renderSaved();Sync.schedule();
 }
-function travar(){document.querySelectorAll("#ro input,#ro select,#ro textarea,#ro [data-act]").forEach(el=>{el.disabled=true})}
+function travar(){document.querySelectorAll("#ro input,#ro select:not(#sel-proto),#ro textarea,#ro [data-act]").forEach(el=>{el.disabled=true})}
 function bloquear(){
   BLOQUEADA=true;travar();try{Sync.paint()}catch(e){}
   try{Sync.banner("bad","Este aparelho não está conseguindo guardar a ficha (armazenamento cheio, bloqueado ou aba anônima). A edição foi travada. "+(SALVO_EMERGENCIA?"A última alteração foi gravada direto no banco.":"Não feche a página: toque em Copiar resumo e mande o texto para o Alex. A ficha está tentando mandar a última alteração direto ao banco."))}catch(e){}
@@ -743,7 +728,7 @@ const Sync={sb:null,on:!!(SUPABASE_CONFIG.url&&SUPABASE_CONFIG.anonKey),busy:nul
     if(error||!data||!data.dados)return;
     if(pendenciasDe(L.docId).length)return;   // alguém digitou enquanto carregava: não sobrescreve
     S={tab:S.tab,aluno:data.dados.aluno||{},p:data.dados.p||{}};L.baseRev=data.rev;L.copiaDe=data.copia_de||null;
-    persistLocal();loadAluno();renderTabs();renderPanel();
+    persistLocal();loadAluno();renderMenu();renderPanel();
   }
 };
 function loadLib(){return new Promise(res=>{const s=document.createElement("script");s.src="../vendor/supabase.js?r="+Date.now();s.onload=res;s.onerror=res;document.head.appendChild(s)})}
@@ -763,7 +748,7 @@ async function doLogin(){
 // a avaliação que sai da tela já está na chave desta aba (save grava a cada alteração); trocar não perde nada
 function trocarAvaliacao(novoS,novoL){
   S=novoS;L=Object.assign({docId:null,baseRev:null,copiaDe:null},novoL);Sync.banner("","");
-  persistLocal();loadAluno();renderTabs();renderPanel();renderSaved();Sync.paint();
+  persistLocal();loadAluno();renderMenu();renderPanel();renderSaved();Sync.paint();
 }
 async function abrirAvaliacao(id){
   const loc=jget(minhaKey(id),null)||((pendenciasDe(id)[0]||{}).ent);
@@ -841,7 +826,7 @@ function compute(p){
   if(a.medOk&&rows.some(r=>r.fc!=null&&r.fc>a.fcmed))al.push(["warn","Uma FC deste teste passou da FCmáx medida. A máxima real é maior: atualize o campo com a FC mais alta de um teste máximo."]);
   if(p.kind!=="walk"){if(a.pesoD!=null&&a.peso==null)al.push(["bad","Peso fora de "+PESO_MIN+"–"+PESO_MAX+" kg: confira o número. Enquanto isso, o VO₂ fica em branco."]);else if(a.peso==null)al.push(["bad","Preencha o peso: o VO₂ é por kg."])}
   if(a.med)al.push(["bad","Remédio que altera a FC: as estimativas que usam a FC podem não valer para este aluno (o ACSM exclui esse caso no método submáximo). Decida com o Alex."]);
-  if(!a.cinta)al.push(["warn","Use a cinta de FC no peito (padrão Fabrik; nos testes do console, o manual exige ou recomenda monitor de FC)."]);
+  if(!a.cinta)al.push(["warn","Use o frequencímetro no peito (padrão Fabrik; nos testes do console, o manual exige ou recomenda monitor de FC)."]);
   if(!a.parq&&(p.id==="bmax"||p.id==="emax"))al.push(["warn","PAR-Q não está em dia. Confirme com o Alex antes de um teste máximo."]);
   if(n(st.fcpico)!=null&&fcReg!=null&&n(st.fcpico)<fcReg)al.push(["warn","A FC pico digitada ("+f0(n(st.fcpico))+" bpm) é menor que a maior FC da tabela ("+f0(fcReg)+" bpm): confira."]);
   if(fcpico!=null&&fc1!=null&&fc1>fcpico)al.push(["warn","A FC após 1 min ("+f0(fc1)+" bpm) é maior que a FC pico ("+f0(fcpico)+" bpm): confira os dois números. A queda da FC fica em branco."]);
@@ -860,8 +845,8 @@ function compute(p){
     const ex=F.extrap(pts,a.fcmax);
     out.kv=[["Último estágio",fim?fim.plan+" · "+f0(w)+" W":"—"],["% da FCmáx "+a.fonte,pct(fim?fim.pf:null)],["Estimativa do máximo (extrapolação ACSM)",f1(ex)],["Estágios usados na extrapolação",String(pts.length)]];
     if(pts.length<2&&done.length)al.push(["warn","Extrapolação precisa de 2 estágios com watts e FC entre 110 bpm e 85% da FCmáx "+a.fonte+"."]);
-    if(ex!=null)al.push(["warn","A extrapolação superestimou o VO₂ máx em 25,7% em média (Greiwe 1995). Use para comparar o aluno com ele mesmo."]);
-    if(done.length)al.push(["warn","Estágios de 2 min: o ACSM pede 3 min ou mais para a FC estabilizar."]);
+    if(ex!=null)al.push(["warn","A extrapolação superestimou o VO₂ máx em 25,7% em média (Greiwe 1995). Use para comparar o aluno com ele mesmo.","nota"]);
+    if(done.length)al.push(["warn","Estágios de 2 min: o ACSM pede 3 min ou mais para a FC estabilizar.","nota"]);
   }
   if(p.id==="bmax"){
     const w=fim?n(fim.w):null;
@@ -883,7 +868,7 @@ function compute(p){
     out.main=ok?F.ebbeling(v,r2.fc,a.idade,a.sexo):null;out.mainLabel="VO₂ máx estimado (Ebbeling)";out.mainNote="FC no fim dos 4 min a 5%, com velocidade, idade e sexo.";
     // faixa com as FCs inteiras que o alerta aceita (50% a 70%): com 45 anos, 89–123, não 88–124
     out.kv=[["Velocidade",v!=null?f1(v)+" km/h":"—"],["FC etapa 1 (0%)",r1.fc!=null?f0(r1.fc)+" · "+pct(r1.pf):"—"],["FC etapa 2 (5%)",r2.fc!=null?f0(r2.fc)+" · "+pct(r2.pf):"—"],["Faixa-alvo da etapa 1",a.fcmax?f0(Math.ceil(0.5*a.fcmax-1e-9))+"–"+f0(Math.floor(0.7*a.fcmax+1e-9))+" bpm":"—"]];
-    if(out.main!=null)al.push(["warn","Erro típico da equação: cerca de 5 ml/kg/min. Em mulheres de 45 a 65 anos repetiu bem (ICC 0,95), mas acompanhou pouco o VO₂ medido."]);
+    if(out.main!=null)al.push(["warn","Erro típico da equação: cerca de 5 ml/kg/min. Em mulheres de 45 a 65 anos repetiu bem (ICC 0,95), mas acompanhou pouco o VO₂ medido.","nota"]);
   }
   if(p.id==="esub"){
     const pts=test.filter(r=>r.fc!=null&&r.vo2!=null&&r.fc>=110&&a.fcmax&&r.fc<=0.85*a.fcmax).map(r=>({fc:r.fc,vo2:r.vo2}));
@@ -891,8 +876,8 @@ function compute(p){
     out.main=ex;out.mainLabel="VO₂ máx estimado (extrapolação ACSM)";out.mainNote="Reta FC × VO₂ dos estágios entre 110 bpm e 85% da FCmáx "+a.fonte+", prolongada até a FCmáx "+a.fonte+".";
     out.kv=[["Último estágio",last?f1(n(last.vel))+" km/h · "+f0(last.fc)+" bpm":"—"],["VO₂ do último estágio (ACSM)",f1(last?last.vo2:null)],["Estágios usados",String(pts.length)]];
     if(pts.length<2&&done.length)al.push(["warn","A conta precisa de 2 estágios com FC entre 110 bpm e 85% da FCmáx "+a.fonte+"."]);
-    if(ex!=null)al.push(["warn","Estimativa com erro grande. O número mais útil na reavaliação é a FC na mesma velocidade."]);
-    if(test.some(r=>r.fc!=null&&n(r.vel)!=null&&n(r.vel)<8))al.push(["warn","A equação de corrida do ACSM é mais precisa acima de 8 km/h."]);
+    if(ex!=null)al.push(["warn","Estimativa com erro grande. O número mais útil na reavaliação é a FC na mesma velocidade.","nota"]);
+    if(test.some(r=>r.fc!=null&&n(r.vel)!=null&&n(r.vel)<8))al.push(["warn","A equação de corrida do ACSM é mais precisa acima de 8 km/h.","nota"]);
   }
   if(p.id==="emax"){
     const v=fim?n(fim.vel):null,g=fim?n(fim.incl):null;
@@ -907,18 +892,22 @@ function compute(p){
   const rc=(p.id==="bmax"||p.id==="emax")?recovClass(drop):null;
   if(rc)out.kv.push(["Queda da FC em 1 min",f0(drop)+" bpm · "+rc[0]]);
   else if(drop!=null)out.kv.push(["Queda da FC em 1 min",f0(drop)+" bpm"]);
-  if(rc)al.push([rc[1]==="bad"?"bad":"warn",(rc[1]==="bad"?"Queda de 12 bpm ou menos: no estudo de Cole 1999 esse valor foi considerado anormal, com recuperação a 2,4 km/h e 2,5%; a Fabrik usa outra recuperação, então o corte é uma referência, não validado aqui. ":"")+"As faixas Excelente, Muito boa e Moderada são classificação da casa, sem fonte."]);
+  if(rc)al.push([rc[1]==="bad"?"bad":"warn",(rc[1]==="bad"?"Queda de 12 bpm ou menos: no estudo de Cole 1999 esse valor foi considerado anormal, com recuperação a 2,4 km/h e 2,5%; a Fabrik usa outra recuperação, então o corte é uma referência, não validado aqui. ":"")+"As faixas Excelente, Muito boa e Moderada são classificação da casa, sem fonte.",rc[1]==="bad"?"":"nota"]);
   return out;
 }
 
 /* ---------- render ---------- */
 function esc(s){return String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]))}
-function renderTabs(){
-  $("#tabs").innerHTML=P.map(p=>`<button class="tab" role="tab" type="button" id="tab-${p.id}" aria-selected="${S.tab===p.id}" data-tab="${p.id}"><small>${esc(p.sub)}</small>${esc(p.tab)}</button>`).join("");
+// ⓘ do protocolo e Detalhes do resultado: recolhidos por padrão; refazer o painel mantém, trocar de protocolo fecha
+let infoAberta=false,detAberto=false;
+// menu dos protocolos (antes eram abas); renderPanel marca o protocolo aberto
+function renderMenu(){
+  $("#sel-proto").innerHTML=P.map(p=>`<option value="${p.id}">${esc(p.titulo)}</option>`).join("");
 }
 function renderPanel(){
-  const p=P.find(x=>x.id===S.tab)||P[0];
-  if(p.review){$("#panel").innerHTML=document.getElementById("tpl-review").innerHTML;return}
+  // quem estava na antiga aba "Decisões" (S.tab "rev" guardado no aparelho) volta para o 1º protocolo
+  if(!P.some(x=>x.id===S.tab))S.tab=P[0].id;
+  const p=P.find(x=>x.id===S.tab);
   const st=pstate(p);
   const head=p.kind==="bike"
     ?"<th>Tempo (min)</th><th>Fase</th><th>Carga</th><th>Watts no console</th><th>FC</th><th>PSE</th><th>% FCmáx</th><th>VO₂ estágio</th>"
@@ -933,32 +922,35 @@ function renderPanel(){
   }).join("");
   const tools=(p.kind==="run"||p.kind==="runmax")
     ?`<div class="tabtools"><label>Velocidade inicial (km/h)<input id="${p.id}-start" inputmode="decimal" value="${esc(virg(st.start))}"></label><button class="btn" type="button" data-act="regen">Refazer velocidades</button>${p.kind==="runmax"?'<button class="btn" type="button" data-act="add">+ degrau</button>':""}</div>`:"";
-  $("#panel").innerHTML=`
-    <div class="ptop"><h2>${esc(p.titulo)}</h2><span class="chip ${p.status}">${p.status==="atual"?"Protocolo atual":"Proposta · aguarda o Alex"}</span></div>
-    <div class="facts">
+  $("#sel-proto").value=p.id;
+  const chip=$("#proto-chip");chip.className="chip "+p.status;chip.textContent=p.status==="atual"?"Protocolo atual":"Proposta · aguarda o Alex";
+  $("#proto-info").innerHTML=`<div class="facts">
       <div><h3>Para quem</h3><p>${esc(p.indicacao)}</p></div>
       <div style="grid-column:span 2;min-width:0"><h3>Como fazer</h3><ul>${p.passos.map(x=>`<li>${esc(x)}</li>`).join("")}</ul></div>
-    </div>
+    </div>`;
+  $("#proto-info").hidden=!infoAberta;$("#btn-proto-info").setAttribute("aria-expanded",String(infoAberta));
+  $("#panel").innerHTML=`
     <p class="stopline">${esc(p.parada)}</p>
     <div class="grid2" style="margin-top:16px">
       <div style="min-width:0">${tools}<div class="tablebox"><table><thead><tr>${head}</tr></thead><tbody id="tb">${body}</tbody></table></div>
         <div class="safety"><strong>Interrompa na hora</strong> se houver tontura, náusea, dor no peito, falta de ar desproporcional, perda de controle do movimento ou instabilidade na esteira.</div>
       </div>
       <aside class="result" aria-live="polite">
-        <div class="big"><span class="u" id="r-label"></span><span class="v num" id="r-main">—</span><span class="u">ml/kg/min</span><span class="note" id="r-note"></span></div>
+        <div class="big"><span class="u" id="r-label"></span><span class="v num" id="r-main">—</span><span class="u">ml/kg/min</span></div>
         <div class="recov">
           <label>FC pico<input id="${p.id}-fcpico" data-g="fcpico" inputmode="numeric" placeholder="maior FC" value="${esc(st.fcpico)}"></label>
           <label>FC após 1 min<input id="${p.id}-fc1" data-g="fc1" inputmode="numeric" value="${esc(st.fc1)}"></label>
         </div>
-        <dl class="kv" id="r-kv"></dl>
         <ul class="alerts" id="r-al"></ul>
+        <button type="button" class="det-btn" id="btn-det" aria-expanded="${detAberto}" aria-controls="r-det">Detalhes do resultado</button>
+        <div class="det" id="r-det"${detAberto?"":" hidden"}><p class="note" id="r-note"></p><dl class="kv" id="r-kv"></dl><ul class="alerts" id="r-al-nota"></ul></div>
         <label>Observações<textarea id="${p.id}-obs" data-g="obs" rows="3">${esc(st.obs)}</textarea></label>
       </aside>
     </div>`;
   update();if(BLOQUEADA)travar();
 }
 function update(){
-  const p=P.find(x=>x.id===S.tab);if(!p||p.review)return;
+  const p=P.find(x=>x.id===S.tab);if(!p)return;
   const a=A();$("#a-fcmax").value=a.fcprev?f0(a.fcprev)+" bpm":"";
   const o=compute(p);
   document.querySelectorAll("#tb tr").forEach((tr,i)=>{
@@ -973,7 +965,10 @@ function update(){
   if(stopRow)o.al.unshift(["bad","Critério de parada atingido no estágio "+stopRow.t+" min. Encerre e faça a recuperação."]);
   $("#r-label").textContent=o.mainLabel;$("#r-main").textContent=f1(o.main);$("#r-note").textContent=o.mainNote;
   $("#r-kv").innerHTML=o.kv.map(([k,v])=>`<dt>${esc(k)}</dt><dd>${esc(v)}</dd>`).join("");
-  $("#r-al").innerHTML=o.al.map(([c,t])=>`<li class="${c}">${esc(t)}</li>`).join("");
+  // alertas e parada à vista; as notas de método (marcadas "nota" em compute) ficam em Detalhes
+  const li=([c,t])=>`<li class="${c}">${esc(t)}</li>`;
+  $("#r-al").innerHTML=o.al.filter(x=>x[2]!=="nota").map(li).join("");
+  $("#r-al-nota").innerHTML=o.al.filter(x=>x[2]==="nota").map(li).join("");
 }
 function summary(){
   const a=S.aluno,A0=A();const L=[];
@@ -981,11 +976,11 @@ function summary(){
   L.push(`Aluno: ${a.nome||"—"} · Data: ${a.data||"—"} · Avaliador: ${a.aval||"—"}`);
   L.push(`Idade: ${a.idade||"—"} · Peso: ${a.peso||"—"} kg · Sexo: ${a.sexo==="m"?"M":a.sexo==="f"?"F":"—"} · FCmáx prevista: ${A0.fcprev?f0(A0.fcprev):"—"}${A0.medOk?" · FCmáx medida: "+f0(A0.fcmed)+" (usada nas contas)":""} · FC repouso: ${a.fcrep||"—"}`);
   const sn=v=>v?"sim":"não",tem=v=>String(v??"").trim()!=="";
-  L.push(`PAR-Q em dia: ${sn(a.parq)} · Cinta de FC: ${sn(a.cinta)} · Remédio que altera a FC: ${sn(a.med)}`);
+  L.push(`PAR-Q em dia: ${sn(a.parq)} · Frequencímetro: ${sn(a.cinta)} · Remédio que altera a FC: ${sn(a.med)}`);
   // entra todo teste com algum dado anotado (velocidade e inclinação da esteira já nascem preenchidas: não contam)
-  const ps=P.filter(p=>!p.review&&S.p[p.id]).filter(p=>{const st=S.p[p.id];return st.rows.some(r=>tem(r.fc)||tem(r.pse)||tem(r.w))||tem(st.fcpico)||tem(st.fc1)||tem(st.obs)});
+  const ps=P.filter(p=>S.p[p.id]).filter(p=>{const st=S.p[p.id];return st.rows.some(r=>tem(r.fc)||tem(r.pse)||tem(r.w))||tem(st.fcpico)||tem(st.fc1)||tem(st.obs)});
   const os=ps.map(p=>compute(p)),at=o=>o.al.filter(x=>x[0]!=="ok").map(x=>x[1]);
-  // com mais de um teste, os alertas de texto igual em todos (idade, peso, remédio, cinta) saem uma vez só, aqui
+  // com mais de um teste, os alertas de texto igual em todos (idade, peso, remédio, frequencímetro) saem uma vez só, aqui
   const comuns=os.length>1?at(os[0]).filter(t=>os.every(o=>at(o).includes(t))):[];
   comuns.forEach(t=>L.push("Atenção: "+t));
   ps.forEach((p,k)=>{
@@ -1012,15 +1007,19 @@ document.querySelector(".aluno").addEventListener("input",e=>{
   if(e.target.type==="checkbox")S.aluno[id]=e.target.checked;else S.aluno[id]=e.target.value;
   save();update();
 });
-$("#tabs").addEventListener("click",e=>{const b=e.target.closest(".tab");if(!b)return;S.tab=b.dataset.tab;persistLocal();renderTabs();renderPanel()});
+$("#sel-proto").addEventListener("change",e=>{S.tab=e.target.value;persistLocal();infoAberta=false;detAberto=false;renderPanel()});
+$("#btn-proto-info").addEventListener("click",()=>{infoAberta=!infoAberta;$("#proto-info").hidden=!infoAberta;$("#btn-proto-info").setAttribute("aria-expanded",String(infoAberta))});
+$("#btn-dec").addEventListener("click",()=>{const d=$("#dec");d.hidden=!d.hidden;$("#btn-dec").setAttribute("aria-expanded",String(!d.hidden))});
 $("#panel").addEventListener("input",e=>{
-  const p=P.find(x=>x.id===S.tab);if(!p||p.review)return;const st=pstate(p);const t=e.target;
+  const p=P.find(x=>x.id===S.tab);if(!p)return;const st=pstate(p);const t=e.target;
   if(t.dataset.k){st.rows[+t.dataset.i][t.dataset.k]=t.value}
   else if(t.dataset.g){st[t.dataset.g]=t.value}
   else if(t.id===p.id+"-start"){st.start=t.value}
   save();update();
 });
 $("#panel").addEventListener("click",e=>{
+  // Detalhes do resultado: abre e fecha sem salvar (sem data-act, funciona com a ficha travada)
+  if(e.target.closest("#btn-det")){detAberto=!detAberto;$("#r-det").hidden=!detAberto;$("#btn-det").setAttribute("aria-expanded",String(detAberto));return}
   const b=e.target.closest("[data-act]");if(!b)return;const p=P.find(x=>x.id===S.tab);const st=pstate(p);
   // todas as linhas, inclusive as do "+ degrau": a velocidade sai da posição do degrau
   if(b.dataset.act==="regen"){const s=n(st.start);if(s==null)return;
@@ -1077,7 +1076,7 @@ const relRecados={};
 const dataBR=d=>/^\d{4}-\d{2}-\d{2}$/.test(d||"")?d.split("-").reverse().join("/"):(d||"");
 const f01=x=>x==null?"—":x.toLocaleString("pt-BR",{maximumFractionDigits:1});
 // testes com FC registrada ou com estágio final; só os que têm resultado principal entram na folha e na mensagem
-function relTestes(){return P.filter(p=>!p.review&&S.p[p.id]).map(p=>({p,o:compute(p)})).filter(x=>x.o.rows.some(r=>r.fc!=null)||x.o.fim)}
+function relTestes(){return P.filter(p=>S.p[p.id]).map(p=>({p,o:compute(p)})).filter(x=>x.o.rows.some(r=>r.fc!=null)||x.o.fim)}
 // estágio final: o mesmo da ficha (o.fim na bike e na esteira máx); na esteira submáx, o último com FC
 function relUltimo(p,o){if(p.id==="bsub"||p.id==="bmax"||p.id==="emax")return o.fim;const done=o.rows.filter(r=>!r.warm&&r.fc!=null);return done[done.length-1]||null}
 function relNota(p,o){
@@ -1175,7 +1174,7 @@ $("#rel-msg").addEventListener("click",async()=>{
   catch(e){ta.value=txt;ta.hidden=false;ta.focus();ta.select();av.textContent="A mensagem está selecionada abaixo: copie e cole no WhatsApp ou no e-mail."}
 });
 if(!S.aluno.data){S.aluno.data=hoje()}
-loadAluno();renderTabs();renderPanel();renderSaved();Sync.paint();Sync.init();
+loadAluno();renderMenu();renderPanel();renderSaved();Sync.paint();Sync.init();
 })();
 </script>
 
