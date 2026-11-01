@@ -1790,7 +1790,18 @@ $("loginBtn").onclick=doLogin;
 $("loginSenha").addEventListener("keydown",e=>{ if(e.key==="Enter") doLogin(); });
 $("btnSync").onclick=()=>DataStore.syncNow();
 $("btnPend").onclick=exportarPendencias;
-$("btnSair").onclick=async()=>{ if(DataStore.sb) await DataStore.sb.auth.signOut(); location.reload(); };
+// Sair só neste aparelho (sem escopo o Supabase derrubava o login em todos os aparelhos e abas).
+// Sem rede o servidor pode não responder: espera até 4 s; e como aí o signOut falha sem apagar a
+// sessão guardada, apaga só as chaves deste login (a fila de envio e os registros ficam).
+$("btnSair").onclick=async()=>{
+  $("btnSair").disabled=true;
+  const sb=DataStore.sb;
+  if(sb){
+    try{ await Promise.race([sb.auth.signOut({scope:"local"}), new Promise(r=>setTimeout(r,4000))]); }catch(e){}
+    try{ const k=sb.auth.storageKey; if(k) Object.keys(localStorage).filter(x=>x.startsWith(k)).forEach(x=>localStorage.removeItem(x)); }catch(e){}
+  }
+  location.reload();
+};
 $("cfgOk").onclick=()=>{ cfgAberta=false; renderCtx(); };
 $("syncBadge").onclick=()=>{ if(DataStore.on) DataStore.syncNow(); };
 // menu "⋯": fecha ao escolher uma ação ou ao clicar fora
