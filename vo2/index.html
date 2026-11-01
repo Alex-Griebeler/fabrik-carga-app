@@ -274,7 +274,7 @@ tr.stop td:first-child{box-shadow:inset 3px 0 0 var(--accent)}
 </div>
 <template id="tpl-review">
 <div class="review">
-  <div class="ptop"><h2>Como fazer os testes de esteira</h2><span class="chip proposta">Revisão de 14/10/2026 · aguarda o Alex</span></div>
+  <div class="ptop"><h2>Como fazer os testes de esteira</h2><span class="chip atual">Revisão de 14/10/2026 · aprovada em 01/11/2026</span></div>
 
   <section>
     <h3>Resumo</h3>
@@ -326,9 +326,8 @@ tr.stop td:first-child{box-shadow:inset 3px 0 0 var(--accent)}
 
   <section>
     <h3>O que você precisa decidir</h3>
+    <p>Aprovado em 01/11/2026: os 3 protocolos de esteira desta ficha e a parada da corrida submáxima em 85% da FCmáx prevista.</p>
     <ol>
-      <li>Aprovar (ou ajustar) os 3 protocolos de esteira desta ficha.</li>
-      <li>Corrida submáxima: parar em 85% da FCmáx prevista (ACSM) ou manter PSE 9 / 90–95% do manual Fabrik.</li>
       <li>Trocar a fórmula da bike máxima da ACSM para a FRIEND. Isso muda os números antigos: na faixa de 150 W com 70 kg, o resultado cai cerca de 4 ml/kg/min.</li>
       <li>Bike submáxima: a planilha usa watts (25 a 200 W) e o app usa níveis do console (2 a 9). Qual vale? A troca pelo teste de Ekblom-Bak segue esperando os watts de cada nível a 60 rpm.</li>
       <li>Antes do primeiro aluno, testar na esteira da Fabrik se o Multiestágio e o Máximo customizado aparecem como no manual Live, e se na volta à calma dá para pôr 3 km/h e 0%.</li>
@@ -420,7 +419,7 @@ const P=[
   near:(r)=>(r.pse!=null&&r.pse>=9),
   rows:[{t:"0–2",fase:"Aquecimento",plan:"nível 2",warm:1}].concat([3,4,5,7,9,11,13].map((l,i)=>({t:(2+2*i)+"–"+(4+2*i),fase:"Teste",plan:"nível "+l})))
 },
-{ id:"ecam", tab:"Esteira caminhada", sub:"Submáx · proposta", status:"proposta", kind:"walk",
+{ id:"ecam", tab:"Esteira caminhada", sub:"Submáx", status:"atual", kind:"walk",
   titulo:"Esteira · caminhada submáxima (Ebbeling)",
   indicacao:"Iniciantes, sobrepeso, baixa aptidão, quem não corre ou está em reabilitação. Equação feita com adultos de 20 a 59 anos.",
   passos:["No console: Multiestágio, no modo caminhada. O console faz sozinho 90 s de aquecimento na metade da velocidade, a 0%; as etapas abaixo começam depois disso.","Escolha uma velocidade de caminhada entre 3,2 e 7,2 km/h (no console, o modo caminhada vai até 6,9 km/h).","Etapa 1 (proposta Fabrik, para acertar a velocidade): 4 min a 0%. A FC no fim deve ficar entre 50% e 70% da FCmáx prevista, a faixa descrita para este teste; se não ficar, ajuste a velocidade e recomece.","Etapa 2 (a que entra na equação): 4 min a 5%, mesma velocidade. Anote a FC no fim do 4º minuto.","Sem agarrar o corrimão.","Recuperação: 1 min a 3 km/h e 0%; anote a FC."],
@@ -428,16 +427,16 @@ const P=[
   stop:()=>false, near:()=>false,
   rows:[{t:"0–4",fase:"Etapa 1 · 0%",vel:"5",incl:"0",lockIncl:1},{t:"4–8",fase:"Etapa 2 · 5%",vel:"",incl:"5",lockIncl:1,mirror:1}]
 },
-{ id:"esub", tab:"Esteira corrida submáx", sub:"Proposta", status:"proposta", kind:"run",
+{ id:"esub", tab:"Esteira corrida submáx", sub:"Submáx", status:"atual", kind:"run",
   titulo:"Esteira · corrida submáxima",
   indicacao:"Intermediários já adaptados à corrida, sem dor ou limitação.",
   passos:["Antes de iniciar o teste no console: 2 min caminhando a 3,5 km/h e 0% (o teste do console não tem aquecimento).","No console: Teste máximo customizado com velocidade inicial 7 km/h, incremento 1 km/h e degrau de 3 min (a 0%).","No fim de cada estágio: FC e PSE.","Sem segurar no corrimão.","Ao chegar no ponto de parada abaixo, aperte STOP. O console entra na volta à calma: ponha 3 km/h e 0% se ele deixar e anote a FC depois de 1 min."],
-  parada:"Proposta: parar quando a FC passar de 85% da FCmáx prevista (ponto final do ACSM para esta conta). O manual Fabrik hoje diz PSE 9 ou 90–95%.",
+  parada:"Parar quando a FC chegar a 85% da FCmáx prevista (ponto final do ACSM para esta conta; aprovado em 01/11/2026), ou antes, se a PSE chegar a 9.",
   stop:(r,fm)=>(r.fc!=null&&fm&&r.fc>=0.85*fm)||(r.pse!=null&&r.pse>=9),
   near:(r,fm)=>(r.fc!=null&&fm&&r.fc>=0.8*fm),
   startSpeed:7, step:1, dur:3, count:7, incl:0
 },
-{ id:"emax", tab:"Esteira corrida máx", sub:"Proposta", status:"proposta", kind:"runmax",
+{ id:"emax", tab:"Esteira corrida máx", sub:"Máx", status:"atual", kind:"runmax",
   titulo:"Esteira · corrida máxima (rampa)",
   indicacao:"Alunos treinados, alta tolerância ao esforço, sem limitação articular ou clínica. Pré-requisito: já ter feito um submáximo.",
   passos:["Antes de iniciar o teste no console: 2 min caminhando a 3,5 km/h e 0% (o teste do console não tem aquecimento).","No console: Teste máximo customizado (velocidade inicial, incremento e duração do degrau).","Degraus de 1 min a 0%, subindo 1 km/h por degrau (proposta Fabrik).","Velocidade inicial: escolha para o teste durar de 8 a 12 min, como o ACSM recomenda (regra prática da casa: velocidade final esperada menos 9 km/h).","Anote FC e PSE no fim de cada degrau. Se o aluno parar no meio de um degrau, anote na linha desse degrau: a conta usa a velocidade em que o teste terminou.","Ao parar, aperte STOP. O console entra na volta à calma: ponha 3 km/h e 0% se ele deixar e anote a FC depois de 1 min."],
