@@ -102,6 +102,10 @@ fieldset.ro{border:0;margin:0;padding:0;min-width:0}
 /* dados do aluno */
 .aluno{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;padding:18px 20px;border:1px solid var(--line);border-radius:var(--r-lg);background:var(--surface)}
 .aluno .wide{grid-column:span 2}
+.lbl{display:flex;align-items:center;height:15.75px}
+.info{display:inline-grid;place-items:center;flex:none;width:44px;height:44px;margin:-16px -12px -16px -6px;border:0;border-radius:50%;background:none;color:var(--muted);cursor:pointer;font-family:var(--sans);font-size:16px;letter-spacing:0;padding:0;vertical-align:middle}
+.info:hover{background:var(--surface2);color:var(--ink)}
+.dica{grid-column:1/-1;font-size:14px;color:var(--ink2);background:var(--surface2);border-left:3px solid var(--accent);border-radius:0 var(--r-md) var(--r-md) 0;padding:10px 14px;max-width:72ch}
 .checks{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:4px 28px}
 .checks label{flex-direction:row;align-items:center;gap:10px;min-height:var(--h);font-size:14px;font-weight:500;letter-spacing:0;text-transform:none;color:var(--ink);cursor:pointer}
 .checks input{flex:0 0 auto;width:22px;height:22px;padding:0;margin:0;accent-color:var(--accent)}
@@ -241,7 +245,9 @@ tr.stop td:first-child{box-shadow:inset 3px 0 0 var(--accent)}
     <label>Peso (kg)<input id="a-peso" inputmode="decimal"></label>
     <label>Sexo<select id="a-sexo"><option value="">—</option><option value="m">Masculino</option><option value="f">Feminino</option></select></label>
     <label>FCmáx prevista<input id="a-fcmax" readonly title="208 − 0,7 × idade"></label>
+    <label for="a-fcmed"><span class="lbl">FCmáx medida<button type="button" class="info" data-dica="fcmed" title="O que é">ⓘ</button></span><input id="a-fcmed" inputmode="numeric" placeholder="opcional"></label>
     <label>FC de repouso<input id="a-fcrep" inputmode="numeric"></label>
+    <div class="dica" id="dica-fcmed" hidden>Preencha só com a FC mais alta medida com a cinta num teste máximo (bike máx ou esteira corrida máx, terminado com PSE 10). Com ela preenchida, a ficha usa esse valor no lugar da fórmula (208 − 0,7 × idade) no limite de parada, na faixa da caminhada e na conta do VO₂. Vazio, continua a fórmula. A fórmula erra cerca de 10 bpm para mais ou para menos de pessoa para pessoa (Tanaka 2001).</div>
     <div class="checks">
       <label><input type="checkbox" id="a-parq"> PAR-Q em dia</label>
       <label><input type="checkbox" id="a-cinta"> Cinta de FC no peito</label>
@@ -503,7 +509,7 @@ function adotarOrfas(){
 })();
 setInterval(marcarViva,10000);
 // qualquer dado digitado conta (não só o nome)
-function temDados(st){const a=(st&&st.aluno)||{};if(["nome","idade","peso","fcrep"].some(k=>String(a[k]||"").trim()))return true;
+function temDados(st){const a=(st&&st.aluno)||{};if(["nome","idade","peso","fcmed","fcrep"].some(k=>String(a[k]||"").trim()))return true;
   return Object.values((st&&st.p)||{}).some(ps=>(ps.rows||[]).some(r=>["w","fc","pse"].some(k=>String(r[k]||"").trim()))||["fcpico","fc1","obs"].some(k=>String(ps[k]||"").trim()))}
 function hasContent(){return temDados(S)}
 function newId(){return "av-"+hoje()+"-"+rid()}
@@ -701,7 +707,11 @@ function pstate(p){
   }
   return S.p[p.id];
 }
-const A=()=>{const a=S.aluno;return{idade:n(a.idade),peso:n(a.peso),sexo:a.sexo||"",fcmax:F.fcmax(n(a.idade)),med:!!a.med,parq:!!a.parq,cinta:!!a.cinta}};
+// FCmáx medida (teste máximo anterior) substitui a prevista quando está numa faixa plausível
+const FCMED_MIN=100,FCMED_MAX=230;
+const A=()=>{const a=S.aluno,idade=n(a.idade),fcprev=F.fcmax(idade),fcmed=n(a.fcmed);
+  const medOk=fcmed!=null&&fcmed>=FCMED_MIN&&fcmed<=FCMED_MAX;
+  return{idade,peso:n(a.peso),sexo:a.sexo||"",fcmax:medOk?fcmed:fcprev,fcprev,fcmed,medOk,fonte:medOk?"medida":"prevista",med:!!a.med,parq:!!a.parq,cinta:!!a.cinta}};
 
 /* ---------- cálculo por protocolo ---------- */
 function rowCalc(p,r,a){
@@ -721,7 +731,10 @@ function compute(p){
   const fcpico=n(st.fcpico)??(fcs.length?Math.max(...fcs):null);
   const fc1=n(st.fc1);const drop=(fcpico!=null&&fc1!=null)?fcpico-fc1:null;
   const out={rows,main:null,mainLabel:"",mainNote:"",kv:[],al,fcpico,fc1,drop};
-  if(a.idade==null)al.push(["bad","Preencha a idade: a FCmáx prevista depende dela."]);
+  if(a.idade==null&&!a.medOk)al.push(["bad","Preencha a idade: a FCmáx prevista depende dela."]);
+  if(a.fcmed!=null&&!a.medOk)al.push(["bad","FCmáx medida fora de "+FCMED_MIN+"–"+FCMED_MAX+" bpm: confira o número. Enquanto isso, a ficha usa a prevista."]);
+  if(a.medOk)al.push(["ok","Usando a FCmáx medida ("+f0(a.fcmed)+" bpm)"+(a.fcprev?" no lugar da prevista ("+f0(a.fcprev)+" bpm).":".")]);
+  if(a.medOk&&rows.some(r=>r.fc!=null&&r.fc>a.fcmed))al.push(["warn","Uma FC deste teste passou da FCmáx medida. A máxima real é maior: atualize o campo com a FC mais alta de um teste máximo."]);
   if(a.peso==null&&p.kind!=="walk")al.push(["bad","Preencha o peso: o VO₂ é por kg."]);
   if(a.med)al.push(["bad","Remédio que altera a FC: as estimativas que usam a FC podem não valer para este aluno (o ACSM exclui esse caso no método submáximo). Decida com o Alex."]);
   if(!a.cinta)al.push(["warn","Use a cinta de FC no peito (padrão Fabrik; nos testes do console, o manual exige ou recomenda monitor de FC)."]);
@@ -732,8 +745,8 @@ function compute(p){
     out.main=last?F.bikeACSM(w,a.peso):null;out.mainLabel="VO₂ no último estágio";out.mainNote="Valor do esforço em que o aluno parou. Não é o VO₂ máximo.";
     const pts=test.filter(r=>r.fc!=null&&r.vo2!=null&&r.fc>=110&&a.fcmax&&r.fc<=0.85*a.fcmax).map(r=>({fc:r.fc,vo2:r.vo2}));
     const ex=F.extrap(pts,a.fcmax);
-    out.kv=[["Último estágio",last?last.plan+" · "+f0(w)+" W":"—"],["% da FCmáx prevista",pct(last?last.pf:null)],["Estimativa do máximo (extrapolação ACSM)",f1(ex)],["Estágios usados na extrapolação",String(pts.length)]];
-    if(pts.length<2&&done.length)al.push(["warn","Extrapolação precisa de 2 estágios com FC entre 110 bpm e 85% da FCmáx prevista."]);
+    out.kv=[["Último estágio",last?last.plan+" · "+f0(w)+" W":"—"],["% da FCmáx "+a.fonte,pct(last?last.pf:null)],["Estimativa do máximo (extrapolação ACSM)",f1(ex)],["Estágios usados na extrapolação",String(pts.length)]];
+    if(pts.length<2&&done.length)al.push(["warn","Extrapolação precisa de 2 estágios com FC entre 110 bpm e 85% da FCmáx "+a.fonte+"."]);
     if(ex!=null)al.push(["warn","A extrapolação superestimou o VO₂ máx em 25,7% em média (Greiwe 1995). Use para comparar o aluno com ele mesmo."]);
     if(done.length)al.push(["warn","Estágios de 2 min: o ACSM pede 3 min ou mais para a FC estabilizar."]);
   }
@@ -741,14 +754,14 @@ function compute(p){
     const w=last?n(last.w):null;
     const acsm=F.bikeACSM(w,a.peso),fr=F.bikeFRIEND(w,a.peso);
     out.main=acsm;out.mainLabel="VO₂ máx estimado · fórmula atual (ACSM)";out.mainNote="Watts do último estágio registrado (fim do teste).";
-    out.kv=[["Estágio final",last?last.plan+" · "+f0(w)+" W":"—"],["VO₂ pela equação FRIEND (proposta)",f1(fr)],["Diferença FRIEND × ACSM",(acsm!=null&&fr!=null)?f1(fr-acsm):"—"],["FC pico · % da prevista",fcpico!=null?f0(fcpico)+" · "+pct(a.fcmax?fcpico/a.fcmax:null):"—"],["PSE final",last&&last.pse!=null?f0(last.pse):"—"]];
+    out.kv=[["Estágio final",last?last.plan+" · "+f0(w)+" W":"—"],["VO₂ pela equação FRIEND (proposta)",f1(fr)],["Diferença FRIEND × ACSM",(acsm!=null&&fr!=null)?f1(fr-acsm):"—"],["FC pico · % da "+a.fonte,fcpico!=null?f0(fcpico)+" · "+pct(a.fcmax?fcpico/a.fcmax:null):"—"],["PSE final",last&&last.pse!=null?f0(last.pse):"—"]];
     if(w!=null&&(w<50||w>200))al.push(["warn","Watts fora de 50–200 W: fora da faixa de precisão declarada pelo ACSM para esta equação."]);
     if(last&&last.pse!=null&&last.pse<10)al.push(["warn","PSE final abaixo de 10: o teste pode não ter chegado ao máximo."]);
   }
   if(p.id==="ecam"){
     const r1=rows[0],r2=rows[1];const v=n(r1.vel);
     if(v!=null&&(v<3.2||v>7.2))al.push(["bad","Velocidade fora da faixa da equação (3,2 a 7,2 km/h)."]);
-    if(r1.fc!=null&&a.fcmax){const q=r1.fc/a.fcmax;if(q<0.5||q>0.7)al.push(["bad","FC da etapa 1 em "+pct(q)+" da FCmáx prevista. A faixa é 50–70%: ajuste a velocidade e recomece."]);else al.push(["ok","FC da etapa 1 dentro da faixa de 50–70%."])}
+    if(r1.fc!=null&&a.fcmax){const q=r1.fc/a.fcmax;if(q<0.5||q>0.7)al.push(["bad","FC da etapa 1 em "+pct(q)+" da FCmáx "+a.fonte+". A faixa é 50–70%: ajuste a velocidade e recomece."]);else al.push(["ok","FC da etapa 1 dentro da faixa de 50–70%."])}
     if(a.idade!=null&&(a.idade<20||a.idade>59))al.push(["warn","Idade fora da faixa em que a equação foi feita (20 a 59 anos)."]);
     if(!a.sexo)al.push(["bad","Preencha o sexo: entra na equação."]);
     const ok=v!=null&&r2.fc!=null&&a.idade!=null&&a.sexo;
@@ -759,9 +772,9 @@ function compute(p){
   if(p.id==="esub"){
     const pts=test.filter(r=>r.fc!=null&&r.vo2!=null&&r.fc>=110&&a.fcmax&&r.fc<=0.85*a.fcmax).map(r=>({fc:r.fc,vo2:r.vo2}));
     const ex=F.extrap(pts,a.fcmax);
-    out.main=ex;out.mainLabel="VO₂ máx estimado (extrapolação ACSM)";out.mainNote="Reta FC × VO₂ dos estágios entre 110 bpm e 85% da FCmáx prevista, prolongada até a FCmáx prevista.";
+    out.main=ex;out.mainLabel="VO₂ máx estimado (extrapolação ACSM)";out.mainNote="Reta FC × VO₂ dos estágios entre 110 bpm e 85% da FCmáx "+a.fonte+", prolongada até a FCmáx "+a.fonte+".";
     out.kv=[["Último estágio",last?f1(n(last.vel))+" km/h · "+f0(last.fc)+" bpm":"—"],["VO₂ do último estágio (ACSM)",f1(last?last.vo2:null)],["Estágios usados",String(pts.length)]];
-    if(pts.length<2&&done.length)al.push(["warn","A conta precisa de 2 estágios com FC entre 110 bpm e 85% da FCmáx prevista."]);
+    if(pts.length<2&&done.length)al.push(["warn","A conta precisa de 2 estágios com FC entre 110 bpm e 85% da FCmáx "+a.fonte+"."]);
     if(ex!=null)al.push(["warn","Estimativa com erro grande. O número mais útil na reavaliação é a FC na mesma velocidade."]);
     if(test.some(r=>r.fc!=null&&n(r.vel)!=null&&n(r.vel)<8))al.push(["warn","A equação de corrida do ACSM é mais precisa acima de 8 km/h."]);
   }
@@ -770,7 +783,7 @@ function compute(p){
     const fr=(v!=null&&g!=null)?F.runFRIEND(v,g):null,ac=(v!=null&&g!=null)?F.runACSM(v,g):null;
     out.main=fr;out.mainLabel="VO₂ máx estimado (FRIEND)";out.mainNote="Velocidade e inclinação do degrau em que o teste terminou (pico).";
     const durMin=done.length*1;
-    out.kv=[["Degrau final (pico)",v!=null?f1(v)+" km/h · "+f1(g)+"%":"—"],["Duração da rampa",done.length?durMin+" min":"—"],["VO₂ pela equação ACSM (comparação)",f1(ac)],["FC pico · % da prevista",fcpico!=null?f0(fcpico)+" · "+pct(a.fcmax?fcpico/a.fcmax:null):"—"],["PSE final",last&&last.pse!=null?f0(last.pse):"—"]];
+    out.kv=[["Degrau final (pico)",v!=null?f1(v)+" km/h · "+f1(g)+"%":"—"],["Duração da rampa",done.length?durMin+" min":"—"],["VO₂ pela equação ACSM (comparação)",f1(ac)],["FC pico · % da "+a.fonte,fcpico!=null?f0(fcpico)+" · "+pct(a.fcmax?fcpico/a.fcmax:null):"—"],["PSE final",last&&last.pse!=null?f0(last.pse):"—"]];
     if(done.length&&(durMin<8||durMin>12))al.push(["warn","Rampa de "+durMin+" min. O ideal é 8–12 min: na próxima, ajuste a velocidade inicial."]);
     if(last&&last.pse!=null&&last.pse<10)al.push(["warn","PSE final abaixo de 10: o teste pode não ter chegado ao máximo."]);
   }
@@ -828,7 +841,7 @@ function renderPanel(){
 }
 function update(){
   const p=P.find(x=>x.id===S.tab);if(!p||p.review)return;
-  const a=A();$("#a-fcmax").value=a.fcmax?f0(a.fcmax)+" bpm":"";
+  const a=A();$("#a-fcmax").value=a.fcprev?f0(a.fcprev)+" bpm":"";
   const o=compute(p);
   document.querySelectorAll("#tb tr").forEach((tr,i)=>{
     const r=o.rows[i];if(!r)return;
@@ -848,7 +861,7 @@ function summary(){
   const a=S.aluno,A0=A();const L=[];
   L.push("FICHA VO₂ FABRIK");
   L.push(`Aluno: ${a.nome||"—"} · Data: ${a.data||"—"} · Avaliador: ${a.aval||"—"}`);
-  L.push(`Idade: ${a.idade||"—"} · Peso: ${a.peso||"—"} kg · Sexo: ${a.sexo==="m"?"M":a.sexo==="f"?"F":"—"} · FCmáx prevista: ${A0.fcmax?f0(A0.fcmax):"—"} · FC repouso: ${a.fcrep||"—"}`);
+  L.push(`Idade: ${a.idade||"—"} · Peso: ${a.peso||"—"} kg · Sexo: ${a.sexo==="m"?"M":a.sexo==="f"?"F":"—"} · FCmáx prevista: ${A0.fcprev?f0(A0.fcprev):"—"}${A0.medOk?" · FCmáx medida: "+f0(A0.fcmed)+" (usada nas contas)":""} · FC repouso: ${a.fcrep||"—"}`);
   P.filter(p=>!p.review&&S.p[p.id]).forEach(p=>{
     const o=compute(p);if(!o.rows.some(r=>r.fc!=null))return;
     L.push("");L.push("— "+p.titulo+(p.status==="proposta"?" (proposta)":""));
@@ -863,8 +876,9 @@ function summary(){
 }
 
 /* ---------- eventos ---------- */
-const AL=["nome","data","aval","idade","peso","sexo","fcrep"];
+const AL=["nome","data","aval","idade","peso","sexo","fcmed","fcrep"];
 function loadAluno(){AL.forEach(k=>{const el=$("#a-"+k);if(el)el.value=S.aluno[k]||""});["parq","cinta","med"].forEach(k=>{$("#a-"+k).checked=!!S.aluno[k]})}
+document.querySelector(".aluno").addEventListener("click",e=>{const b=e.target.closest("[data-dica]");if(!b)return;const d=$("#dica-"+b.dataset.dica);if(d)d.hidden=!d.hidden});
 document.querySelector(".aluno").addEventListener("input",e=>{
   const id=e.target.id.replace("a-","");
   if(e.target.type==="checkbox")S.aluno[id]=e.target.checked;else S.aluno[id]=e.target.value;
