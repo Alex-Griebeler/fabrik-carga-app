@@ -272,6 +272,97 @@ tr.stop td:first-child{box-shadow:inset 3px 0 0 var(--accent)}
     <p id="loginErro" role="status"></p>
   </div>
 </div>
+<template id="tpl-review">
+<div class="review">
+  <div class="ptop"><h2>Como fazer os testes de esteira</h2><span class="chip proposta">Revisão de 14/10/2026 · aguarda o Alex</span></div>
+
+  <section>
+    <h3>Resumo</h3>
+    <ul>
+      <li><strong>Proposta: o VO₂ que o console da Technogym mostra não vira resultado oficial.</strong> O console mostra "max VO2" em alguns testes (Teste de fitness, por exemplo), mas o manual não diz a fórmula de nenhum. Sem saber a conta, não dá para defender o número nem comparar com a bike. Isso é decisão da Fabrik, não algo que o manual afirma.</li>
+      <li><strong>Usar a esteira para conduzir o teste e a ficha para calcular</strong>, com equações publicadas e validadas contra VO₂ medido.</li>
+      <li><strong>Caminhada submáxima:</strong> teste de Ebbeling (a etapa que entra na conta é a de 4 min a 5%). Dá para rodar no modo Multiestágio do console.</li>
+      <li><strong>Corrida submáxima:</strong> nesta revisão não identifiquei teste validado para a faixa de 40 a 60 anos. Proposta: estágios de 3 min com a conta do ACSM, usada para comparar o aluno com ele mesmo.</li>
+      <li><strong>Corrida máxima:</strong> rampa de 8–12 min no Teste máximo customizado, com a equação FRIEND. Não recomendo o Bruce do console.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h3>O que o console oferece</h3>
+    <p>A folha de especificação da esteira da Fabrik (Excite Live Run) lista 4 testes submáximos e 9 máximos. Os detalhes abaixo vêm do manual do console Unity (linha Artis/Excite). Não achei o manual do console Live: a lista de testes é a mesma, mas os degraus não foram conferidos no aparelho da Fabrik.</p>
+    <div class="tablebox"><table>
+      <thead><tr><th>Teste do console</th><th>Como funciona (manual Unity)</th><th>Uso na Fabrik</th></tr></thead>
+      <tbody>
+        <tr><td>Teste de fitness</td><td>90 s a 3,5 km/h; 3 min a 60% (ou 65%) da FCmáx; 4 min a 75%. A esteira ajusta a carga pela FC. Mostra "max VO2" no fim.</td><td>Não. Fórmula não informada.</td></tr>
+        <tr><td>Estágio único</td><td>90 s de aquecimento + 5 min na velocidade e inclinação escolhidas.</td><td>Não.</td></tr>
+        <tr><td>Multiestágio</td><td>90 s + 2 etapas de 4 min com velocidade e inclinação escolhidas. Caminhada até 6,9 km/h; corrida a partir de 7,0 km/h.</td><td>Sim, para conduzir o Ebbeling.</td></tr>
+        <tr><td>Teste inteligente</td><td>A intensidade sobe até a pessoa dizer que está "forte".</td><td>Não.</td></tr>
+        <tr><td>Máximo Technogym</td><td>15 min de aquecimento guiado pela FC (65, 70 e 75%); depois a velocidade sobe a cada minuto a 0%.</td><td>Não. Aquecimento longo demais.</td></tr>
+        <tr><td>Máximo customizado</td><td>Você define a velocidade inicial, o incremento e a duração do degrau.</td><td>Sim, para a corrida máxima.</td></tr>
+        <tr><td>Bruce</td><td>5 degraus de 3 min, de 2,7 km/h e 10% a 8,0 km/h e 18%. Termina em 15 min.</td><td>Não (ver abaixo).</td></tr>
+        <tr><td>Bruce modificado, Naughton, Balke &amp; Ware</td><td>Caminhada com a inclinação subindo. O manual indica o Bruce modificado para qualquer pessoa e para alto risco, o Naughton para cardiopatas ou alto risco e o Balke &amp; Ware para qualquer pessoa. O ACSM indica Naughton e Balke-Ware para pessoas mais velhas ou descondicionadas.</td><td>Não. São caminhada, não corrida.</td></tr>
+        <tr><td>Åstrand modificado, Costill &amp; Fox</td><td>Corrida a 8–13 km/h ou fixa em 14,3 km/h, com a inclinação subindo.</td><td>Não. São para pessoas muito treinadas.</td></tr>
+      </tbody>
+    </table></div>
+  </section>
+
+  <section>
+    <h3>Por que não usar o Bruce do console</h3>
+    <ul>
+      <li>O ACSM diz que os degraus do Bruce são grandes (2 a 3 METs a cada 3 min) e que estimar a capacidade pelo tempo ou pela carga pode superestimá-la muito. Para pessoas mais velhas ou destreinadas, o ACSM indica degraus menores (Naughton, Balke-Ware) ou rampa.</li>
+      <li>No console, o Bruce para em 15 min. Quem aguenta mais termina sem chegar ao máximo, e o próprio manual manda fazer um teste mais forte nesse caso.</li>
+      <li>O ACSM recomenda um protocolo que dure de 8 a 12 min até o esforço máximo. A rampa com velocidade inicial ajustada ao aluno atende isso; o Bruce fixo, não.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h3>Base de cada proposta</h3>
+    <div class="decision"><strong>Caminhada · Ebbeling.</strong> Estudo com 139 adultos de 20 a 59 anos: equação feita com 117 e validada em 22. A equação usa a FC dos 4 min a 5%, a velocidade, a idade e o sexo. Explicou 86% da variação, com erro típico de 4,85 ml/kg/min; na validação, 90,9% ficaram dentro de ±5. A faixa de FC de 50–70% da FCmáx prevista é a descrita para o teste em Waddoups 2008; a etapa a 0% antes dela é rotina proposta pela Fabrik para acertar a velocidade (o resumo do artigo original não detalha isso). Ressalvas: com FC em 50%, o teste subestimou 3,5 ml/kg/min; em 70%, superestimou 3,5 (Waddoups 2008). Em mulheres de 45 a 65 anos repetiu muito bem (ICC 0,95), mas a associação com o VO₂ medido foi fraca (ρ = 0,48; Mitros 2010). A ficha usa FCmáx prevista = 208 − 0,7 × idade (Tanaka 2001); não sei qual fórmula o estudo original usou para a faixa, e a diferença para 220 − idade é de até 6 bpm.</div>
+    <div class="decision"><strong>Corrida submáxima · estágios de 3 min + conta do ACSM.</strong> O teste de corrida submáxima com equação própria que encontrei (George 1993) foi feito com 129 pessoas treinadas de 18 a 29 anos; num estudo independente com 32 universitários, a correlação com o VO₂ medido foi de r = 0,50 (McNaughton 1998). O ACSM diz que não há protocolo submáximo específico para esteira. A proposta segue o método do ACSM: estágios de 3 min ou mais, FC entre 110 bpm e 85% da FCmáx prevista, reta prolongada até a FCmáx prevista. Na bike, esse método superestimou o VO₂ máx em 25,7% em média (Greiwe 1995); não há esse número para a corrida. Por isso o dado mais útil aqui é a FC na mesma velocidade de uma avaliação para a outra.</div>
+    <div class="decision"><strong>Corrida máxima · rampa + FRIEND.</strong> A equação FRIEND foi feita com 7.983 adultos saudáveis com VO₂ medido em teste máximo, usando a velocidade e a inclinação do fim do teste. Erro relativo global de 5,1%, contra 21,4% das equações do ACSM. A ficha usa a velocidade do degrau em que o teste terminou. A rampa (1 km/h por minuto, 0%, velocidade inicial pela regra da casa) é proposta da Fabrik; não encontrei validação específica dela. Os 8–12 min vêm do ACSM.</div>
+    <div class="decision"><strong>Bike máxima · FRIEND também.</strong> A FRIEND da bike (5.100 pessoas, feita com a potência no fim de teste máximo) teve viés de 0,5%, contra 15,5% da fórmula do ACSM que a Fabrik usa hoje. Num grupo independente de 1.255 pessoas com idade média de 62 anos, o viés ficou abaixo de 1% (Boulay 2025). A ficha mostra as duas lado a lado, com os watts do último estágio registrado.</div>
+    <div class="decision"><strong>Queda da FC em 1 min.</strong> Cole 1999 considerou anormal a queda de 12 bpm ou menos, com recuperação ativa a 2,4 km/h e 2,5%. A Fabrik usa 3 km/h e 0% (esteira) ou 25 W (bike), então o corte serve de referência, sem validação neste protocolo. As faixas Excelente (≥ 30), Muito boa (20–29) e Moderada (13–19) são da casa, sem fonte.</div>
+  </section>
+
+  <section>
+    <h3>O que você precisa decidir</h3>
+    <ol>
+      <li>Aprovar (ou ajustar) os 3 protocolos de esteira desta ficha.</li>
+      <li>Corrida submáxima: parar em 85% da FCmáx prevista (ACSM) ou manter PSE 9 / 90–95% do manual Fabrik.</li>
+      <li>Trocar a fórmula da bike máxima da ACSM para a FRIEND. Isso muda os números antigos: na faixa de 150 W com 70 kg, o resultado cai cerca de 4 ml/kg/min.</li>
+      <li>Bike submáxima: a planilha usa watts (25 a 200 W) e o app usa níveis do console (2 a 9). Qual vale? A troca pelo teste de Ekblom-Bak segue esperando os watts de cada nível a 60 rpm.</li>
+      <li>Confirmar no console da Fabrik se os testes aparecem como no manual Unity (principalmente o Máximo customizado e o Multiestágio).</li>
+      <li>Depois de aprovado, levar os protocolos de esteira para o app: hoje o app guarda o protocolo de esteira só como texto livre.</li>
+    </ol>
+  </section>
+
+  <section>
+    <h3>Números que não devem ser usados</h3>
+    <p>O "Manual Fabrik de Avaliação Cardiovascular" traz uma tabela de esteira (4 a 11 km/h, 0 a 7%) com uma coluna de VO₂ estimado. Esses valores não batem com as equações do ACSM (4 km/h a 0% dá 10,2 pela equação de caminhada; o manual diz 14,3). O texto termina com uma pergunta de assistente de IA, sinal de que não foi revisado.</p>
+  </section>
+
+  <section>
+    <h3>Fontes</h3>
+    <ul class="src">
+      <li>ACSM's Guidelines for Exercise Testing and Prescription, 8ª ed., 2010 (acervo): equações metabólicas (tab. 7.2), método submáximo (cap. 4), protocolos e duração de 8–12 min (cap. 5).</li>
+      <li>Ebbeling CB et al. Med Sci Sports Exerc 1991;23(8):966-73. PMID 1956273.</li>
+      <li>Waddoups L et al. J Sports Sci 2008;26(5):491-7. <a href="https://doi.org/10.1080/02640410701591425">DOI</a></li>
+      <li>Mitros M et al. Eur J Appl Physiol 2010;111(1):47-56. <a href="https://doi.org/10.1007/s00421-010-1615-3">DOI</a></li>
+      <li>George JD et al. Med Sci Sports Exerc 1993;25(5):643-7. PMID 8492693.</li>
+      <li>McNaughton L et al. Percept Mot Skills 1998;87(2):575-84. <a href="https://doi.org/10.2466/pms.1998.87.2.575">DOI</a></li>
+      <li>Greiwe JS et al. Med Sci Sports Exerc 1995;27(9):1315-20. PMID 8531631.</li>
+      <li>Kokkinos P et al. (FRIEND esteira) Am J Cardiol 2017;120(4):688-692. <a href="https://doi.org/10.1016/j.amjcard.2017.05.037">DOI</a></li>
+      <li>Kokkinos P et al. (FRIEND bike) Eur J Prev Cardiol 2018;25(10):1077-1082. <a href="https://doi.org/10.1177/2047487318772667">DOI</a></li>
+      <li>Boulay P et al. Med Sci Sports Exerc 2025;57(10):2207-2215. <a href="https://doi.org/10.1249/MSS.0000000000003761">DOI</a></li>
+      <li>Cole CR et al. NEJM 1999;341:1351-7 (acervo). <a href="https://doi.org/10.1056/NEJM199910283411804">DOI</a></li>
+      <li>Tanaka H et al. J Am Coll Cardiol 2001;37(1):153-6. <a href="https://doi.org/10.1016/S0735-1097(00)01054-8">DOI</a></li>
+      <li>Technogym, ARTIS Cardio · Excite · Unity User Manual (testes de Run); folha de especificação Excite Live Run (pasta Expansão Fabrik 2024).</li>
+      <li>Fabrik: planilhas Bike Ride máximo e submáximo; "Testes de VO2 Fabrik" (critérios de escolha e segurança).</li>
+    </ul>
+    <p class="note">Li o resumo dos artigos no PubMed, não o texto completo. FCmáx prevista = 208 − 0,7 × idade, a mesma das planilhas Fabrik.</p>
+  </section>
+</div>
+</template>
 <script src="../vendor/supabase.js"></script>
 <script>
 (function(){
@@ -828,98 +919,6 @@ if(!S.aluno.data){S.aluno.data=hoje()}
 loadAluno();renderTabs();renderPanel();renderSaved();Sync.paint();Sync.init();
 })();
 </script>
-
-<template id="tpl-review">
-<div class="review">
-  <div class="ptop"><h2>Como fazer os testes de esteira</h2><span class="chip proposta">Revisão de 14/10/2026 · aguarda o Alex</span></div>
-
-  <section>
-    <h3>Resumo</h3>
-    <ul>
-      <li><strong>Proposta: o VO₂ que o console da Technogym mostra não vira resultado oficial.</strong> O console mostra "max VO2" em alguns testes (Teste de fitness, por exemplo), mas o manual não diz a fórmula de nenhum. Sem saber a conta, não dá para defender o número nem comparar com a bike. Isso é decisão da Fabrik, não algo que o manual afirma.</li>
-      <li><strong>Usar a esteira para conduzir o teste e a ficha para calcular</strong>, com equações publicadas e validadas contra VO₂ medido.</li>
-      <li><strong>Caminhada submáxima:</strong> teste de Ebbeling (a etapa que entra na conta é a de 4 min a 5%). Dá para rodar no modo Multiestágio do console.</li>
-      <li><strong>Corrida submáxima:</strong> nesta revisão não identifiquei teste validado para a faixa de 40 a 60 anos. Proposta: estágios de 3 min com a conta do ACSM, usada para comparar o aluno com ele mesmo.</li>
-      <li><strong>Corrida máxima:</strong> rampa de 8–12 min no Teste máximo customizado, com a equação FRIEND. Não recomendo o Bruce do console.</li>
-    </ul>
-  </section>
-
-  <section>
-    <h3>O que o console oferece</h3>
-    <p>A folha de especificação da esteira da Fabrik (Excite Live Run) lista 4 testes submáximos e 9 máximos. Os detalhes abaixo vêm do manual do console Unity (linha Artis/Excite). Não achei o manual do console Live: a lista de testes é a mesma, mas os degraus não foram conferidos no aparelho da Fabrik.</p>
-    <div class="tablebox"><table>
-      <thead><tr><th>Teste do console</th><th>Como funciona (manual Unity)</th><th>Uso na Fabrik</th></tr></thead>
-      <tbody>
-        <tr><td>Teste de fitness</td><td>90 s a 3,5 km/h; 3 min a 60% (ou 65%) da FCmáx; 4 min a 75%. A esteira ajusta a carga pela FC. Mostra "max VO2" no fim.</td><td>Não. Fórmula não informada.</td></tr>
-        <tr><td>Estágio único</td><td>90 s de aquecimento + 5 min na velocidade e inclinação escolhidas.</td><td>Não.</td></tr>
-        <tr><td>Multiestágio</td><td>90 s + 2 etapas de 4 min com velocidade e inclinação escolhidas. Caminhada até 6,9 km/h; corrida a partir de 7,0 km/h.</td><td>Sim, para conduzir o Ebbeling.</td></tr>
-        <tr><td>Teste inteligente</td><td>A intensidade sobe até a pessoa dizer que está "forte".</td><td>Não.</td></tr>
-        <tr><td>Máximo Technogym</td><td>15 min de aquecimento guiado pela FC (65, 70 e 75%); depois a velocidade sobe a cada minuto a 0%.</td><td>Não. Aquecimento longo demais.</td></tr>
-        <tr><td>Máximo customizado</td><td>Você define a velocidade inicial, o incremento e a duração do degrau.</td><td>Sim, para a corrida máxima.</td></tr>
-        <tr><td>Bruce</td><td>5 degraus de 3 min, de 2,7 km/h e 10% a 8,0 km/h e 18%. Termina em 15 min.</td><td>Não (ver abaixo).</td></tr>
-        <tr><td>Bruce modificado, Naughton, Balke &amp; Ware</td><td>Caminhada com a inclinação subindo. O manual indica o Bruce modificado para qualquer pessoa e para alto risco, o Naughton para cardiopatas ou alto risco e o Balke &amp; Ware para qualquer pessoa. O ACSM indica Naughton e Balke-Ware para pessoas mais velhas ou descondicionadas.</td><td>Não. São caminhada, não corrida.</td></tr>
-        <tr><td>Åstrand modificado, Costill &amp; Fox</td><td>Corrida a 8–13 km/h ou fixa em 14,3 km/h, com a inclinação subindo.</td><td>Não. São para pessoas muito treinadas.</td></tr>
-      </tbody>
-    </table></div>
-  </section>
-
-  <section>
-    <h3>Por que não usar o Bruce do console</h3>
-    <ul>
-      <li>O ACSM diz que os degraus do Bruce são grandes (2 a 3 METs a cada 3 min) e que estimar a capacidade pelo tempo ou pela carga pode superestimá-la muito. Para pessoas mais velhas ou destreinadas, o ACSM indica degraus menores (Naughton, Balke-Ware) ou rampa.</li>
-      <li>No console, o Bruce para em 15 min. Quem aguenta mais termina sem chegar ao máximo, e o próprio manual manda fazer um teste mais forte nesse caso.</li>
-      <li>O ACSM recomenda um protocolo que dure de 8 a 12 min até o esforço máximo. A rampa com velocidade inicial ajustada ao aluno atende isso; o Bruce fixo, não.</li>
-    </ul>
-  </section>
-
-  <section>
-    <h3>Base de cada proposta</h3>
-    <div class="decision"><strong>Caminhada · Ebbeling.</strong> Estudo com 139 adultos de 20 a 59 anos: equação feita com 117 e validada em 22. A equação usa a FC dos 4 min a 5%, a velocidade, a idade e o sexo. Explicou 86% da variação, com erro típico de 4,85 ml/kg/min; na validação, 90,9% ficaram dentro de ±5. A faixa de FC de 50–70% da FCmáx prevista é a descrita para o teste em Waddoups 2008; a etapa a 0% antes dela é rotina proposta pela Fabrik para acertar a velocidade (o resumo do artigo original não detalha isso). Ressalvas: com FC em 50%, o teste subestimou 3,5 ml/kg/min; em 70%, superestimou 3,5 (Waddoups 2008). Em mulheres de 45 a 65 anos repetiu muito bem (ICC 0,95), mas a associação com o VO₂ medido foi fraca (ρ = 0,48; Mitros 2010). A ficha usa FCmáx prevista = 208 − 0,7 × idade (Tanaka 2001); não sei qual fórmula o estudo original usou para a faixa, e a diferença para 220 − idade é de até 6 bpm.</div>
-    <div class="decision"><strong>Corrida submáxima · estágios de 3 min + conta do ACSM.</strong> O teste de corrida submáxima com equação própria que encontrei (George 1993) foi feito com 129 pessoas treinadas de 18 a 29 anos; num estudo independente com 32 universitários, a correlação com o VO₂ medido foi de r = 0,50 (McNaughton 1998). O ACSM diz que não há protocolo submáximo específico para esteira. A proposta segue o método do ACSM: estágios de 3 min ou mais, FC entre 110 bpm e 85% da FCmáx prevista, reta prolongada até a FCmáx prevista. Na bike, esse método superestimou o VO₂ máx em 25,7% em média (Greiwe 1995); não há esse número para a corrida. Por isso o dado mais útil aqui é a FC na mesma velocidade de uma avaliação para a outra.</div>
-    <div class="decision"><strong>Corrida máxima · rampa + FRIEND.</strong> A equação FRIEND foi feita com 7.983 adultos saudáveis com VO₂ medido em teste máximo, usando a velocidade e a inclinação do fim do teste. Erro relativo global de 5,1%, contra 21,4% das equações do ACSM. A ficha usa a velocidade do degrau em que o teste terminou. A rampa (1 km/h por minuto, 0%, velocidade inicial pela regra da casa) é proposta da Fabrik; não encontrei validação específica dela. Os 8–12 min vêm do ACSM.</div>
-    <div class="decision"><strong>Bike máxima · FRIEND também.</strong> A FRIEND da bike (5.100 pessoas, feita com a potência no fim de teste máximo) teve viés de 0,5%, contra 15,5% da fórmula do ACSM que a Fabrik usa hoje. Num grupo independente de 1.255 pessoas com idade média de 62 anos, o viés ficou abaixo de 1% (Boulay 2025). A ficha mostra as duas lado a lado, com os watts do último estágio registrado.</div>
-    <div class="decision"><strong>Queda da FC em 1 min.</strong> Cole 1999 considerou anormal a queda de 12 bpm ou menos, com recuperação ativa a 2,4 km/h e 2,5%. A Fabrik usa 3 km/h e 0% (esteira) ou 25 W (bike), então o corte serve de referência, sem validação neste protocolo. As faixas Excelente (≥ 30), Muito boa (20–29) e Moderada (13–19) são da casa, sem fonte.</div>
-  </section>
-
-  <section>
-    <h3>O que você precisa decidir</h3>
-    <ol>
-      <li>Aprovar (ou ajustar) os 3 protocolos de esteira desta ficha.</li>
-      <li>Corrida submáxima: parar em 85% da FCmáx prevista (ACSM) ou manter PSE 9 / 90–95% do manual Fabrik.</li>
-      <li>Trocar a fórmula da bike máxima da ACSM para a FRIEND. Isso muda os números antigos: na faixa de 150 W com 70 kg, o resultado cai cerca de 4 ml/kg/min.</li>
-      <li>Bike submáxima: a planilha usa watts (25 a 200 W) e o app usa níveis do console (2 a 9). Qual vale? A troca pelo teste de Ekblom-Bak segue esperando os watts de cada nível a 60 rpm.</li>
-      <li>Confirmar no console da Fabrik se os testes aparecem como no manual Unity (principalmente o Máximo customizado e o Multiestágio).</li>
-      <li>Depois de aprovado, levar os protocolos de esteira para o app: hoje o app guarda o protocolo de esteira só como texto livre.</li>
-    </ol>
-  </section>
-
-  <section>
-    <h3>Números que não devem ser usados</h3>
-    <p>O "Manual Fabrik de Avaliação Cardiovascular" traz uma tabela de esteira (4 a 11 km/h, 0 a 7%) com uma coluna de VO₂ estimado. Esses valores não batem com as equações do ACSM (4 km/h a 0% dá 10,2 pela equação de caminhada; o manual diz 14,3). O texto termina com uma pergunta de assistente de IA, sinal de que não foi revisado.</p>
-  </section>
-
-  <section>
-    <h3>Fontes</h3>
-    <ul class="src">
-      <li>ACSM's Guidelines for Exercise Testing and Prescription, 8ª ed., 2010 (acervo): equações metabólicas (tab. 7.2), método submáximo (cap. 4), protocolos e duração de 8–12 min (cap. 5).</li>
-      <li>Ebbeling CB et al. Med Sci Sports Exerc 1991;23(8):966-73. PMID 1956273.</li>
-      <li>Waddoups L et al. J Sports Sci 2008;26(5):491-7. <a href="https://doi.org/10.1080/02640410701591425">DOI</a></li>
-      <li>Mitros M et al. Eur J Appl Physiol 2010;111(1):47-56. <a href="https://doi.org/10.1007/s00421-010-1615-3">DOI</a></li>
-      <li>George JD et al. Med Sci Sports Exerc 1993;25(5):643-7. PMID 8492693.</li>
-      <li>McNaughton L et al. Percept Mot Skills 1998;87(2):575-84. <a href="https://doi.org/10.2466/pms.1998.87.2.575">DOI</a></li>
-      <li>Greiwe JS et al. Med Sci Sports Exerc 1995;27(9):1315-20. PMID 8531631.</li>
-      <li>Kokkinos P et al. (FRIEND esteira) Am J Cardiol 2017;120(4):688-692. <a href="https://doi.org/10.1016/j.amjcard.2017.05.037">DOI</a></li>
-      <li>Kokkinos P et al. (FRIEND bike) Eur J Prev Cardiol 2018;25(10):1077-1082. <a href="https://doi.org/10.1177/2047487318772667">DOI</a></li>
-      <li>Boulay P et al. Med Sci Sports Exerc 2025;57(10):2207-2215. <a href="https://doi.org/10.1249/MSS.0000000000003761">DOI</a></li>
-      <li>Cole CR et al. NEJM 1999;341:1351-7 (acervo). <a href="https://doi.org/10.1056/NEJM199910283411804">DOI</a></li>
-      <li>Tanaka H et al. J Am Coll Cardiol 2001;37(1):153-6. <a href="https://doi.org/10.1016/S0735-1097(00)01054-8">DOI</a></li>
-      <li>Technogym, ARTIS Cardio · Excite · Unity User Manual (testes de Run); folha de especificação Excite Live Run (pasta Expansão Fabrik 2024).</li>
-      <li>Fabrik: planilhas Bike Ride máximo e submáximo; "Testes de VO2 Fabrik" (critérios de escolha e segurança).</li>
-    </ul>
-    <p class="note">Li o resumo dos artigos no PubMed, não o texto completo. FCmáx prevista = 208 − 0,7 × idade, a mesma das planilhas Fabrik.</p>
-  </section>
-</div>
-</template>
 
 </body>
 </html>
