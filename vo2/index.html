@@ -332,7 +332,7 @@ body.rel-aberto{overflow:hidden}
     <div class="dica" id="dica-fcmed" hidden>Preencha só com a FC mais alta medida com o frequencímetro num teste máximo (bike máx ou esteira corrida máx, terminado com PSE 10). Com ela preenchida, a ficha usa esse valor no lugar da fórmula (208 − 0,7 × idade) no limite de parada, na faixa da caminhada e na conta do VO₂. Vazio, continua a fórmula. A fórmula erra cerca de 10 bpm para mais ou para menos de pessoa para pessoa (Tanaka 2001).</div>
     <div class="checks">
       <label><input type="checkbox" id="a-parq"> PAR-Q em dia</label>
-      <label><input type="checkbox" id="a-cinta"> Frequencímetro no peito</label>
+      <label><input type="checkbox" id="a-cinta"> Frequencímetro conectado</label>
       <label><input type="checkbox" id="a-med"> Usa remédio que altera a FC (ex.: betabloqueador)</label>
     </div>
   </section>
@@ -880,7 +880,7 @@ function compute(p){
   if(a.medOk&&rows.some(r=>r.fc!=null&&r.fc>a.fcmed))al.push(["warn","Uma FC deste teste passou da FCmáx medida. A máxima real é maior: atualize o campo com a FC mais alta de um teste máximo."]);
   if(p.kind!=="walk"){if(a.pesoInv)al.push(["bad","Peso "+bruto("peso")+" inválido (aceita "+PESO_MIN+" a "+PESO_MAX+" kg): confira o número. Enquanto isso, o VO₂ fica em branco."]);else if(a.peso==null)al.push(["bad","Preencha o peso: o VO₂ é por kg."])}
   if(a.med)al.push(["bad","Remédio que altera a FC: as estimativas que usam a FC podem não valer para este aluno (o ACSM exclui esse caso no método submáximo). Decida com o Alex."]);
-  if(!a.cinta)al.push(["warn","Use o frequencímetro no peito (padrão Fabrik; nos testes do console, o manual exige ou recomenda monitor de FC)."]);
+  if(!a.cinta)al.push(["warn","Use o frequencímetro (padrão Fabrik; nos testes do console, o manual exige ou recomenda monitor de FC)."]);
   if(!a.parq&&(p.id==="bmax"||p.id==="emax"))al.push(["warn","PAR-Q não está em dia. Confirme com o Alex antes de um teste máximo."]);
   if(fcpD!=null&&fcReg!=null&&fcpD<fcReg)al.push(["warn","A FC pico digitada ("+f0(fcpD)+" bpm) é menor que a maior FC da tabela ("+f0(fcReg)+" bpm): confira."]);
   if(fcpico!=null&&fc1!=null&&fc1>fcpico)al.push(["warn","A FC após 1 min ("+f0(fc1)+" bpm) é maior que a FC pico ("+f0(fcpico)+" bpm): confira os dois números. A queda da FC fica em branco."]);
