@@ -358,14 +358,14 @@ function telaAluno(id){
   return h}
 // ───────── FC máxima: o que a regra do banco decidiu sozinha e o que a equipe desfez ─────────
 const SIT_FX={automatica:"subiu sozinha",confirmada:"voltou a valer",descartada:"desfeita"};
-const MED_TXT=`<div class="dica">Remédio que altera a FC (Ficha VO₂): a faixa de FC pode não valer.</div>`;
+const MED_TXT=`<div class="dica">Medicação que altera a FC (Testes de VO₂): a faixa de FC pode não valer.</div>`;
 function secaoFcmax(f,av){
   // sem a FC máxima do banco (falhou ao carregar), o aviso do remédio vem do teste que vale, o mesmo que o banco lê
   if(!f){const m=av&&av.dados&&av.dados.aluno&&av.dados.aluno.med;return m===true||m==="true"?`<h3>FC máxima</h3><div class="caixa fx">${MED_TXT}</div>`:""}
   const aulas=f.aulas||[],rel=aulas.filter(x=>SIT_FX[x.situacao]),resto=aulas.length-rel.length;
   if(!f.med&&!rel.length)return"";
   const acima=acimaDe(f),bt=(pid,d,rot,cls)=>`<button class="btn sm${cls?" "+cls:""}" data-fxdecide="${esc(pid)}" data-decisao="${d}">${rot}</button>`;
-  let h=`<h3>FC máxima <button class="info" data-dica="fcmax" title="Como funciona">ⓘ</button></h3><div class="dica" id="dica-fcmax" hidden>Vale a FC máxima do teste máximo (PSE 10 no último estágio) ou a anotada como FCmáx medida na Ficha VO₂; sem teste máximo, 208 − 0,7 × idade. Se numa aula a FC ficar 10 s seguidos acima dela, a da aula passa a valer sozinha. A aula nunca baixa a FC máxima e conta por 12 meses. Se o sensor errou, use Desfazer.</div><div class="caixa fx">`;
+  let h=`<h3>FC máxima <button class="info" data-dica="fcmax" title="Como funciona">ⓘ</button></h3><div class="dica" id="dica-fcmax" hidden>Vale a FC máxima do teste máximo (PSE 10 no último estágio) ou a anotada como FCmáx medida nos Testes de VO₂; sem teste máximo, 208 − 0,7 × idade. Se numa aula a FC ficar 10 s seguidos acima dela, a da aula passa a valer sozinha. A aula nunca baixa a FC máxima e conta por 12 meses. Se o sensor errou, use Desfazer.</div><div class="caixa fx">`;
   if(f.med)h+=MED_TXT;
   if(f.aula){const x=f.aula;
     h+=`<div class="fx-vale"><p>${x.automatica?`Subiu sozinha para <b>${f0(x.fc)}</b> na aula de ${dataBR(x.data)} (${f0(x.fc-f.base)} acima ${acima}).`
@@ -414,7 +414,7 @@ function telaTestes(){
   const sem=S.avals.filter(a=>!a.aluno_id&&!a.copia_de),com=S.avals.filter(a=>a.aluno_id&&!a.copia_de);
   const ops=sel=>'<option value="">— aluno —</option>'+S.alunos.map(a=>`<option value="${esc(a.id)}" ${a.id===sel?"selected":""}>${esc(a.nome)}</option>`).join("");
   const nomeDe=id=>(S.alunos.find(a=>a.id===id)||{}).nome||id;
-  let h=`<h1>Testes</h1><h3>Testes sem aluno <button class="info" data-dica="testes" title="O que é">ⓘ</button></h3><div class="dica" id="dica-testes" hidden>A Ficha VO₂ guarda o nome digitado. Para a sala usar o teste, escolha aqui o aluno do cadastro. Nada é ligado automaticamente pelo nome.</div>`;
+  let h=`<h1>Testes</h1><h3>Testes sem aluno <button class="info" data-dica="testes" title="O que é">ⓘ</button></h3><div class="dica" id="dica-testes" hidden>Os Testes de VO₂ guardam o nome digitado. Para a sala usar o teste, escolha aqui o aluno do cadastro. Nada é ligado automaticamente pelo nome.</div>`;
   h+=sem.length?`<div class="tablebox"><table><thead><tr><th>Nome digitado</th><th>Data</th><th>Testes</th><th>Aluno do cadastro</th><th></th></tr></thead><tbody>`+
     sem.map(a=>`<tr><td>${esc(a.aluno_nome||"(sem nome)")}</td><td>${dataBR(a.data_teste)}</td><td>${esc(testesTxt(a.protocolos))}</td><td><select data-ligar-sel="${esc(a.id)}">${ops("")}</select></td><td><button class="btn sm primary" data-ligar="${esc(a.id)}">Ligar</button></td></tr>`).join("")+`</tbody></table></div>`
     :'<p class="muted">Nenhum teste sem aluno.</p>';
