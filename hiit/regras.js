@@ -1,6 +1,7 @@
 // Regras de carga da sala HIIT para as telas de planejamento. É a mesma conta do computador da sala
 // (fabrik_fc_turma/sala/motor.py), conferida caso a caso por um teste de paridade. O teste vale; sem teste máximo,
 // a FC máxima sai da idade (208 − 0,7 × idade, como no HTML de prescrição) e o perfil completa idade e repouso.
+// Desde 02/11/2026 a FC máxima vem pronta do banco (regra do Alex, migration 0011): com a chave fcmax no perfil, ela vale.
 (function (g) {
   "use strict";
   const PARTIDA = { curto: 1.10, longo: 0.90, limiar: 0.85 };
@@ -33,8 +34,11 @@
   }
   // 208 − 0,7 × idade (anos completos), meio para cima, em conta inteira: o mesmo número na sala e no banco
   function fcmaxPelaIdade(idade) { return Math.floor((2085 - 7 * Math.floor(idade)) / 10); }
+  const FONTES_FCMAX = ["teste", "idade", "medida", "teste_pico", "aula"];
+  const ROTULO_FCMAX = { teste: "teste máximo", medida: "FCmáx medida", teste_pico: "FC mais alta de um teste", aula: "aula", idade: "208 − 0,7 × idade" };
   // av: avaliação da Ficha VO₂ ({id, dados:{aluno:{fcrep, idade}, p:{bmax,emax,bsub,esub}}}) ou o formato da cópia da sala
-  // ({fcrep, idade, testes}); perfil: {idade, fcrep} do perfil HIIT, que só completa o que o teste não tem
+  // ({fcrep, idade, testes}); perfil: {idade, fcrep} do perfil HIIT, que só completa o que o teste não tem.
+  // Com a chave fcmax no perfil (FC máxima pronta do banco, mesmo null), ela vale e a conta do teste e da idade é pulada.
   function referencias(av, perfil) {
     const R = { avaliacao_id: null, fcmax: null, fcmax_fonte: null, idade: null, fcrep: null, bike_w: null, esteira_kmh: null, fontes: {}, avisos: [] };
     const pf = perfil || {};
@@ -49,14 +53,20 @@
     if (R.fcrep != null) R.fontes.fcrep = "teste";
     else if ((R.fcrep = num(pf.fcrep, 30, 110)) != null) R.fontes.fcrep = "perfil";
     if (R.idade == null) R.idade = num(pf.idade, 14, 95);
+    const pronta = Object.prototype.hasOwnProperty.call(pf, "fcmax");
     const picos = [];
-    for (const k of ["bmax", "emax"]) {
+    for (const k of pronta ? [] : ["bmax", "emax"]) {
       if (!t[k]) continue;
       const fcs = linhas(t[k]).filter((l) => l.fc).map((l) => l.fc);
       const p = num(t[k].fcpico, 110, 230) || (fcs.length ? Math.max(...fcs) : null);
       if (p && p >= 110 && p <= 230) picos.push(p);
     }
-    if (picos.length) { R.fcmax = Math.max(...picos); R.fcmax_fonte = "teste"; R.fontes.fcmax = "teste máximo"; }
+    if (pronta) {
+      R.fcmax = num(pf.fcmax, 100, 230);
+      if (R.fcmax != null && FONTES_FCMAX.includes(pf.fcmax_fonte)) { R.fcmax_fonte = pf.fcmax_fonte; R.fontes.fcmax = ROTULO_FCMAX[pf.fcmax_fonte]; }
+      if (R.fcmax == null) R.avisos.push(av ? "sem teste máximo e sem idade: sem FC máxima" : "sem idade: sem FC máxima");
+      else if (R.fcmax_fonte === "idade") R.avisos.push(av ? "sem teste máximo: FC máxima pela idade" : "FC máxima pela idade");
+    } else if (picos.length) { R.fcmax = Math.max(...picos); R.fcmax_fonte = "teste"; R.fontes.fcmax = "teste máximo"; }
     else if (R.idade != null) {
       R.fcmax = fcmaxPelaIdade(R.idade); R.fcmax_fonte = "idade"; R.fontes.fcmax = "208 − 0,7 × idade";
       R.avisos.push(av ? "sem teste máximo: FC máxima pela idade" : "FC máxima pela idade");

@@ -143,6 +143,11 @@ th{font-size:10.5px;font-weight:600;letter-spacing:.09em;text-transform:uppercas
 .dia .novo{display:grid;grid-template-columns:140px minmax(0,1fr) auto auto;gap:10px;align-items:center;padding:12px 16px;border-top:1px dashed var(--line3);background:var(--surface2)}
 .vazio{padding:12px 16px;border-top:1px solid var(--line);font-size:13.5px;color:var(--faint)}
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+.fx .dica:last-child{margin-bottom:0}
+.fx-vale{margin:0 0 14px}.fx-vale p{margin:0 0 8px;max-width:72ch}
+.fxsit{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px 12px}.fxsit .btn{white-space:nowrap}
+@media (max-width:560px){.fxhist th,.fxhist td{padding:10px 8px}}
+.fx-resto{margin:12px 0 0;font-size:13px}
 </style>
 </head>
 <body>
@@ -191,10 +196,24 @@ const NIVEL={ini:"Iniciante",int:"Intermediário",ava:"Avançado"},TIPO={curto:"
 const MAQ={bike1:"Bike 1",bike2:"Bike 2",esteira1:"Esteira 1",esteira2:"Esteira 2"};
 const ORIGEM={teste:"do teste",treinador:"treinador",sugestao_aceita:"sugestão aceita","recebida_ant+":"da bike",confirmada:"confirmada",ajustada:"ajustada",presumida_prescrita:"presumida",ausente:"—"};
 
-let sb=null,S={papel:null,email:"",alunos:[],perfis:{},avals:[],protos:[],versoes:{},aulas:[],presc:[]},aba="alunos",alunoSel=null,filtro="",soSala=false,semTeste=false,ocupado=false;
+let sb=null,S={papel:null,email:"",alunos:[],perfis:{},avals:[],protos:[],versoes:{},aulas:[],presc:[],fcmax:{}},aba="alunos",alunoSel=null,filtro="",soSala=false,semTeste=false,ocupado=false;
 let prescEdit=null,diaAberto=null,abertas=new Set();   // linha de prescrição em edição; dia com "incluir aula" aberto; aulas do histórico abertas
 const NOME_TESTE={bmax:"Bike máx",bsub:"Bike submáx",emax:"Esteira máx",esub:"Esteira submáx",ecam:"Caminhada"};
 const testesTxt=ps=>(ps||[]).map(k=>NOME_TESTE[k]||k).join(" · ");
+// FC máxima do dia pela regra do banco (0011), por aluno: a mesma que a sala recebe na cópia do dia. Ela entra pronta no
+// cálculo das referências (o submáximo é extrapolado até ela); a data e o protocolo vêm da origem que o banco devolve
+const fxDe=id=>(S.fcmax&&S.fcmax[id])||null;
+const comFcmax=(id,p)=>{const f=fxDe(id);return f?{...p,fcmax:f.fcmax,fcmax_fonte:f.fonte}:p};
+const acimaDe=f=>f&&f.base_fonte==="idade"?"da fórmula":"do teste";
+function fonteFcmaxTxt(f,R){
+  if(!f)return R.fcmax_fonte==="idade"?" · pela idade ("+f0(R.idade)+" anos)":"";
+  const o=f.origem||{};
+  return f.fonte==="medida"?" · medida no teste de "+dataBR(o.data_teste):f.fonte==="teste"?" · do teste máximo de "+dataBR(o.data_teste)
+    :f.fonte==="teste_pico"?" · FC mais alta de um teste, "+dataBR(o.data_teste):f.fonte==="aula"?" · da aula de "+dataBR(o.data)
+    :f.fonte==="idade"?" · pela idade ("+f0(o.idade)+" anos)":""}
+function semTesteTxt(id,p){const f=fxDe(id);
+  if(!f)return p.idade!=null?"na sala · FC máx. pela idade":"na sala · sem idade";
+  return f.fcmax==null?"na sala · sem idade":"na sala · FC máx. "+(f.fonte==="aula"?"da aula":"pela idade")}
 
 // com a tela de login aberta (sessão caiu no meio de um clique), o erro técnico do clique não aparece por cima
 function toast(t,tipo){if(!$("#loginOverlay").hidden&&tipo!=="ok")return;const e=$("#toast");e.textContent=t;e.className=tipo||"bad";e.hidden=false;clearTimeout(toast.t);toast.t=setTimeout(()=>e.hidden=true,4500)}
@@ -218,7 +237,7 @@ async function carregar(){
   S.papel=papel;
   if(!papel){$("#semAcesso").hidden=false;$("#semAcesso").textContent="Seu login não está na equipe da sala HIIT. Peça ao Alex para incluir.";$("#abas").hidden=true;$("#painel").innerHTML="";return}
   $("#semAcesso").hidden=true;$("#abas").hidden=false;
-  const [alunos,perfis,avals,protos,versoes,aulas,presc]=await Promise.all([
+  const [alunos,perfis,avals,protos,versoes,aulas,presc,fx]=await Promise.all([
     todos("alunos","id,nome,ativo","nome",[["ativo",["eq",true]]]),
     todos("hiit_perfis","*"),
     // dois testes no mesmo dia: vale o gravado por último na Ficha, como na cópia do dia da sala (ligar não muda essa ordem)
@@ -226,7 +245,10 @@ async function carregar(){
     todos("hiit_protocolos","*","id"),
     todos("hiit_protocolos_versoes","protocolo_id,versao,etapas","versao"),
     todos("hiit_aulas_planejadas","*","data",[["data",["gte",maisDias(hoje(),-1)]],["data",["lte",maisDias(hoje(),30)]]]),
-    todos("hiit_prescricoes","*",["criado_em",false])]);
+    todos("hiit_prescricoes","*",["criado_em",false]),
+    // sem a FC máxima do banco o resto da página continua (a conta antiga, da tela), com o aviso
+    rpc("hiit_fcmax_equipe").catch(e=>{toast("Não consegui carregar a FC máxima: "+msgErro(e));return null})]);
+  S.fcmax=(fx&&fx.alunos)||{};
   S.alunos=alunos;S.perfis=Object.fromEntries(perfis.map(p=>[p.aluno_id,p]));S.avals=avals;S.protos=protos;S.aulas=aulas;S.presc=presc;
   S.versoes={};for(const v of versoes)S.versoes[v.protocolo_id]=v;   // ordenado por versão: fica a mais nova
   desenhar();
@@ -260,36 +282,37 @@ function telaAlunos(){
     <label><input type="checkbox" id="semTeste" ${semTeste?"checked":""}> Na sala e sem teste (${nSemTeste})</label></div><div class="lista">`;
   for(const a of lista){const p=S.perfis[a.id],av=avalDe(a.id);
     h+=`<button data-aluno="${esc(a.id)}" aria-current="${a.id===alunoSel}"><span>${esc(a.nome)}</span><span>${p&&!av?'<span class="chip warn">sem teste</span>':""}</span>
-      <small>${p?(av?"teste de "+dataBR(av.data_teste):p.idade!=null?"na sala · FC máx. pela idade":"na sala · sem idade"):"fora da sala HIIT"}${p&&!p.optin_dados?" · sem consentimento":""}</small></button>`}
+      <small>${p?(av?"teste de "+dataBR(av.data_teste):semTesteTxt(a.id,p)):"fora da sala HIIT"}${p&&!p.optin_dados?" · sem consentimento":""}</small></button>`}
   h+=`</div></div><div>${alunoSel?telaAluno(alunoSel):'<p class="muted" style="margin-top:8px">Escolha um aluno na lista.</p>'}</div></div>`;
   return h}
 function telaAluno(id){
-  const a=S.alunos.find(x=>x.id===id);if(!a)return"";const p=S.perfis[id]||{},novo=!S.perfis[id],av=avalDe(id),R=H.referencias(av,p);
+  const a=S.alunos.find(x=>x.id===id);if(!a)return"";const p=S.perfis[id]||{},novo=!S.perfis[id],av=avalDe(id),f=fxDe(id),R=H.referencias(av,comFcmax(id,p));
   let h=`<h1>${esc(a.nome)}</h1><p class="muted" style="margin:6px 0 0">${novo?"Fora da sala HIIT":NIVEL[p.nivel||"int"]+(p.sem_corrida?" · sem corrida":"")+(av?" · teste de "+dataBR(av.data_teste):" · sem teste")}</p>
-  <h3>Perfil na sala <button class="info" data-dica="perfil" title="O que é">ⓘ</button></h3><div class="dica" id="dica-perfil" hidden>Nível, limites e consentimento valem para a TV e para o registro das aulas. O computador da sala só recebe alunos com perfil. Idade e FC de repouso só completam o teste: sem teste máximo, a FC máxima sai de 208 − 0,7 × idade (como no HTML de prescrição) e a TV mostra "falta teste".</div>
+  <h3>Perfil na sala <button class="info" data-dica="perfil" title="O que é">ⓘ</button></h3><div class="dica" id="dica-perfil" hidden>Nível, limites e consentimento valem para a TV e para o registro das aulas. O computador da sala só recebe alunos com perfil. Idade e FC de repouso só completam o teste. A FC máxima é a do teste máximo; sem ele, sai de 208 − 0,7 × idade (como no HTML de prescrição) e a TV mostra "falta teste". Uma FC mais alta que o aluno sustente numa aula passa a valer (veja <b>FC máxima</b>).</div>
   <div class="caixa"><div class="grade">
     <label>Apelido na TV<input id="p-apelido" maxlength="24" value="${esc(p.apelido||"")}"></label>
     <label>Nível<select id="p-nivel">${["ini","int","ava"].map(n=>`<option value="${n}" ${(p.nivel||"int")===n?"selected":""}>${NIVEL[n]}</option>`).join("")}</select></label>
     <label>Idade (anos)<input id="p-idade" inputmode="numeric" value="${esc(p.idade??"")}"></label>
     <label>FC de repouso (bpm)<input id="p-fcrep" inputmode="numeric" value="${esc(p.fcrep??"")}"></label>
     <label>Velocidade máx. (km/h)<input id="p-vel" inputmode="decimal" value="${esc(p.vel_max_kmh??"")}"></label>
-    <label>Inclinação máx. (%)<input id="p-incl" inputmode="decimal" value="${esc(p.incl_max_pct??"")}"></label>
-    <label>Cinta padrão<input id="p-cinta" maxlength="40" value="${esc(p.cinta_padrao||"")}" placeholder="ex.: ANT43139"></label></div>
+    <label>Inclinação máx. (%)<input id="p-incl" inputmode="decimal" value="${esc(p.incl_max_pct??"")}"></label></div>
   <div class="checks"><label><input type="checkbox" id="p-semcorrida" ${p.sem_corrida?"checked":""}> Sem corrida (dor em joelho, quadril ou lombar)</label>
     <label><input type="checkbox" id="p-dados" ${p.optin_dados?"checked":""}> Autorizou guardar FC e cargas das aulas (termo LGPD assinado)</label>
     <label><input type="checkbox" id="p-tv" ${p.optin_tv?"checked":""}> Autorizou aparecer na TV com o nome</label>
     <label><input type="checkbox" id="p-foto" ${p.optin_foto?"checked":""}> Autorizou a foto na TV</label></div>
   <div class="linha" style="margin-top:12px"><button class="btn primary" id="salvarPerfil">${novo?"Pôr na sala HIIT":"Salvar perfil"}</button></div></div>`;
   h+=`<h3>Teste</h3><div class="caixa">`;
-  const fcmaxTxt=`<div><b>${f0(R.fcmax)}</b><span>FC máxima${R.fcmax_fonte==="idade"?" · pela idade ("+f0(R.idade)+" anos)":""}</span></div>`;
+  const fcmaxTxt=`<div><b>${f0(R.fcmax)}</b><span>FC máxima${fonteFcmaxTxt(f,R)}</span></div>`;
+  // FC máxima da FC anotada num teste ou de uma aula, sem teste máximo: a sala mostra "falta teste máximo"
+  const avisos=f&&f.fcmax!=null&&!f.tem_teste_maximo&&f.fonte!=="idade"?[...R.avisos,"sem teste máximo (PSE 10 no último estágio)"]:R.avisos;
   const fcrepTxt=`<div><b>${f0(R.fcrep)}</b><span>FC de repouso${R.fontes.fcrep==="perfil"?" · do perfil":""}</span></div>`;
-  if(!av&&R.fcmax)h+=`<div class="kv">${fcmaxTxt}${fcrepTxt}</div><div class="dica">Falta teste. Na aula, a faixa de FC sai da idade e a TV mostra "falta teste"; carga só depois do teste. Ligue o teste em <b>Testes</b>.${R.fcrep==null?" Anote também a FC de repouso no perfil: sem ela, só o limiar e o iniciante têm faixa.":""}</div>`;
+  if(!av&&R.fcmax)h+=`<div class="kv">${fcmaxTxt}${fcrepTxt}</div><div class="dica">Falta teste. Na aula, a faixa de FC sai ${R.fcmax_fonte==="aula"?"da FC máxima da aula":"da idade"} e a TV mostra "falta teste"; carga só depois do teste. Ligue o teste em <b>Testes</b>.${R.fcrep==null?" Anote também a FC de repouso no perfil: sem ela, só o limiar e o iniciante têm faixa.":""}</div>`;
   else if(!av)h+=`<p class="muted">Sem teste e sem idade no perfil: na aula, o aluno aparece só com os batimentos. Anote a idade e a FC de repouso no perfil ou ligue um teste em <b>Testes</b>.</p>`;
   else h+=`<div class="kv"><div><b>${dataBR(av.data_teste)}</b><span>data do teste</span></div>${fcmaxTxt}
     ${fcrepTxt}<div><b>${R.bike_w?f0(R.bike_w)+" W":"—"}</b><span>bike${R.fontes.bike?" · "+esc(R.fontes.bike):""}</span></div>
     <div><b>${R.esteira_kmh?f1(R.esteira_kmh)+" km/h":"—"}</b><span>esteira${R.fontes.esteira?" · "+esc(R.fontes.esteira):""}</span></div></div>
-    ${R.avisos.length?`<div class="dica">${R.avisos.map(esc).join(" · ")}</div>`:""}`;
-  h+=`</div>`;
+    ${avisos.length?`<div class="dica">${avisos.map(esc).join(" · ")}${R.fcmax==null?" · anote a idade no perfil":""}</div>`:""}`;
+  h+=`</div>`+secaoFcmax(f,av);
   if(!novo&&!av)h+=`<h3>Carga prescrita <button class="info" data-dica="semteste" title="Por quê">ⓘ</button></h3><div class="dica" id="dica-semteste" hidden>A carga e a faixa de carga saem do teste. Sem teste, a aula guia pela FC: a FC máxima sai da idade (208 − 0,7 × idade) e a TV mostra "falta teste".</div><p class="muted">Sem teste ligado. Ligue em <b>Testes</b>.</p><h3>Últimas aulas</h3><div id="historico"><p class="muted">Carregando…</p></div>`;
   if(!novo&&av){
     const nivel=p.nivel||"int";
@@ -308,6 +331,27 @@ function telaAluno(id){
     h+=`</tbody></table></div><h3>Últimas aulas</h3><div id="historico"><p class="muted">Carregando…</p></div>`;
   }
   return h}
+// ───────── FC máxima: o que a regra do banco decidiu sozinha e o que a equipe desfez ─────────
+const SIT_FX={automatica:"subiu sozinha",confirmada:"voltou a valer",descartada:"desfeita"};
+const MED_TXT=`<div class="dica">Remédio que altera a FC (Ficha VO₂): a faixa de FC pode não valer.</div>`;
+function secaoFcmax(f,av){
+  // sem a FC máxima do banco (falhou ao carregar), o aviso do remédio vem do teste que vale, o mesmo que o banco lê
+  if(!f){const m=av&&av.dados&&av.dados.aluno&&av.dados.aluno.med;return m===true||m==="true"?`<h3>FC máxima</h3><div class="caixa fx">${MED_TXT}</div>`:""}
+  const aulas=f.aulas||[],rel=aulas.filter(x=>SIT_FX[x.situacao]),resto=aulas.length-rel.length;
+  if(!f.med&&!rel.length)return"";
+  const acima=acimaDe(f),bt=(pid,d,rot,cls)=>`<button class="btn sm${cls?" "+cls:""}" data-fxdecide="${esc(pid)}" data-decisao="${d}">${rot}</button>`;
+  let h=`<h3>FC máxima <button class="info" data-dica="fcmax" title="Como funciona">ⓘ</button></h3><div class="dica" id="dica-fcmax" hidden>Vale a FC máxima do teste máximo (PSE 10 no último estágio) ou a anotada como FCmáx medida na Ficha VO₂; sem teste máximo, 208 − 0,7 × idade. Se numa aula a FC ficar 10 s seguidos acima dela, a da aula passa a valer sozinha. A aula nunca baixa a FC máxima e conta por 12 meses. Se o sensor errou, use Desfazer.</div><div class="caixa fx">`;
+  if(f.med)h+=MED_TXT;
+  if(f.aula){const x=f.aula;
+    h+=`<div class="fx-vale"><p>${x.automatica?`Subiu sozinha para <b>${f0(x.fc)}</b> na aula de ${dataBR(x.data)} (${f0(x.fc-f.base)} acima ${acima}).`
+      :`Vale <b>${f0(x.fc)}</b>, da aula de ${dataBR(x.data)}: voltou a valer pela equipe.`}</p><div class="linha">${bt(x.participacao_id,"descartada","Desfazer")}</div></div>`}
+  if(rel.length)h+=`<div class="tablebox"><table class="fxhist"><thead><tr><th>Aula</th><th>FC 10 s</th><th>Situação</th></tr></thead><tbody>`+rel.map(x=>{
+      const desfeita=x.situacao==="descartada",vale=f.aula&&f.aula.participacao_id===x.participacao_id;
+      return `<tr><td>${dataBR(x.data)}</td><td class="num">${f0(x.fc)}</td><td><div class="fxsit"><span>${esc(SIT_FX[x.situacao])}${vale?' <span class="chip ok">vale</span>':""}</span>
+        ${desfeita?bt(x.participacao_id,"confirmada","Usar de novo","ghost"):bt(x.participacao_id,"descartada","Desfazer","ghost")}</div></td></tr>`}).join("")+`</tbody></table></div>`;
+  if(resto)h+=`<p class="muted fx-resto">${resto===1?"Mais 1 aula":"Mais "+resto+" aulas"} dos 12 meses ${f.base==null?"sem efeito: sem teste máximo e sem idade, a aula não conta"
+    :"sem subida (abaixo "+acima+" ou sem 10 s seguidos com sinal)"}.</p>`;
+  return h+`</div>`}
 let histCache={id:null,html:null};
 function ligarHistorico(){document.querySelectorAll("[data-abrir]").forEach(b=>b.onclick=()=>{const id=b.dataset.abrir;abertas.has(id)?abertas.delete(id):abertas.add(id);
   histCache.id=null;carregarHistorico(alunoSel)})}
@@ -332,7 +376,7 @@ async function carregarHistorico(id){
       linhas.map(({p,s})=>{const xs=et.filter(e=>e.participacao_id===p.id).sort((a,b)=>a.etapa_idx-b.etapa_idx);
         const pr=S.protos.find(x=>x.id===s.protocolo_id),pct=p.tempo_valido_s?Math.round(p.tempo_alvo_s/p.tempo_valido_s*100):null,aberta=abertas.has(p.id);
         return `<tr><td>${dataBR(s.data)}</td><td>${esc(pr?pr.nome:s.protocolo_id)}</td><td>${esc(MAQ[p.maquina]||p.maquina)}</td>
-        <td><span class="barra-alvo">${pct==null?"—":`<i><b style="width:${pct}%"></b></i>${pct}%`}${p.zona_conferida===false?' <span class="chip" title="O teste foi editado ou religado depois da aula, ou o nível mudou: o banco não conseguiu conferir a faixa. Não use esta aula para ajustar carga.">não conferida</span>':""}</span></td>
+        <td><span class="barra-alvo">${pct==null?"—":`<i><b style="width:${pct}%"></b></i>${pct}%`}${p.zona_conferida===false?' <span class="chip" title="O teste foi editado ou religado depois da aula, o perfil mudou ou a FC máxima não era a do dia: o banco não conseguiu conferir a faixa. Não use esta aula para ajustar carga.">não conferida</span>':""}</span></td>
         <td class="num">${f0(p.fc_media)} / ${f0(p.fc_max)}</td>
         <td>${resumo(xs)}${xs.length?` <button class="btn sm ghost" data-abrir="${esc(p.id)}">${aberta?"fechar":"ver"}</button>`:""}
           ${aberta?`<div class="estimulos">${xs.map((e,i)=>`<div>${i+1}. <b>${cargaTxt(e.carga,e.carga&&e.carga.watts!=null?"bike":"esteira")}</b> · ${esc(ORIGEM[e.carga_origem]||e.carga_origem||"")} · FC ${f0(e.fc_media_ult_min)}</div>`).join("")}</div>`:""}</td></tr>`}).join("")+`</tbody></table></div>`;
@@ -404,6 +448,9 @@ function ligar(){
   const so=$("#soSala");if(so)so.onchange=()=>{soSala=so.checked;desenhar()};
   const st=$("#semTeste");if(st)st.onchange=()=>{semTeste=st.checked;desenhar()};
   document.querySelectorAll("[data-aluno]").forEach(b=>b.onclick=()=>{alunoSel=b.dataset.aluno;prescEdit=null;desenhar()});
+  // Desfazer a subida de uma aula (sensor errado) ou usá-la de novo: o banco decide de novo e a página recarrega
+  document.querySelectorAll("[data-fxdecide]").forEach(b=>b.onclick=()=>acao(()=>rpc("hiit_decidir_fcmax",{p_participacao_id:b.dataset.fxdecide,p_decisao:b.dataset.decisao}),
+    b.dataset.decisao==="confirmada"?"A FC dessa aula voltou a contar.":"Subida desfeita: essa aula não conta para a FC máxima."));
   document.querySelectorAll("[data-editar]").forEach(b=>b.onclick=()=>{prescEdit=b.dataset.editar||null;desenharAluno();
     const i=prescEdit&&document.querySelector(`[data-k="${prescEdit}"]`);if(i)i.focus()});
   document.querySelectorAll("[data-abrir-dia]").forEach(b=>b.onclick=()=>{diaAberto=b.dataset.abrirDia||null;desenhar()});
@@ -418,7 +465,7 @@ function ligar(){
     const idade=inteiro("#p-idade",14,95,"Idade"),fcrep=inteiro("#p-fcrep",30,110,"FC de repouso");
     await rpc("hiit_salvar_perfil",{p:{aluno_id:alunoSel,apelido:$("#p-apelido").value.trim(),nivel:$("#p-nivel").value,sem_corrida:$("#p-semcorrida").checked,idade,fcrep,
       optin_tv:$("#p-tv").checked,optin_foto:$("#p-foto").checked,optin_dados:$("#p-dados").checked,vel_max_kmh:$("#p-vel").value.trim().replace(",","."),
-      incl_max_pct:$("#p-incl").value.trim().replace(",","."),cinta_padrao:$("#p-cinta").value.trim()},p_base_rev:p?p.rev:null})},"Perfil salvo.");
+      incl_max_pct:$("#p-incl").value.trim().replace(",","."),cinta_padrao:(p&&p.cinta_padrao)||""},p_base_rev:p?p.rev:null})},"Perfil salvo.");
   document.querySelectorAll("[data-prescrever]").forEach(b=>b.onclick=()=>{
     const [t,m]=b.dataset.prescrever.split("-"),val=c=>{const e=document.querySelector(`[data-k="${t}-${m}"][data-campo="${c}"]`);return e?e.value.trim().replace(",","."):""};
     const av=avalDe(alunoSel),p={aluno_id:alunoSel,modalidade:m,tipo_estimulo:t,avaliacao_id:av?av.id:null};
