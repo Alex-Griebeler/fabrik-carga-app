@@ -10,7 +10,7 @@
 <style>
 /* Identidade Fabrik, a mesma do Registro de Carga (aprovada pelo Alex em 25/10 e na TV da sala em 30/10):
    quase preto com brilho terracota embaixo, creme e terracota; Inter nos textos e Instrument Serif nos títulos.
-   Computador e tablet (sem versão de celular). */
+   Feita para computador e tablet; no iPad em pé a barra do app fica mais compacta e no celular quebra em duas linhas (fim do arquivo de estilo). */
 :root{
   --bg:#131210;--solid:#1b1916;--raised:#221f1b;
   --surface:rgba(241,236,228,.035);--surface2:rgba(241,236,228,.07);--surface3:rgba(241,236,228,.12);
@@ -147,6 +147,31 @@ th{font-size:10.5px;font-weight:600;letter-spacing:.09em;text-transform:uppercas
 .fx-vale{margin:0 0 14px}.fx-vale p{margin:0 0 8px;max-width:72ch}
 .fxsit{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px 12px}.fxsit .btn{white-space:nowrap}
 @media (max-width:560px){.fxhist th,.fxhist td{padding:10px 8px}}
+/* iPad em pé e janela estreita (701 a 900 px): a barra continua numa linha, mais compacta; só o e-mail encolhe, com reticências */
+@media (max-width:900px){
+  .appbar{gap:12px}
+  .brand,.tabs{flex:none}
+  .brand span{white-space:nowrap}
+  .quem{min-width:0;gap:8px}
+  #quem{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .tab{padding:0 10px}
+  .tab[aria-current]::after{left:10px;right:10px}
+}
+/* celular: logo e quem entrou em cima, abas embaixo; a barra não deixa a página mais larga que a tela */
+@media (max-width:700px){
+  .appbar{flex-wrap:wrap;height:auto;gap:0 12px;padding-top:8px}
+  .quem{flex:1 1 0;justify-content:flex-end;gap:10px}
+  .tabs{order:3;flex:0 0 calc(100% + 2*var(--gutter));height:44px;margin:0 calc(-1*var(--gutter));padding:0 calc(var(--gutter) - 12px);overflow-x:auto;scrollbar-width:none}
+  .tab{flex:none;padding:0 12px}
+  .tab[aria-current]::after{left:12px;right:12px;bottom:0}
+  .tab:focus-visible{outline-offset:-2px}
+}
+@media (max-width:560px){
+  :root{--gutter:16px}
+  .brand{gap:10px}
+  .brand img{height:28px}
+  .brand span{font-size:22px}
+}
 .fx-resto{margin:12px 0 0;font-size:13px}
 </style>
 </head>
