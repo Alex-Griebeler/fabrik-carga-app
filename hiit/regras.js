@@ -4,6 +4,7 @@
 // Desde 02/11/2026 a FC máxima vem pronta do banco (regra do Alex, migration 0011): com a chave fcmax no perfil, ela vale.
 (function (g) {
   "use strict";
+  // Sprint (03/11/2026) fica fora de PARTIDA e de FAIXA: a carga é só a do professor e o alvo é "a carga ou mais"
   const PARTIDA = { curto: 1.10, longo: 0.90, limiar: 0.85 };
   // o console da esteira caminha até 6,9 km/h e corre a partir de 7,0: limite de quem está "sem corrida"
   const CAMINHADA_MAX_KMH = 6.9;

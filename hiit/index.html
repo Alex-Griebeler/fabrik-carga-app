@@ -217,7 +217,7 @@ const hoje=()=>new Intl.DateTimeFormat("en-CA",{timeZone:"America/Sao_Paulo"}).f
 const maisDias=(iso,n)=>{const d=new Date(iso+"T12:00:00");d.setDate(d.getDate()+n);return d.toISOString().slice(0,10)};
 const dataBR=iso=>iso?iso.slice(8,10)+"/"+iso.slice(5,7)+"/"+iso.slice(0,4):"—";
 const DIA=["dom","seg","ter","qua","qui","sex","sáb"];
-const NIVEL={ini:"Iniciante",int:"Intermediário",ava:"Avançado"},TIPO={curto:"Curto",longo:"Longo",limiar:"Limiar"},MOD={bike:"Bike",esteira:"Esteira"};
+const NIVEL={ini:"Iniciante",int:"Intermediário",ava:"Avançado"},TIPO={curto:"Curto",longo:"Longo",limiar:"Limiar",sprint:"Sprint"},MOD={bike:"Bike",esteira:"Esteira"};
 const MAQ={bike1:"Bike 1",bike2:"Bike 2",esteira1:"Esteira 1",esteira2:"Esteira 2"};
 const ORIGEM={teste:"do teste",treinador:"treinador",sugestao_aceita:"sugestão aceita","recebida_ant+":"da bike",confirmada:"confirmada",ajustada:"ajustada",presumida_prescrita:"presumida",ausente:"—"};
 
@@ -280,9 +280,10 @@ async function carregar(){
 }
 // avaliação que vale para o aluno: a mais recente já feita, que não é cópia de conflito (mesma regra da cópia do dia da sala)
 function avalDe(id){return S.avals.find(a=>a.aluno_id===id&&!a.copia_de&&a.data_teste&&a.data_teste<=hoje())||null}
-// vale a mais nova que já começou, feita com um teste que ainda é deste aluno (religado a outro, a prescrição sai, como na sala)
+// vale a mais nova que já começou, feita com um teste que ainda é deste aluno (religado a outro, a prescrição sai, como na sala).
+// Sprint: a carga é do professor e vale também sem teste
 function prescVigente(id,mod,tipo){return S.presc.filter(p=>p.aluno_id===id&&p.modalidade===mod&&p.tipo_estimulo===tipo&&p.vigente_desde<=hoje()
-    &&S.avals.some(a=>a.id===p.avaliacao_id&&a.aluno_id===id))
+    &&(S.avals.some(a=>a.id===p.avaliacao_id&&a.aluno_id===id)||tipo==="sprint"&&!p.avaliacao_id))
   .sort((a,b)=>a.vigente_desde<b.vigente_desde?1:a.vigente_desde>b.vigente_desde?-1:(a.criado_em<b.criado_em?1:-1))[0]||null}
 function cargaTxt(c,mod){if(!c)return"—";return mod==="bike"||c.watts!=null?f0(c.watts)+" W":f1(c.vel_kmh)+" km/h · "+f0(c.incl_pct)+"%"}
 function faixaTxt(f){if(!f)return"—";return f.watts?f.watts[0]+"–"+f.watts[1]+" W":f1(f.vel_kmh[0])+"–"+f1(f.vel_kmh[1])+" km/h"}
@@ -331,31 +332,38 @@ function telaAluno(id){
   // FC máxima da FC anotada num teste ou de uma aula, sem teste máximo: a sala mostra "falta teste máximo"
   const avisos=f&&f.fcmax!=null&&!f.tem_teste_maximo&&f.fonte!=="idade"?[...R.avisos,"sem teste máximo (PSE 10 no último estágio)"]:R.avisos;
   const fcrepTxt=`<div><b>${f0(R.fcrep)}</b><span>FC de repouso${R.fontes.fcrep==="perfil"?" · do perfil":""}</span></div>`;
-  if(!av&&R.fcmax)h+=`<div class="kv">${fcmaxTxt}${fcrepTxt}</div><div class="dica">Falta teste. Na aula, a faixa de FC sai ${R.fcmax_fonte==="aula"?"da FC máxima da aula":"da idade"} e a TV mostra "falta teste"; carga só depois do teste. Ligue o teste em <b>Testes</b>.${R.fcrep==null?" Anote também a FC de repouso no perfil: sem ela, só o limiar e o iniciante têm faixa.":""}</div>`;
+  if(!av&&R.fcmax)h+=`<div class="kv">${fcmaxTxt}${fcrepTxt}</div><div class="dica">Falta teste. Na aula, a faixa de FC sai ${R.fcmax_fonte==="aula"?"da FC máxima da aula":"da idade"} e a TV mostra "falta teste"; carga só depois do teste (no Sprint, o professor define a carga na aula). Ligue o teste em <b>Testes</b>.${R.fcrep==null?" Anote também a FC de repouso no perfil: sem ela, só o limiar e o iniciante têm faixa.":""}</div>`;
   else if(!av)h+=`<p class="muted">Sem teste e sem idade no perfil: na aula, o aluno aparece só com os batimentos. Anote a idade e a FC de repouso no perfil ou ligue um teste em <b>Testes</b>.</p>`;
   else h+=`<div class="kv"><div><b>${dataBR(av.data_teste)}</b><span>data do teste</span></div>${fcmaxTxt}
     ${fcrepTxt}<div><b>${R.bike_w?f0(R.bike_w)+" W":"—"}</b><span>bike${R.fontes.bike?" · "+esc(R.fontes.bike):""}</span></div>
     <div><b>${R.esteira_kmh?f1(R.esteira_kmh)+" km/h":"—"}</b><span>esteira${R.fontes.esteira?" · "+esc(R.fontes.esteira):""}</span></div></div>
     ${avisos.length?`<div class="dica">${avisos.map(esc).join(" · ")}${R.fcmax==null?" · anote a idade no perfil":""}</div>`:""}`;
   h+=`</div>`+secaoFcmax(f,av);
-  if(!novo&&!av)h+=`<h3>Carga prescrita <button class="info" data-dica="semteste" title="Por quê">ⓘ</button></h3><div class="dica" id="dica-semteste" hidden>A carga e a faixa de carga saem do teste. Sem teste, a aula guia pela FC: a FC máxima sai da idade (208 − 0,7 × idade) e a TV mostra "falta teste".</div><p class="muted">Sem teste ligado. Ligue em <b>Testes</b>.</p><h3>Últimas aulas</h3><div id="historico"><p class="muted">Carregando…</p></div>`;
+  const SPRINT_TXT=`Sprint: a carga é a que o professor define, aqui ou no tablet durante a aula; não precisa de teste. Conta no alvo quem faz essa carga ou mais, depois dos 3 primeiros segundos do tiro. Sem carga, a TV mostra "Tudo!" e o tiro não conta.`;
+  if(!novo&&!av){
+    h+=`<h3>Carga prescrita <button class="info" data-dica="semteste" title="Por quê">ⓘ</button></h3><div class="dica" id="dica-semteste" hidden>A carga e a faixa de carga do curto, do longo e do limiar saem do teste. Sem teste, a aula guia pela FC: a FC máxima sai da idade (208 − 0,7 × idade) e a TV mostra "falta teste". ${SPRINT_TXT}</div><p class="muted">Sem teste ligado: só a carga do Sprint. Para as outras, ligue o teste em <b>Testes</b>.</p>`;
+    h+=tabelaPresc(id,p,R,["sprint"])+`<h3>Últimas aulas</h3><div id="historico"><p class="muted">Carregando…</p></div>`;
+  }
   if(!novo&&av){
-    const nivel=p.nivel||"int";
-    h+=`<h3>Carga prescrita <button class="info" data-dica="presc" title="O que é">ⓘ</button></h3><div class="dica" id="dica-presc" hidden>A carga que o aluno começa cada estímulo. Sem prescrição, a sala usa a do teste (curto 110%, longo 90%, limiar 85% da referência); iniciante não recebe carga do teste, só a prescrita. A faixa é o alvo da página HIIT. Sem corrida: esteira só em caminhada, até 6,9 km/h.</div>
-    <div class="tablebox"><table class="prescr"><thead><tr><th>Estímulo</th><th>Vale hoje</th><th>Faixa</th><th></th></tr></thead><tbody>`;
-    for(const t of ["curto","longo","limiar"])for(const m of ["bike","esteira"]){
+    h+=`<h3>Carga prescrita <button class="info" data-dica="presc" title="O que é">ⓘ</button></h3><div class="dica" id="dica-presc" hidden>A carga que o aluno começa cada estímulo. Sem prescrição, a sala usa a do teste (curto 110%, longo 90%, limiar 85% da referência); iniciante não recebe carga do teste, só a prescrita. A faixa é o alvo da página HIIT. Sem corrida: esteira só em caminhada, até 6,9 km/h. ${SPRINT_TXT}</div>`;
+    h+=tabelaPresc(id,p,R,["curto","longo","limiar","sprint"])+`<h3>Últimas aulas</h3><div id="historico"><p class="muted">Carregando…</p></div>`;
+  }
+  return h}
+// linhas de carga prescrita por tipo e máquina. Sprint: sem carga do teste e sem faixa ("a carga ou mais")
+function tabelaPresc(id,p,R,tipos){
+    const nivel=p.nivel||"int";let h=`<div class="tablebox"><table class="prescr"><thead><tr><th>Estímulo</th><th>Vale hoje</th><th>Faixa</th><th></th></tr></thead><tbody>`;
+    for(const t of tipos)for(const m of ["bike","esteira"]){
       const v=prescVigente(id,m,t),doTeste=H.cargaDoTeste(t,m,R,nivel),faixa=H.faixaCarga(t,nivel,m,R);
-      const atual=v?cargaTxt(v,m)+` <span class="chip">${esc(ORIGEM[v.origem]||v.origem)} · ${dataBR(v.vigente_desde)}</span>`:doTeste?cargaTxt(doTeste,m)+' <span class="chip">do teste</span>':'<span class="muted">sem carga</span>';
+      const atual=v?cargaTxt(v,m)+` <span class="chip">${esc(ORIGEM[v.origem]||v.origem)} · ${dataBR(v.vigente_desde)}</span>`:doTeste?cargaTxt(doTeste,m)+' <span class="chip">do teste</span>'
+        :t==="sprint"?'<span class="muted">o professor define na aula</span>':'<span class="muted">sem carga</span>';
       const bloq=m==="esteira"&&p.sem_corrida&&nivel!=="ini";
       const k=t+"-"+m,editando=prescEdit===k;
       const ent=bloq?'<span class="muted">sem corrida</span>':!editando?`<button class="btn sm" data-editar="${k}">Alterar</button>`:`<span class="nova">`+(m==="bike"?`<input data-campo="watts" data-k="${k}" inputmode="decimal" placeholder="W" aria-label="watts">`
         :`<input data-campo="vel_kmh" data-k="${k}" inputmode="decimal" placeholder="${p.sem_corrida?"até 6,9":"km/h"}" aria-label="velocidade"><input data-campo="incl_pct" data-k="${k}" inputmode="decimal" placeholder="%" aria-label="inclinação">`)
         +`<button class="btn sm primary" data-prescrever="${k}">Prescrever</button><button class="btn sm ghost" data-editar="">Cancelar</button></span>`;
-      h+=`<tr><td>${TIPO[t]} · ${MOD[m]}</td><td>${atual}</td><td class="num">${nivel==="ini"?"pela FC":faixaTxt(faixa)}</td><td>${editando?"":ent}</td></tr>`;
+      h+=`<tr><td>${TIPO[t]} · ${MOD[m]}</td><td>${atual}</td><td class="num">${t==="sprint"?"a carga ou mais":nivel==="ini"?"pela FC":faixaTxt(faixa)}</td><td>${editando?"":ent}</td></tr>`;
       if(editando)h+=`<tr class="editando"><td colspan="4">${ent}</td></tr>`}
-    h+=`</tbody></table></div><h3>Últimas aulas</h3><div id="historico"><p class="muted">Carregando…</p></div>`;
-  }
-  return h}
+    return h+`</tbody></table></div>`}
 // ───────── FC máxima: o que a regra do banco decidiu sozinha e o que a equipe desfez ─────────
 const SIT_FX={automatica:"subiu sozinha",confirmada:"voltou a valer",descartada:"desfeita"};
 const MED_TXT=`<div class="dica">Medicação que altera a FC (Testes de VO₂): a faixa de FC pode não valer.</div>`;
@@ -447,9 +455,9 @@ function telaAulas(){
 
 // ───────── Protocolos ─────────
 function telaProtocolos(){
-  let h=`<h1>Protocolos</h1><h3>Novo protocolo <button class="info" data-dica="proto" title="O que é">ⓘ</button></h3><div class="dica" id="dica-proto" hidden>Aquecimento de 5:00 e volta à calma de 5:00 entram sozinhos. Regras da turma: a aula inteira cabe em 30 min, e no curto o estímulo tem 1 min ou mais.</div>
+  let h=`<h1>Protocolos</h1><h3>Novo protocolo <button class="info" data-dica="proto" title="O que é">ⓘ</button></h3><div class="dica" id="dica-proto" hidden>Aquecimento de 5:00 e volta à calma de 5:00 entram sozinhos. Regras da turma: a aula inteira cabe em 30 min; no curto o estímulo tem 1 min ou mais; no sprint, de 5 a 59 s (a carga do sprint é a que o professor define). A recuperação pode ser menor que o estímulo.</div>
   <div class="caixa"><div class="grade"><label style="grid-column:span 2">Nome<input id="n-nome" maxlength="80" placeholder="ex.: Longo 6 × 2:00 / 1:00"></label>
-    <label>Tipo<select id="n-tipo"><option value="longo">Longo</option><option value="curto">Curto</option><option value="limiar">Limiar</option></select></label>
+    <label>Tipo<select id="n-tipo"><option value="longo">Longo</option><option value="curto">Curto</option><option value="limiar">Limiar</option><option value="sprint">Sprint</option></select></label>
     <label>Estímulos<input id="n-n" inputmode="numeric" value="6"></label><label>Estímulo (m:ss)<input id="n-e" value="2:00"></label><label>Recuperação (m:ss)<input id="n-r" value="1:00"></label></div>
     <div class="linha" style="margin-top:12px"><span class="muted" id="n-total"></span><button class="btn primary" id="criarProto">Criar protocolo</button></div></div>
   <h3>Todos os protocolos</h3><div class="tablebox"><table><thead><tr><th>Protocolo</th><th>Tipo</th><th>Linha do tempo</th><th>Duração</th><th></th></tr></thead><tbody>`;
@@ -461,7 +469,9 @@ function telaProtocolos(){
 const seg=t=>{const m=String(t||"").trim().match(/^(\d{1,2}):([0-5]\d)$/);return m?+m[1]*60+ +m[2]:(/^\d+$/.test(String(t).trim())?+t:null)};
 function totalNovo(){const n=+$("#n-n").value,e=seg($("#n-e").value),r=seg($("#n-r").value);const el=$("#n-total");
   if(!(n>0)||e==null||r==null){el.textContent="Preencha estímulos e tempos.";return}
-  const t=600+n*(e+r);el.textContent="Aula de "+mmss(t)+(t>1800?" · passa de 30:00":"")}
+  // as mesmas regras do banco (hiit_criar_protocolo), avisadas antes de criar
+  const tipo=$("#n-tipo").value,regra=tipo==="sprint"&&(e<5||e>59)?" · no sprint o estímulo vai de 0:05 a 0:59":tipo==="curto"&&e<60?" · no curto o estímulo tem 1:00 ou mais (abaixo disso, use o sprint)":"";
+  const t=600+n*(e+r);el.textContent="Aula de "+mmss(t)+(t>1800?" · passa de 30:00":"")+regra}
 
 // ───────── ações ─────────
 async function acao(fn,msgOk){if(ocupado)return;ocupado=true;const y=window.scrollY;
@@ -515,7 +525,7 @@ function ligar(){
     if(!a.cancelada&&!confirm("Cancelar a aula das "+a.horario+"? Ela some da sala, mas fica registrada."))return;
     const p=a.cancelada?document.querySelector(`[data-troca-p="${a.id}"]`).value:a.protocolo_id;   // reativa com o protocolo escolhido
     acao(()=>rpc("hiit_planejar_aula",{p_data:a.data,p_horario:a.horario,p_protocolo_id:p,p_base_rev:a.rev,p_cancelar:!a.cancelada}),a.cancelada?"Aula reativada.":"Aula cancelada.")});
-  const np=$("#n-n");if(np){["#n-n","#n-e","#n-r"].forEach(s=>$(s).oninput=totalNovo);totalNovo();
+  const np=$("#n-n");if(np){["#n-n","#n-e","#n-r"].forEach(s=>$(s).oninput=totalNovo);$("#n-tipo").onchange=totalNovo;totalNovo();
     $("#criarProto").onclick=()=>{const e=seg($("#n-e").value),r=seg($("#n-r").value);if(e==null||r==null)return toast("Tempos no formato m:ss.");
       acao(()=>rpc("hiit_criar_protocolo",{p_nome:$("#n-nome").value.trim(),p_tipo:$("#n-tipo").value,p_n:+$("#n-n").value,p_estimulo_s:e,p_recuperacao_s:r}),"Protocolo criado.")}}
   document.querySelectorAll("[data-arquivar]").forEach(b=>b.onclick=()=>(b.dataset.ativo==="1"||confirm("Arquivar este protocolo? Ele sai da lista de aulas novas; as aulas antigas continuam."))&&acao(()=>rpc("hiit_arquivar_protocolo",{p_id:b.dataset.arquivar,p_ativo:b.dataset.ativo==="1"}),b.dataset.ativo==="1"?"Protocolo reativado.":"Protocolo arquivado."));
