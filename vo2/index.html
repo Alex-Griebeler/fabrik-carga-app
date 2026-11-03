@@ -344,7 +344,7 @@ body.rel-aberto{overflow:hidden}
     <div class="checks">
       <label><input type="checkbox" id="a-parq"> PAR-Q em dia</label>
       <label><input type="checkbox" id="a-cinta"> Frequencímetro conectado</label>
-      <label><input type="checkbox" id="a-med"> Usa remédio que altera a FC (ex.: betabloqueador)</label>
+      <label><input type="checkbox" id="a-med"> Usa medicação que altera a FC (ex.: betabloqueador)</label>
     </div>
   </section>
 
@@ -890,7 +890,7 @@ function compute(p){
   if(a.medOk)al.push(["ok","Usando a FCmáx medida ("+f0(a.fcmed)+" bpm)"+(a.fcprev?" no lugar da prevista ("+f0(a.fcprev)+" bpm).":".")]);
   if(a.medOk&&rows.some(r=>r.fc!=null&&r.fc>a.fcmed))al.push(["warn","Uma FC deste teste passou da FCmáx medida. A máxima real é maior: atualize o campo com a FC mais alta de um teste máximo."]);
   if(p.kind!=="walk"){if(a.pesoInv)al.push(["bad","Peso "+bruto("peso")+" inválido (aceita "+PESO_MIN+" a "+PESO_MAX+" kg): confira o número. Enquanto isso, o VO₂ fica em branco."]);else if(a.peso==null)al.push(["bad","Preencha o peso: o VO₂ é por kg."])}
-  if(a.med)al.push(["bad","Remédio que altera a FC: as estimativas que usam a FC podem não valer para este aluno (o ACSM exclui esse caso no método submáximo). Decida com o Alex."]);
+  if(a.med)al.push(["bad","Medicação que altera a FC: as estimativas que usam a FC podem não valer para este aluno (o ACSM exclui esse caso no método submáximo). Decida com o Alex."]);
   if(!a.cinta)al.push(["warn","Use o frequencímetro (padrão Fabrik; nos testes do console, o manual exige ou recomenda monitor de FC)."]);
   if(!a.parq&&(p.id==="bmax"||p.id==="emax"))al.push(["warn","PAR-Q não está em dia. Confirme com o Alex antes de um teste máximo."]);
   if(fcpD!=null&&fcReg!=null&&fcpD<fcReg)al.push(["warn","A FC pico digitada ("+f0(fcpD)+" bpm) é menor que a maior FC da tabela ("+f0(fcReg)+" bpm): confira."]);
@@ -1051,7 +1051,7 @@ function summary(){
   const cru=(v,k,inv,un="")=>{const t=String(a[k]??"").trim();return v!=null?t+un:t?'"'+t+'"'+un+" ("+inv+")":"—"+un};
   L.push(`Idade: ${cru(A0.idade,"idade","inválida")} · Peso: ${cru(A0.peso,"peso","inválido"," kg")} · Sexo: ${a.sexo==="m"?"M":a.sexo==="f"?"F":"—"} · FCmáx prevista: ${A0.fcprev?f0(A0.fcprev):"—"}${A0.medOk?" · FCmáx medida: "+f0(A0.fcmed)+" (usada nas contas)":A0.fcmedInv?" · FCmáx medida: "+cru(null,"fcmed","inválida, fora das contas"):""} · FC repouso: ${cru(A0.fcrep,"fcrep","inválida")}`);
   const sn=v=>v?"sim":"não",tem=v=>String(v??"").trim()!=="";
-  L.push(`PAR-Q em dia: ${sn(a.parq)} · Frequencímetro: ${sn(a.cinta)} · Remédio que altera a FC: ${sn(a.med)}`);
+  L.push(`PAR-Q em dia: ${sn(a.parq)} · Frequencímetro: ${sn(a.cinta)} · Medicação que altera a FC: ${sn(a.med)}`);
   // entra todo teste com algum dado anotado (velocidade e inclinação da esteira já nascem preenchidas: não contam)
   const ps=P.filter(p=>S.p[p.id]).filter(p=>{const st=S.p[p.id];return st.rows.some(r=>tem(r.fc)||tem(r.pse)||tem(r.w))||tem(st.fcpico)||tem(st.fc1)||tem(st.obs)});
   const os=ps.map(p=>compute(p)),at=o=>o.al.filter(x=>x[0]!=="ok").map(x=>x[1]);
@@ -1194,7 +1194,7 @@ function relFolha(T){
   return `<header class="rel-cab"><h3>Avaliação cardiorrespiratória</h3><h2 id="rel-titulo">${esc(nome||"Aluno")}</h2>${quando?`<p class="lead">${esc(quando)}</p>`:""}</header>
     ${dados.length?`<section class="rel-sec"><h3>Dados do aluno</h3><div class="rel-stats">${dados.map(([v,k])=>`<div><b class="num">${esc(v)}</b><span>${k}</span></div>`).join("")}</div></section>`:""}
     ${T.map(({p,o})=>relTeste(p,o,a)).join("")}
-    ${a.med?`<ul class="alerts rel-sec"><li class="warn">Você usa remédio que altera a frequência cardíaca. Os números que dependem da FC servem para comparar você com você mesmo, nas mesmas condições.</li></ul>`:""}
+    ${a.med?`<ul class="alerts rel-sec"><li class="warn">Você usa medicação que altera a frequência cardíaca. Os números que dependem da FC servem para comparar você com você mesmo, nas mesmas condições.</li></ul>`:""}
     <section class="rel-sec rel-como"><h3>Como ler</h3><div class="rel-explica">
       <div class="decision"><strong>O que é o VO₂</strong><p>É a quantidade de oxigênio que o corpo consegue usar por minuto, para cada quilo de peso. Coração, pulmões e músculos trabalham juntos para chegar a esse número. Quanto maior, mais fôlego para sustentar esforço.</p></div>
       <div class="decision"><strong>Como ler este resultado</strong><p>É uma estimativa calculada por fórmula a partir do que você fez no teste, não uma medida de laboratório. O valor mais útil é a comparação com você mesmo: na reavaliação, repetimos o mesmo teste, nas mesmas condições.</p></div>
