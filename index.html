@@ -289,9 +289,31 @@ body:not(.sync-on) .synconly{display:none}
 .cbox{display:flex; flex-wrap:wrap; align-items:center; gap:10px 10px}
 .grp{display:flex; align-items:center; gap:7px}
 .grp>span:not(.fixed){font-size:11px; font-weight:600; letter-spacing:.07em; text-transform:uppercase; color:var(--muted)}
+/* registro: título em cima do campo (como no app Alex Performance); o "+" da 2ª anilha segue ao lado */
+.row{padding-top:18px; row-gap:30px}
+.row .cbox{row-gap:30px}
+.row .grp{position:relative}
+.row .grp:not(.anilha2)>span:first-child:not(.fixed){position:absolute; bottom:100%; left:50%; transform:translateX(-50%); margin-bottom:6px; line-height:1; white-space:nowrap}
+.row .grp:has(>.barb)>span:first-child{left:30px}
 .fixed{display:inline-flex; align-items:center; height:var(--h); padding:0 14px; border-radius:var(--r); background:var(--surface2); color:var(--muted); font-size:15px; font-weight:600}
 .cin{width:76px; padding:0 6px; font-size:19px; font-weight:700; text-align:center}
 .cin.barra{width:60px; font-size:16px; font-weight:600}
+/* implemento e barra: um botão só mostra o de hoje; ao tocar, a lista abre por cima da tela (como no app Alex Performance) */
+.impb{min-width:64px; padding:0 12px; gap:9px; background:rgba(241,236,228,.04); font-size:15px; font-weight:700; letter-spacing:.02em}
+.impb::after{content:""; border-left:4px solid transparent; border-right:4px solid transparent; border-top:5px solid var(--muted)}
+.impb.barb{min-width:60px; padding:0 10px; font-size:16px; font-weight:600}
+#folha .veu{position:fixed; inset:0; z-index:70; background:rgba(0,0,0,.55)}
+#folha .sheet{position:fixed; left:0; right:0; bottom:0; z-index:71; max-height:72vh; overflow-y:auto; overscroll-behavior:contain;
+  padding:8px 8px max(12px,env(safe-area-inset-bottom,0px)); background:var(--raised); border:1px solid var(--line2);
+  border-radius:var(--r-xl) var(--r-xl) 0 0; box-shadow:0 18px 44px rgba(0,0,0,.55)}
+#folha h3{margin:6px 10px 8px; font-size:12.5px; font-weight:600; color:var(--muted)}
+#folha .opt{width:100%; justify-content:flex-start; gap:14px; height:46px; padding:0 12px; border:0; border-radius:var(--r-sm); background:none; color:var(--ink2); font-size:16px; font-weight:500}
+#folha .opt b{width:34px; color:var(--ink); font-weight:700}
+#folha .opt span{color:var(--muted)}
+#folha .opt:hover{background:var(--surface2); border:0}
+#folha .opt.on{background:var(--ink)}
+#folha .opt.on b,#folha .opt.on span{color:#131210}
+@media (min-width:600px){ #folha .sheet{left:50%; right:auto; bottom:auto; top:50%; transform:translate(-50%,-50%); width:320px; border-radius:var(--r-lg)} }
 input.sm{width:62px; padding:0 6px; font-size:17px; font-weight:600; text-align:center}
 .cbox small{font-size:12px; color:var(--muted)}
 .x2{font-weight:600; color:var(--muted)}
@@ -521,7 +543,7 @@ svg.chart .grid{stroke:var(--line); stroke-width:1}
       <div class="modos" id="modos"><button data-m="treino"><svg class="ic"><use href="#i-list"/></svg>Treino completo</button><button data-m="registro"><svg class="ic"><use href="#i-weight"/></svg>Registro de carga</button></div>
     </div>
     <div class="regtop">
-      <div class="regrow"><div class="blocks" id="blocks"></div><button id="btnSemCarga" class="switch" role="switch" aria-checked="false" title="Mostra também os exercícios sem carga, pra adaptar"><span class="sw"></span>Exercícios sem carga</button></div>
+      <div class="regrow"><div class="blocks" id="blocks"></div><button id="btnSemCarga" class="switch on" role="switch" aria-checked="true" title="Mostra também os exercícios sem carga (peso corporal); desligue pra ver só os com carga"><span class="sw"></span>Exercícios sem carga</button></div>
       <div id="blocoResumo" class="bresumo"></div>
     </div>
     <aside id="programa" class="prog"></aside>
@@ -566,6 +588,9 @@ svg.chart .grid{stroke:var(--line); stroke-width:1}
   <p class="muted" id="status"></p>
 </div>
 
+<!-- lista do implemento / da barra (abre por cima da tela) -->
+<div id="folha"></div>
+
 <div id="loginOverlay">
   <div class="loginbox">
     <h2>Entrar</h2>
@@ -596,6 +621,15 @@ const TURMAS = ["06:00","07:00","08:00","09:00","10:00","11:00","12:30","16:30",
 const NIVEIS_ELASTICO = ["Leve","Média","Forte","Extra"];
 // caixas de salto da Fabrik (cm): a pequena tem 35/40/45, a grande 50/60/75
 const ALTURAS_CAIXA = [["pequena",[35,40,45]],["grande",[50,60,75]]];
+// Implemento de hoje: um botão só mostra o prescrito; ao tocar abre a lista com os outros.
+// [valor gravado em montagem, sigla no botão, nome na lista]
+const IMPLEMENTOS = [["impl","DB","halter"],["kb","KB","kettlebell"],["barra","BB","barra"],["landmine","LM","landmine"],["pc","PC","peso corporal"],["elastico","EL","elástico"]];
+// barras da Fabrik (kg): também um botão só, a lista mostra as três
+const BARRAS = ["10","15","20"];
+// RR travado nos exercícios de potência (carga leve a moderada, intenção máxima de velocidade):
+// Helms et al. 2016 — longe da falha o RR não se estima com precisão; teto de PSE 4 (esforço leve),
+// acima da faixa 5-6 = 4-6 RR → mais de 6 RR. Exercício de potência no MESES leva rrFixo:RR_POTENCIA.
+const RR_POTENCIA = "7+";
 
 const RULES = {
   "1":{txt:"Deload — reduz carga e volume, recupera.", cls:"ok"},
@@ -747,12 +781,12 @@ const MESES = {
   },
   "Out-Nov 26": {
     "1":[
-      {id:"outnov26_t1_hipthrustpress",nome:"Hip thrust + press horizontal 2DB",tipo:"carga",carga:"impl",un:"kg",qtd:2,metodo:"SUPERSET",presc:"4 x 6",alvo:"3-4RR",bloco:1},
+      {id:"outnov26_t1_hipthrustpress",nome:"Hip thrust + press horizontal 2DB",tipo:"carga",carga:"impl",un:"kg",qtd:2,metodo:"SUPERSET",presc:"4 x 6",alvo:"potência",rrFixo:RR_POTENCIA,bloco:1},
       {id:"outnov26_t1_boxjump",nome:"Box jump",tipo:"caixa",repsFixas:"6",metodo:"SUPERSET",presc:"4 x 6",alvo:"potência",bloco:1},
       {id:"outnov26_t1_nordica",nome:"Flexão nórdica",tipo:"pc",metodo:"CIRCUITO",presc:"3 x 8-5",alvo:"1-2RR",bloco:2},
       {id:"outnov26_t1_serrote",nome:"Remada serrote",tipo:"carga",carga:"impl",un:"kg",qtd:1,metodo:"CIRCUITO",presc:"3 x 8-5",alvo:"1-2RR",bloco:2},
       {id:"outnov26_t1_exttoracica",nome:"Extensão torácica AJ c/ bastão",tipo:"pc",repsFixas:"8",metodo:"CIRCUITO",presc:"2 x 8",alvo:"mobilidade",bloco:2},
-      {id:"outnov26_t1_frontsquat",nome:"Front squat BB c/ pausa (3s)",tipo:"carga",carga:"barra",un:"lb",bar:10,metodo:"CIRCUITO",presc:"3 x 8-5",alvo:"1-2RR",bloco:3},
+      {id:"outnov26_t1_frontsquat",nome:"Front squat BB c/ pausa (3s)",tipo:"carga",carga:"barra",un:"lb",bar:15,metodo:"CIRCUITO",presc:"3 x 8-5",alvo:"1-2RR",bloco:3},
       {id:"outnov26_t1_supinoinc",nome:"Supino inclinado DB",tipo:"carga",carga:"impl",un:"kg",qtd:2,metodo:"CIRCUITO",presc:"3 x 8-5",alvo:"1-2RR",bloco:3},
       {id:"outnov26_t1_extpunho",nome:"Extensão de punho AJ",tipo:"pc",repsFixas:"8",metodo:"CIRCUITO",presc:"2 x 8",alvo:"mobilidade",bloco:3}
     ],
@@ -769,10 +803,10 @@ const MESES = {
     ],
     "3":[
       {id:"outnov26_t3_remadaunl",nome:"Remada UNL carga CNTL (PTE)",tipo:"carga",carga:"impl",un:"kg",qtd:1,metodo:"SUPERSET",presc:"3 x 12 cl",alvo:"1-2RR",bloco:1},
-      {id:"outnov26_t3_hipthrustbb",nome:"Hip thrust BB",tipo:"carga",carga:"barra",un:"lb",bar:10,metodo:"SUPERSET",presc:"3 x 12",alvo:"1-2RR",bloco:1},
+      {id:"outnov26_t3_hipthrustbb",nome:"Hip thrust BB",tipo:"carga",carga:"barra",un:"lb",bar:15,metodo:"SUPERSET",presc:"3 x 12",alvo:"1-2RR",bloco:1},
       {id:"outnov26_t3_desenvolvimento",nome:"Desenvolvimento em pé 2DB",tipo:"carga",carga:"impl",un:"kg",qtd:2,metodo:"SUPERSET",presc:"3 x 12",alvo:"1-2RR",bloco:2},
       {id:"outnov26_t3_curtsy",nome:"Curtsy lunge taça no slide",tipo:"carga",carga:"impl",un:"kg",qtd:1,metodo:"SUPERSET",presc:"3 x 12 cl",alvo:"1-2RR",bloco:2},
-      {id:"outnov26_t3_sumobb",nome:"Agachamento sumô BB",tipo:"carga",carga:"barra",un:"lb",bar:10,metodo:"TRISET",presc:"3 x 12",alvo:"1-2RR",bloco:3},
+      {id:"outnov26_t3_sumobb",nome:"Agachamento sumô BB",tipo:"carga",carga:"barra",un:"lb",bar:15,metodo:"TRISET",presc:"3 x 12",alvo:"1-2RR",bloco:3},
       {id:"outnov26_t3_facepull",nome:"Face pull c/ SB",tipo:"elastico",metodo:"TRISET",presc:"3 x 15",alvo:"1-2RR",bloco:3},
       {id:"outnov26_t3_abdinverso",nome:"ABD inverso c/ SB",tipo:"elastico",metodo:"TRISET",presc:"3 x 15",alvo:"1-2RR",bloco:3}
     ]
@@ -1093,10 +1127,10 @@ function treinosDo(mes){ return MESES[mes] || MESES[Object.keys(MESES)[0]]; }
 // caixa (a altura do salto). Peso corporal e tempo aparecem só no treino. Decide pelo prescrito da turma.
 function registraCarga(e){ return e.tipo==="carga" || e.tipo==="elastico" || e.tipo==="caixa"; }
 // Exercício sem carga adaptado pra um com carga continua no registro (só pro aluno adaptado).
-// "ver sem carga" mostra o bloco inteiro de novo, pra o professor conseguir adaptar na hora.
-let verSemCarga = false;
-function slotVisivel(slot,aId,c){ return verSemCarga || registraCarga(slot) || registraCarga(exEfetivo(slot,aId,c)); }
-function slotNaTurma(slot){ const c=ctx(); return verSemCarga || registraCarga(slot) || alunosDaTurma(c.turma).some(a=>registraCarga(exEfetivo(slot,a.id,c))); }
+// "Exercícios sem carga" já vem ligado (bloco inteiro, peso corporal incluso); o professor desliga se quiser só os com carga.
+let verSemCarga = true;
+function slotVisivel(slot,aId,c){ return verSemCarga || registraCarga(slot) || registraCarga(exDoAluno(slot,aId,c)); }
+function slotNaTurma(slot){ const c=ctx(); return verSemCarga || registraCarga(slot) || alunosDaTurma(c.turma).some(a=>registraCarga(exDoAluno(slot,a.id,c))); }
 function blocosDe(t){ return [...new Set((treinosDo($("mes").value)[t]||[]).filter(slotNaTurma).map(e=>e.bloco))]; }
 function exsDoBloco(t,b){ return (treinosDo($("mes").value)[t]||[]).filter(e=>e.bloco===b && slotNaTurma(e)); }
 // mês publicado antes de todos os treinos estarem prontos: avisa e aponta o mês anterior que tem esse treino
@@ -1137,12 +1171,17 @@ function adaptDeRecords(aId,c,slotId){
                   && r.exercicioNome && r.exercicioNome!==prescrito)
                   .sort((x,y)=>String(y.data).localeCompare(String(x.data)));
   if(!rs.length) return null;
-  const r=rs[0]; let tipo="pc", carga, un, qtd, bar;
+  // nome = o da adaptação mais recente; tipo/implemento = o mais usado com esse nome (empate: o mais recente).
+  // Assim a troca "só hoje" do menu de implemento não vira o padrão da adaptação no outro computador.
+  const atual=rs[0].exercicioNome, doAtual=rs.filter(x=>x.exercicioNome===atual), usos={};
+  doAtual.forEach(x=>{ const k=x.montagem||""; usos[k]=(usos[k]||0)+1; });
+  const mais=Math.max(...Object.values(usos));
+  const r=doAtual.find(x=>usos[x.montagem||""]===mais); let tipo="pc", carga, un, qtd, bar;
   if(r.montagem==="elastico") tipo="elastico";
   else if(r.montagem==="caixa") tipo="caixa";
   else if(["impl","kb","barra","landmine"].includes(r.montagem)){ tipo="carga"; carga=r.montagem; un=r.un||"kg"; qtd=Number(r.qtd)||1; bar=r.bar; }
   else if(String(r.cargaTotal||"").trim()!==""){ tipo="carga"; carga="impl"; un=r.un||"kg"; qtd=Number(r.qtd)||1; }
-  return { nome:r.exercicioNome, tipo, carga, un, qtd, bar };
+  return { nome:atual, tipo, carga, un, qtd, bar };
 }
 function getAdapt(aId,c,slotId){
   const k=adaptKey(aId,c,slotId);
@@ -1154,7 +1193,52 @@ function exEfetivo(ex,aId,c){
   const ad=getAdapt(aId,c,ex.id); if(!ad) return ex;
   return { id:ex.id, slotId:ex.id, adaptado:true, origNome:ex.nome,
     nome:ad.nome, tipo:ad.tipo||"carga", carga:ad.carga, un:ad.un||"kg", qtd:ad.qtd||1, bar:ad.bar,
-    metodo:ex.metodo, alvo:ex.alvo, bloco:ex.bloco };
+    metodo:ex.metodo, alvo:ex.alvo, rrFixo:ex.rrFixo, bloco:ex.bloco };
+}
+// implemento prescrito (vem marcado no botão). tempo, caixa e carga com rótulo próprio ("livre") não têm menu.
+function montPadrao(ex){
+  if(ex.cargaLabel) return null;
+  if(ex.tipo==="carga") return ex.carga||"impl";
+  return (ex.tipo==="pc"||ex.tipo==="elastico") ? ex.tipo : null;
+}
+const siglaImpl = v => (IMPLEMENTOS.find(i=>i[0]===v)||[v,v])[1];
+// exercício de HOJE: o efetivo com o implemento que o professor escolheu no menu (fica só no registro do dia, em montagem)
+function exHoje(ex,r){
+  const pad=montPadrao(ex); if(!pad) return ex;
+  const m=(r && IMPLEMENTOS.some(i=>i[0]===r.montagem)) ? r.montagem : pad;
+  const tipo=(m==="pc"||m==="elastico") ? m : "carga";
+  return Object.assign({},ex,{ tipo, carga: tipo==="carga" ? m : ex.carga, montHoje:m, montPadrao:pad });
+}
+function exDoAluno(slot,aId,c){ const ex=exEfetivo(slot,aId,c); return exHoje(ex,getRec(c,aId,ex.id)); }
+// lista por cima da tela (implemento e barra): rola sozinha e a tela de trás fica parada; fecha no fundo escuro ou no Esc
+function abrirFolha(titulo,itens,atual,onPick){
+  const el=$("folha");
+  const fechar=()=>{ el.innerHTML=""; document.body.style.overflow=""; document.removeEventListener("keydown",esc); };
+  const esc=ev=>{ if(ev.key==="Escape") fechar(); };
+  el.innerHTML=`<div class="veu"></div><div class="sheet" role="dialog" aria-label="${attrEsc(titulo)}"><h3>${he(titulo)}</h3>`+
+    itens.map(([v,sig,nome])=>`<button type="button" class="opt ${String(v)===String(atual)?"on":""}" data-v="${attrEsc(v)}"><b>${he(sig)}</b><span>${he(nome)}</span></button>`).join("")+`</div>`;
+  document.body.style.overflow="hidden";
+  el.querySelector(".veu").onclick=fechar;
+  el.querySelectorAll(".opt").forEach(b=>b.onclick=()=>{ fechar(); onPick(b.dataset.v); });
+  document.addEventListener("keydown",esc);
+  const foco=el.querySelector(".opt.on")||el.querySelector(".opt"); if(foco) foco.focus();
+}
+// troca o implemento SÓ DE HOJE (não vira padrão; o padrão do aluno é o "Adaptar").
+// Entre DB e KB o peso continua (é o peso do implemento nos dois). Em qualquer outra troca a carga digitada sai,
+// pra não virar conta errada (ex.: 12 kg do halter virar 12 kg por lado na barra); a unidade volta à do implemento.
+function trocaImpl(c,aluno,ex,v){
+  const de=ex.montHoje; if(!v || v===de) return;
+  const dbkb=["impl","kb"], comBarra=["barra","landmine"];
+  const r=getRec(c,aluno.id,ex.id)||{};
+  const patch={montagem:v};
+  if(dbkb.includes(de) && dbkb.includes(v)){
+    const out=calcCarga(v, r.qtd||ex.qtd||1, r.peso, r.un||ex.un||"kg", r.peso2, r.un2||"kg", r.bar);
+    Object.assign(patch,{cargaTotal:out.total, cargaParcial:out.parcial});
+  } else {
+    Object.assign(patch,{qtd:"", peso:"", un:"", peso2:"", un2:"", bar:"", cargaTotal:"", cargaParcial: v==="pc" ? "PC" : ""});
+    if(dbkb.includes(v)||comBarra.includes(v)) patch.un = comBarra.includes(v) ? "lb" : "kg";
+  }
+  upsert(c,aluno,ex,patch); renderPanel();
 }
 // nome de um exercício por id (inclui adaptados, que não estão no MESES/EXALL)
 function nomeEx(id){ return EXALL[id] || (records.find(r=>r.exercicioId===id)||{}).exercicioNome || id; }
@@ -1312,6 +1396,7 @@ function upsert(c,aluno,ex,patch){
   if(!r){ r={alunoId:aluno.id,alunoNome:aluno.nome,turma:c.turma,treino:c.treino,semana:c.semana,data:c.data,exercicioId:ex.id,exercicioNome:ex.nome,metodo:ex.metodo,bloco:ex.bloco,montagem:"",qtd:"",peso:"",un:"",peso2:"",un2:"",bar:"",cargaParcial:"",cargaTotal:"",reps:"",rr:"",troca:"",dor:false,dorNota:"",obs:""}; records.push(r); }
   Object.assign(r,patch,{semana:c.semana});
   if(ex.repsFixas){ r.reps=ex.repsFixas; r.rr=""; }
+  if(ex.rrFixo) r.rr=ex.rrFixo;
   DataStore.putRegistro(r);
   $("status").textContent="Salvo "+new Date().toLocaleTimeString("pt-BR",{hour:'2-digit',minute:'2-digit',second:'2-digit'});
 }
@@ -1360,49 +1445,54 @@ function renderPanel(){
     const visiveis=exs.filter(exSlot=>slotVisivel(exSlot,a.id,c));
     if(!visiveis.length) return ""; // aluno sem nada com carga neste bloco
     const lines=visiveis.map(exSlot=>{
-      const ex=exEfetivo(exSlot,a.id,c); // efetivo = adaptado do aluno, senão o prescrito da turma
-      const r=getRec(c,a.id,ex.id)||{};
+      const ex0=exEfetivo(exSlot,a.id,c); // efetivo = adaptado do aluno, senão o prescrito da turma
+      const r=getRec(c,a.id,ex0.id)||{};
+      const ex=exHoje(ex0,r); // + implemento de hoje, se o professor trocou no menu
       const isCarga=ex.tipo==="carga";
       const isElastico=ex.tipo==="elastico";
-      const montagem = ex.carga==='landmine' ? 'landmine' : (r.montagem||ex.carga);
+      const montagem = ex.carga; // implemento de hoje (exHoje): o prescrito ou o escolhido no menu
       const isKbLike = montagem==='impl'||montagem==='kb';
       const un=r.un||ex.un||"kg", un2=r.un2||"kg", qtd=Number(r.qtd||ex.qtd||1);
-      const bar=(r.bar!==undefined&&r.bar!=="")?r.bar:(ex.bar!==undefined?ex.bar:10);
+      const bar=(r.bar!==undefined&&r.bar!=="")?r.bar:(ex.bar!==undefined?ex.bar:15);
       const peso=(r.peso!==undefined&&r.peso!==null)?r.peso:"";
       const peso2=(r.peso2!==undefined&&r.peso2!==null)?r.peso2:"";
       const disp = isCarga ? (calcCarga(montagem,qtd,peso,un,peso2,un2,bar).total||'—') : '';
       const unTog=(dc,cur)=>`<div class="seg unit"><button class="ubtn ${cur==='kg'?'on':''}" data-c="${dc}" data-v="kg">kg</button><button class="ubtn ${cur==='lb'?'on':''}" data-c="${dc}" data-v="lb">lb</button></div>`;
+      const impBtn = ex.montHoje ? `<button type="button" class="impb" aria-haspopup="dialog" title="Implemento de hoje: toque para trocar">${he(siglaImpl(ex.montHoje))}</button>` : "";
       let cargaBox;
       if(isElastico){
         const nivel=r.cargaParcial||"";
-        cargaBox=`<div class="cbox elastico" data-tipo="elastico"><div class="grp"><span class="ellbl">Elástico</span><div class="seg elchips">`+
+        cargaBox=`<div class="cbox elastico" data-tipo="elastico">${impBtn}<div class="grp"><span class="ellbl">Elástico</span><div class="seg elchips">`+
           NIVEIS_ELASTICO.map(n=>`<button class="elch ${nivel===n?'on':''}" data-nivel="${attrEsc(n)}">${he(n)}</button>`).join("")+`</div></div></div>`;
       } else if(ex.tipo==="caixa"){
         const alt=r.cargaParcial||"";
         cargaBox=`<div class="cbox caixa">`+ALTURAS_CAIXA.map(([nome,hs])=>`<div class="grp"><span>Caixa ${nome}</span><div class="seg cxchips">`+
           hs.map(h=>`<button class="cxch ${alt===h+" cm"?'on':''}" data-alt="${h} cm">${h}</button>`).join("")+`</div></div>`).join("")+`<small>cm</small></div>`;
+      } else if(!isCarga && impBtn){
+        cargaBox=`<div class="cbox" data-tipo="pc">${impBtn}</div>`; // peso corporal: só o botão (as reps ficam ao lado)
       } else if(!isCarga){
         cargaBox=`<div class="grp"><span>Carga</span><span class="fixed">${he(ex.cargaLabel || (ex.tipo==='pc'?'PC':'tempo'))}</span></div>`;
       } else {
-        const mtog = ex.carga==='landmine' ? "" : `<div class="seg mtog"><button class="mbtn ${montagem==='impl'?'on':''}" data-v="impl">DB</button><button class="mbtn ${montagem==='kb'?'on':''}" data-v="kb">KB</button><button class="mbtn ${montagem==='barra'?'on':''}" data-v="barra">BB</button></div>`;
+        const mtog = impBtn;
         const totT=`<div class="ctot">= <b class="ctotal">${disp}</b> kg</div>`;
         const pesoIn=lbl=>`<div class="grp"><span>${lbl}</span><input class="cin" data-c="peso" inputmode="decimal" placeholder="0" value="${attrEsc(peso)}"></div>`;
         const peso2In=`<div class="grp anilha2" style="${peso2?'':'display:none'}"><span>+</span><input class="cin" data-c="peso2" inputmode="decimal" placeholder="0" value="${attrEsc(peso2)}">${unTog('un2',un2)}</div>`;
         const mais=txt=>`<button class="icbtn ghost addAnilha" style="${peso2?'display:none':''}">${IC("plus")}${txt}</button>`;
-        const barra=`<div class="grp"><span>+ BB</span><input class="cin barra" data-c="bar" inputmode="decimal" value="${attrEsc(bar)}"><small>kg</small></div>`;
+        const barra=`<div class="grp"><span>+ BB</span><button type="button" class="impb barb" value="${attrEsc(bar)}" aria-haspopup="dialog" title="Peso da barra: toque para trocar (10, 15 ou 20 kg)">${he(bar)}</button><small>kg</small></div>`;
         if(isKbLike){
           cargaBox=`<div class="cbox" data-tipo="${montagem}">${mtog}<div class="grp"><span>Impl.</span><div class="seg"><button class="qbtn ${qtd===1?'on':''}" data-c="qtd" data-v="1">1</button><button class="qbtn ${qtd===2?'on':''}" data-c="qtd" data-v="2">2</button></div></div>${pesoIn("Peso")}${unTog('un',un)}${totT}</div>`;
         } else if(montagem==='barra'){
           cargaBox=`<div class="cbox" data-tipo="barra">${mtog}${pesoIn("Por lado")}${unTog('un',un)}${peso2In}${mais("anilha")}<span class="x2">×2</span>${barra}${totT}</div>`;
         } else {
-          cargaBox=`<div class="cbox" data-tipo="landmine">${pesoIn("Peso")}${unTog('un',un)}${peso2In}${mais("peso")}${barra}${totT}</div>`;
+          cargaBox=`<div class="cbox" data-tipo="landmine">${mtog}${pesoIn("Peso")}${unTog('un',un)}${peso2In}${mais("peso")}${barra}${totT}</div>`;
         }
       }
       const repsBox = ex.repsFixas ? `<div class="grp"><span>Reps</span><span class="fixed" title="Fixo na prescrição">${he(ex.repsFixas)}</span></div>` :
         `<div class="grp"><span>Reps</span><input class="sm" data-f="reps" inputmode="numeric" placeholder="—" value="${attrEsc(r.reps||"")}"></div>`+
-        `<div class="grp"><span>RR</span><input class="sm" data-f="rr" placeholder="—" value="${attrEsc(r.rr||"")}"></div>`;
-      const aTipo = ex.adaptado? ex.tipo : "carga";
-      const aImpl = (ex.adaptado&&ex.carga) ? ex.carga : "impl";
+        (ex.rrFixo ? `<div class="grp"><span>RR</span><span class="fixed" title="Potência: longe da falha, PSE até 4 (esforço leve) · Helms et al. 2016">${he(ex.rrFixo)}</span></div>` :
+        `<div class="grp"><span>RR</span><input class="sm" data-f="rr" placeholder="—" value="${attrEsc(r.rr||"")}"></div>`);
+      const aTipo = ex0.adaptado? ex0.tipo : "carga";
+      const aImpl = (ex0.adaptado&&ex0.carga) ? ex0.carga : "impl";
       const adaptChip = ex.adaptado? `<span class="adaptado" title="original da turma: ${attrEsc(ex.origNome)}">adaptado</span>` : "";
       const ab=(k,v,cur,txt)=>`<button class="abtn ${cur===v?'on':''}" data-${k}="${v}">${txt}</button>`;
       const adaptForm = `<div class="adapt-edit">
@@ -1440,7 +1530,7 @@ function wirePanel(c){
     const aId=line.dataset.aluno, exId=line.dataset.ex, slotId=line.dataset.slot;
     const aluno=alunos.find(a=>a.id===aId);
     const exSlot=treinosDo(c.mes)[c.treino].find(e=>e.id===slotId);
-    const ex=exEfetivo(exSlot,aId,c); // efetivo; ex.id === exId (adaptado ou prescrito)
+    const ex=exHoje(exEfetivo(exSlot,aId,c),getRec(c,aId,exId)); // efetivo + implemento de hoje; ex.id === exId
     const tags=()=>{ const r=getRec(c,aId,exId)||{}; let t="";
       if(r.dor||r.dorNota) t+=`<span class="tag dor">${IC("alert")}${he(r.dorNota||"dor")}</span>`;
       if(r.troca) t+=`<span class="tag troca">${IC("repeat")}${he(r.troca)}</span>`;
@@ -1476,7 +1566,8 @@ function wirePanel(c){
         const ub=line.querySelector('[data-c="un"].on'); const un=ub?ub.dataset.v:'kg';
         const ub2=line.querySelector('[data-c="un2"].on'); const un2=ub2?ub2.dataset.v:'kg';
         const qb=line.querySelector('.qbtn.on'); const qtd=qb?qb.dataset.v:1;
-        const peso=gv('[data-c="peso"]'), peso2=gv('[data-c="peso2"]'), bar=gv('[data-c="bar"]');
+        const bb=line.querySelector(".barb");
+        const peso=gv('[data-c="peso"]'), peso2=gv('[data-c="peso2"]'), bar=bb?bb.value:"";
         const out=calcCarga(montagem,qtd,peso,un,peso2,un2,bar);
         line.querySelector('.ctotal').textContent=out.total||'—';
         upsert(c,aluno,ex,{montagem,qtd:String(qtd),peso:String(peso||""),un,peso2:String(peso2||""),un2,bar:String(bar),cargaParcial:out.parcial,cargaTotal:out.total});
@@ -1488,14 +1579,12 @@ function wirePanel(c){
       });
       const aA=line.querySelector('.addAnilha');
       if(aA) aA.onclick=()=>{ const g=line.querySelector('.anilha2'); g.style.display=''; aA.style.display='none'; const i=g.querySelector('input'); if(i)i.focus(); };
-      line.querySelectorAll(".mbtn").forEach(b=>b.onclick=()=>{
-        upsert(c,aluno,ex,{montagem:b.dataset.v});
-        const rr=getRec(c,aluno.id,ex.id);
-        const out=calcCarga(b.dataset.v, rr.qtd||ex.qtd||1, rr.peso, rr.un||ex.un||'kg', rr.peso2, rr.un2||'kg', (rr.bar!==""&&rr.bar!=null)?rr.bar:(ex.bar!=null?ex.bar:10));
-        upsert(c,aluno,ex,{cargaTotal:out.total,cargaParcial:out.parcial});
-        renderPanel();
-      });
+      const bb=line.querySelector(".barb");
+      if(bb) bb.onclick=()=>abrirFolha(aluno.nome+" · Barra", BARRAS.map(v=>[v,v,"kg"]), bb.value, v=>{ bb.value=v; bb.textContent=v; recompCarga(); });
     }
+    // implemento de hoje: a lista abre ao tocar, com o de hoje marcado
+    const ib=line.querySelector(".impb:not(.barb)");
+    if(ib) ib.onclick=()=>abrirFolha(aluno.nome+" · "+ex.nome, IMPLEMENTOS.map(([v,s,n])=>[v,s,n]), ex.montHoje, v=>trocaImpl(c,aluno,ex,v));
     if(ex.tipo==="elastico"){
       // nível de resistência (ordinal, não é kg): guarda o nome em cargaParcial, sem cargaTotal
       line.querySelectorAll(".elch").forEach(b=>b.onclick=()=>{
