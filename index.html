@@ -361,6 +361,29 @@ input.sm{width:62px; padding:0 6px; font-size:17px; font-weight:600; text-align:
 .hflag{font-size:11.5px; font-weight:600; padding:1px 8px; border-radius:999px}
 .hflag.dor{background:var(--accent-bg); color:var(--accent-ink)}
 .hflag.troca,.hflag.obs{background:var(--surface2); color:var(--ink2)}
+/* não realizou: a linha some (fica só a etiqueta, a obs e o histórico) */
+.tag.nao,.hflag.nao{background:var(--surface2); color:var(--ink)}
+.exline.nao>.row{display:none}
+/* repetir a troca da última vez (só hoje) */
+.tag.reuse{border:1px dashed var(--accent-ink); background:none; color:var(--accent-ink); cursor:pointer}
+.tag.reuse:hover{border-color:var(--accent-ink); background:var(--accent-bg); color:var(--accent-ink)}
+/* chamada pré-marcada pelo EVO */
+.chevo{display:none; flex-direction:column; gap:10px; padding:0 18px 18px; font-size:13.5px; color:var(--muted)}
+.chamada.open .chevo:not(:empty){display:flex}
+.chevo b{color:var(--ink2); font-weight:600}
+.chevo .evamb{display:flex; flex-wrap:wrap; align-items:center; gap:8px}
+/* ⓘ EVO no fim dos nomes: o resumo do EVO fica guardado aqui (tela limpa pro treinador) */
+.evoinfo{position:relative}
+.evoinfo summary{display:inline-flex; align-items:center; gap:6px; height:36px; padding:0 12px; border:1px solid var(--line2); border-radius:999px; cursor:pointer; list-style:none; color:var(--muted); font-size:13px; font-weight:600}
+.evoinfo summary::-webkit-details-marker{display:none}
+.evoinfo summary:hover,.evoinfo[open] summary{color:var(--ink)}
+.evoinfo[open] summary{border-color:var(--accent)}
+.evoinfo-txt{position:absolute; left:0; top:calc(100% + 8px); z-index:30; width:max-content; max-width:min(440px, calc(100vw - 32px)); box-sizing:border-box; padding:12px 16px; background:var(--raised);
+  border:1px solid var(--line2); border-radius:var(--r-lg); box-shadow:0 14px 34px rgba(0,0,0,.5); font-size:14px; line-height:1.55; color:var(--ink); font-weight:500}
+.evoinfo-txt.dir{left:auto; right:0}
+.evoinfo-txt p{margin:0}
+.evoinfo-txt p+p{margin-top:8px}
+.evoinfo-txt b{font-weight:700}
 #panel>p.muted,#programa>p.muted,#panel>.empty{margin:0; padding:32px 24px; border:1px dashed var(--line2); border-radius:var(--r-xl); text-align:center; font-size:14px}
 #panel>.empty p{margin:0 0 14px; color:var(--muted)}
 
@@ -427,6 +450,7 @@ svg.chart .grid{stroke:var(--line); stroke-width:1}
 @media (min-width:1420px){
   .exline{grid-template-columns:minmax(0,1fr) 340px; column-gap:24px}
   .exline>.row{grid-column:1; grid-row:2}
+  .exline.nao>.tags{grid-column:1; grid-row:2; align-self:center; margin-top:12px} /* não realizou: etiqueta no lugar da carga */
   .exline>.hist{grid-column:2; grid-row:2; align-self:center; flex-direction:column; gap:3px; margin-top:12px; padding:2px 0 2px 16px; border-top:0; border-left:1px solid var(--line)}
   .exline>.hist .hlbl{flex:none; padding:0}
   .exline>.hist .histline{grid-template-columns:38px minmax(0,1fr); font-size:12.5px}
@@ -482,6 +506,7 @@ svg.chart .grid{stroke:var(--line); stroke-width:1}
   <symbol id="i-down" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
   <symbol id="i-right" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></symbol>
   <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12.5 4.5 4.5L19 7.5"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24"><path d="M6.5 6.5l11 11M17.5 6.5l-11 11"/></symbol>
   <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14"/><path d="M5 12h14"/></symbol>
   <symbol id="i-more" viewBox="0 0 24 24"><circle cx="5.5" cy="12" r="1.1"/><circle cx="12" cy="12" r="1.1"/><circle cx="18.5" cy="12" r="1.1"/></symbol>
   <symbol id="i-download" viewBox="0 0 24 24"><path d="M12 4v11"/><path d="m7.5 10.5 4.5 4.5 4.5-4.5"/><path d="M5 20h14"/></symbol>
@@ -561,6 +586,7 @@ svg.chart .grid{stroke:var(--line); stroke-width:1}
       <div id="chamada" class="chamada">
         <div class="chtop"><div id="chamadaTop"></div><label class="search"><svg class="ic"><use href="#i-search"/></svg><input id="busca" placeholder="Filtrar aluno na turma" autocomplete="off"></label></div>
         <div id="chamadaNomes" class="chnames"></div>
+        <div id="chamadaEvo" class="chevo"></div>
       </div>
       <div id="panel"></div>
     </section>
@@ -638,7 +664,8 @@ const IMPLEMENTOS = [["impl","DB","halter"],["kb","KB","kettlebell"],["barra","B
 const BARRAS = ["10","15","20"];
 // RR travado nos exercícios de potência (carga leve a moderada, intenção máxima de velocidade):
 // Helms et al. 2016 — longe da falha o RR não se estima com precisão; teto de PSE 4 (esforço leve),
-// acima da faixa 5-6 = 4-6 RR → mais de 6 RR. Exercício de potência no MESES leva rrFixo:RR_POTENCIA.
+// acima da faixa 5-6 = 4-6 RR → mais de 6 RR. Exercício de potência no MESES leva rrFixo:RR_POTENCIA
+// e repsFixas com as reps da prescrição (pedido do Alex, 13/11).
 const RR_POTENCIA = "7+";
 
 const RULES = {
@@ -791,7 +818,7 @@ const MESES = {
   },
   "Out-Nov 26": {
     "1":[
-      {id:"outnov26_t1_hipthrustpress",nome:"Hip thrust + press horizontal 2DB",tipo:"carga",carga:"impl",un:"kg",qtd:2,metodo:"SUPERSET",presc:"4 x 6",alvo:"potência",rrFixo:RR_POTENCIA,bloco:1},
+      {id:"outnov26_t1_hipthrustpress",nome:"Hip thrust + press horizontal 2DB",tipo:"carga",carga:"impl",un:"kg",qtd:2,metodo:"SUPERSET",presc:"4 x 6",alvo:"potência",repsFixas:"6",rrFixo:RR_POTENCIA,bloco:1},
       {id:"outnov26_t1_boxjump",nome:"Box jump",tipo:"caixa",repsFixas:"6",metodo:"SUPERSET",presc:"4 x 6",alvo:"potência",bloco:1},
       {id:"outnov26_t1_nordica",nome:"Flexão nórdica",tipo:"pc",metodo:"CIRCUITO",presc:"3 x 8-5",alvo:"1-2RR",bloco:2},
       {id:"outnov26_t1_serrote",nome:"Remada serrote",tipo:"carga",carga:"impl",un:"kg",qtd:1,metodo:"CIRCUITO",presc:"3 x 8-5",alvo:"1-2RR",bloco:2},
@@ -842,7 +869,7 @@ function recToRow(r){ return {
   montagem:r.montagem||null, qtd:(r.qtd!==""&&r.qtd!=null)?Number(r.qtd):null,
   peso:numOrNull(r.peso), un:r.un||null, peso2:numOrNull(r.peso2), un2:r.un2||null, bar:numOrNull(r.bar),
   carga_parcial:r.cargaParcial||null, carga_total:numOrNull(r.cargaTotal),
-  reps:r.reps||null, rr:r.rr||null, troca:r.troca||null,
+  reps:r.reps||null, rr:r.rr||null, troca:r.troca||null, nao_realizou:!!r.naoRealizou,
   dor:!!r.dor, dor_nota:r.dorNota||null, obs:r.obs||null,
   client_updated_at:r.client_updated_at||DataStore.nowISO(), source_device_id:r.source_device_id||DataStore.deviceId
 }; }
@@ -853,7 +880,7 @@ function rowToRec(x){ return {
   montagem:x.montagem||"", qtd:x.qtd!=null?String(x.qtd):"",
   peso:x.peso!=null?String(x.peso):"", un:x.un||"", peso2:x.peso2!=null?String(x.peso2):"", un2:x.un2||"", bar:x.bar!=null?String(x.bar):"",
   cargaParcial:x.carga_parcial||"", cargaTotal:x.carga_total!=null?String(x.carga_total):"",
-  reps:x.reps||"", rr:x.rr||"", troca:x.troca||"", dor:!!x.dor, dorNota:x.dor_nota||"", obs:x.obs||"",
+  reps:x.reps||"", rr:x.rr||"", troca:x.troca||"", naoRealizou:!!x.nao_realizou, dor:!!x.dor, dorNota:x.dor_nota||"", obs:x.obs||"",
   client_updated_at:x.client_updated_at, source_device_id:x.source_device_id
 }; }
 
@@ -1167,6 +1194,56 @@ function togglePresente(c,id){
   if(cur.size) m[k]=[...cur]; else delete m[k];
   save("fabrik_presenca",m);
 }
+// ── EVO: pré-marca na chamada quem está inscrito na aula de Back to Basics do horário ──
+// Só logado (função "evo-inscritos" do Supabase guarda o token do EVO) e com a chamada ainda vazia.
+// Uma tentativa por turma+data neste computador; se o professor já mexeu na chamada, a resposta é descartada.
+const EVO_PARTICULAS=new Set(["da","de","do","das","dos","e"]);
+const evoTokens=s=>norm(s).split(" ").filter(w=>w&&!EVO_PARTICULAS.has(w));
+// mesmo 1º nome; cada palavra do nome no app é o começo de uma palavra do nome no EVO, na mesma ordem
+// ("Daniela Stu" casa com "DANIELA MÁRCIA ... STURZENEGGER DIAS"; acento e "da/de" não contam)
+function evoCasa(nomeEvo,nomeApp){
+  const e=evoTokens(nomeEvo), a=evoTokens(nomeApp); if(!a.length||!e.length||a[0]!==e[0]) return false;
+  let j=1; for(let i=1;i<a.length;i++){ while(j<e.length && !e[j].startsWith(a[i])) j++; if(j>=e.length) return false; j++; }
+  return true;
+}
+function casarEvo(nomeEvo,turma){ // → {aluno} | {opcoes:[...]} | null
+  let cand=alunos.filter(a=>evoCasa(nomeEvo,a.nome)); if(!cand.length) return null;
+  const tam=a=>evoTokens(a.nome).length, max=Math.max(...cand.map(tam));
+  cand=cand.filter(a=>tam(a)===max); // o nome mais completo vence ("Ana Paula Ozório" > "Ana")
+  if(cand.length>1){ const naT=cand.filter(a=>a.turmas.includes(turma)); if(naT.length===1) cand=naT; }
+  return cand.length===1 ? {aluno:cand[0]} : {opcoes:cand};
+}
+const evoTitulo=s=>String(s).toLowerCase().split(/\s+/).filter(Boolean).map(w=>EVO_PARTICULAS.has(w)?w:w[0].toUpperCase()+w.slice(1)).join(" ");
+const evoPedido=new Set(), chamadaTocada=new Set();
+// o resumo do que veio do EVO fica salvo por turma+data (sobrevive a recarregar a página)
+function evoInfo(k){ const v=load("fabrik_evo_feito",{})[k]; return (v&&typeof v==="object")?v:null; }
+function salvaEvoInfo(k,info){ const lim=new Date(Date.now()-14*864e5).toISOString().slice(0,10); // só as 2 últimas semanas
+  const f=load("fabrik_evo_feito",{}); Object.keys(f).forEach(x=>{ if(x.split("|")[1]<lim) delete f[x]; }); f[k]=info; save("fabrik_evo_feito",f); }
+function evoDisponivel(){ return DataStore.on && !!DataStore.sb && navigator.onLine; }
+async function buscarEvo(c){
+  const espera=new Promise((_,nao)=>setTimeout(()=>nao(new Error("EVO sem resposta")),8000));
+  const { data, error } = await Promise.race([DataStore.sb.functions.invoke("evo-inscritos",{body:{data:c.data,hora:c.turma}}), espera]);
+  if(error) throw error;
+  return (data&&Array.isArray(data.inscritos))?data.inscritos:[];
+}
+function evoFeito(k){ return !!load("fabrik_evo_feito",{})[k]; }
+function pedirEvo(c){
+  const k=presKey(c);
+  if(!c.turma||!c.data||getPresentes(c)!==null||evoFeito(k)||evoPedido.has(k)||chamadaTocada.has(k)||!evoDisponivel()) return;
+  evoPedido.add(k);
+  buscarEvo(c).then(lista=>aplicarEvo(c,k,lista)).catch(e=>console.warn("[evo]",e));
+}
+function aplicarEvo(c,k,lista){
+  if(chamadaTocada.has(k)||getPresentes(c)!==null||evoFeito(k)||!lista.length) return;
+  const marcar=new Set(), ambiguos=[], fora=[];
+  lista.forEach(x=>{ const m=casarEvo(x.nome,c.turma), nome=evoTitulo(x.nome);
+    if(m&&m.aluno&&m.aluno.turmas.includes(c.turma)) marcar.add(m.aluno.id);
+    else if(m&&m.opcoes){ const op=m.opcoes.filter(a=>a.turmas.includes(c.turma)); if(op.length) ambiguos.push({nome,opcoes:op.map(a=>a.id)}); else fora.push(nome); }
+    else fora.push(nome); });
+  if(marcar.size){ const m=load("fabrik_presenca",{}); m[k]=[...marcar]; save("fabrik_presenca",m); }
+  salvaEvoInfo(k,{total:lista.length, ambiguos, fora});
+  if(presKey(ctx())===k){ chamadaAberta=true; renderPanel(); }
+}
 // ── adaptação individual do exercício (vira o padrão do aluno; reaparece na próxima semana) ──
 // localStorage por aluno+mês+treino+slot; resiliente a multi-laptop via reconstrução dos registros já sincronizados.
 let adapts = load("fabrik_adapt", {});
@@ -1203,7 +1280,8 @@ function exEfetivo(ex,aId,c){
   const ad=getAdapt(aId,c,ex.id); if(!ad) return ex;
   return { id:ex.id, slotId:ex.id, adaptado:true, origNome:ex.nome,
     nome:ad.nome, tipo:ad.tipo||"carga", carga:ad.carga, un:ad.un||"kg", qtd:ad.qtd||1, bar:ad.bar,
-    metodo:ex.metodo, alvo:ex.alvo, rrFixo:ex.rrFixo, bloco:ex.bloco };
+    metodo:ex.metodo, alvo:ex.alvo, rrFixo:ex.rrFixo, bloco:ex.bloco,
+    ...(ex.rrFixo && ex.repsFixas ? {repsFixas:ex.repsFixas} : {}) }; // potência: reps travadas seguem junto com o RR
 }
 // implemento prescrito (vem marcado no botão). tempo, caixa e carga com rótulo próprio ("livre") não têm menu.
 function montPadrao(ex){
@@ -1352,11 +1430,16 @@ function loginNeeded(){ setSync("entrar de novo","warn"); if(!$("loginOverlay").
 // recupera de qualquer estado: se o cliente não existe (lib não carregou) re-bootstrap; senão só sincroniza
 function reconectar(){ if(DataStore.on){ DataStore.sb ? DataStore.syncNow() : DataStore.bootstrap(); } }
 function fmtD(iso){ const p=iso.split("-"); return p[2]+"/"+p[1]; }
+// última troca: o registro mais recente antes de hoje (ignorando "não realizou"); se nele houve troca, sugere repetir hoje
+function trocaAnterior(aId,eId,before){
+  const u=records.filter(r=>r.alunoId===aId&&r.exercicioId===eId&&r.data<before&&!r.naoRealizou).sort((a,b)=>b.data.localeCompare(a.data))[0];
+  return (u && String(u.troca||"").trim()) ? {data:u.data, troca:String(u.troca).trim()} : null;
+}
 function hist(aId,eId,before,n){ return records.filter(r=>r.alunoId===aId&&r.exercicioId===eId&&r.data<before).sort((a,b)=>b.data.localeCompare(a.data)).slice(0,n); }
 // campos ainda não preenchidos deste exercício p/ este aluno (anti-esquecimento).
 // "trocou" zera a cobrança (fez outro exercício); tempo (metcon) não exige campo.
 function faltando(ex,r){
-  r=r||{}; if(r.troca) return [];
+  r=r||{}; if(r.troca||r.naoRealizou) return []; // trocou ou não realizou: nada a cobrar
   // repsFixas: reps travadas na prescrição (sem RR) — nunca viram pendência.
   const f=[]; const temReps=!!ex.repsFixas || String(r.reps||"").trim()!=="";
   if(ex.tipo==="carga"){ if(String(r.cargaTotal||"").trim()==="") f.push("carga"); if(!temReps) f.push("reps"); }
@@ -1392,7 +1475,7 @@ function histBlock(aId,eId,before){
     // total + montagem parcial (ajuda a remontar a barra) — sugestão do Diego
     const carga = (total && parcial) ? total+` <span class="hmont">(${parcial})</span>` : (total || parcial);
     const det=[carga, r.reps?he(r.reps)+" reps":"", r.rr?"RR "+he(r.rr):""].filter(Boolean).join(" · ");
-    let flags="";
+    let flags=r.naoRealizou?`<span class="hflag nao">Não realizou</span>`:"";
     if(r.dor||r.dorNota) flags+=`<span class="hflag dor">⚠ ${he(r.dorNota||"dor")}</span>`;
     if(r.troca) flags+=`<span class="hflag troca">↻ ${he(r.troca)}</span>`;
     if(r.obs) flags+=`<span class="hflag obs">${he(r.obs)}</span>`;
@@ -1403,10 +1486,13 @@ function histBlock(aId,eId,before){
 function upsert(c,aluno,ex,patch){
   if(!c.data || !/^\d{4}-\d{2}-\d{2}$/.test(c.data)){ $("status").textContent="⚠ Defina a data antes de registrar"; return; }
   let r=getRec(c,aluno.id,ex.id);
-  if(!r){ r={alunoId:aluno.id,alunoNome:aluno.nome,turma:c.turma,treino:c.treino,semana:c.semana,data:c.data,exercicioId:ex.id,exercicioNome:ex.nome,metodo:ex.metodo,bloco:ex.bloco,montagem:"",qtd:"",peso:"",un:"",peso2:"",un2:"",bar:"",cargaParcial:"",cargaTotal:"",reps:"",rr:"",troca:"",dor:false,dorNota:"",obs:""}; records.push(r); }
+  if(!r){ r={alunoId:aluno.id,alunoNome:aluno.nome,turma:c.turma,treino:c.treino,semana:c.semana,data:c.data,exercicioId:ex.id,exercicioNome:ex.nome,metodo:ex.metodo,bloco:ex.bloco,montagem:"",qtd:"",peso:"",un:"",peso2:"",un2:"",bar:"",cargaParcial:"",cargaTotal:"",reps:"",rr:"",troca:"",naoRealizou:false,dor:false,dorNota:"",obs:""}; records.push(r); }
   Object.assign(r,patch,{semana:c.semana});
-  if(ex.repsFixas){ r.reps=ex.repsFixas; r.rr=""; }
-  if(ex.rrFixo) r.rr=ex.rrFixo;
+  if(patch.troca && r.naoRealizou) r.naoRealizou=false; // anotou troca: fez outro exercício
+  if(!r.naoRealizou){ // não realizou: reps/RR fixos não entram
+    if(ex.repsFixas){ r.reps=ex.repsFixas; r.rr=""; }
+    if(ex.rrFixo) r.rr=ex.rrFixo;
+  }
   DataStore.putRegistro(r);
   $("status").textContent="Salvo "+new Date().toLocaleTimeString("pt-BR",{hour:'2-digit',minute:'2-digit',second:'2-digit'});
 }
@@ -1419,6 +1505,7 @@ function renderChamada(){
   const el=$("chamada"); if(!el) return;
   if(!turma.length){ el.style.display="none"; $("chamadaTop").innerHTML=""; $("chamadaNomes").innerHTML=""; return; }
   el.style.display="";
+  pedirEvo(c);
   const pres=presentesValidos(c); const set=new Set(pres||[]);
   if(!pres) mostrarTodos=false; // sem presentes válidos: volta pro modo "todos" (evita ficar preso)
   const nP=set.size, aberta = chamadaAberta===null ? !pres : chamadaAberta;
@@ -1431,8 +1518,25 @@ function renderChamada(){
   $("chamadaNomes").innerHTML = turma.map(a=>`<button class="chname ${set.has(a.id)?'on':''}" data-id="${a.id}">${IC("check")}${he(a.nome)}</button>`).join("");
   $("chamadaNomes").querySelectorAll(".chname").forEach(ch=>ch.onclick=()=>{
     if(chamadaAberta===null) chamadaAberta=true; // começou a chamada: não recolhe sozinha no 1º nome
+    chamadaTocada.add(presKey(c)); // professor mexeu: resposta do EVO que chegar depois é descartada
     togglePresente(c,ch.dataset.id); renderPanel(); }); // renderPanel já redesenha a chamada
   $("chAbre").onclick=()=>{ chamadaAberta=!aberta; renderChamada(); };
+  const info=evoInfo(presKey(c));
+  if(info){ // resumo do EVO dentro do ⓘ (só abre se o treinador tocar)
+    $("chamadaNomes").insertAdjacentHTML("beforeend",`<details class="evoinfo"><summary title="O que veio do EVO">${IC("info")}EVO</summary><div class="evoinfo-txt">`+
+      `<p>Pré-marcados pelo EVO: ${info.total} inscrito${info.total===1?"":"s"} na aula das ${he(c.turma)}. Toque nos nomes para ajustar.</p>`+
+      (info.fora.length?`<p>No EVO, mas sem cadastro nesta turma do app: <b>${he(info.fora.join(", "))}</b>. Inclua na aba Alunos.</p>`:"")+`</div></details>`);
+    const d=$("chamadaNomes").querySelector(".evoinfo"); // abre pro lado que cabe na tela
+    d.addEventListener("toggle",()=>{ if(!d.open) return; const t=d.querySelector(".evoinfo-txt"); t.classList.remove("dir");
+      if(t.getBoundingClientRect().right>window.innerWidth-16) t.classList.add("dir"); });
+  }
+  $("chamadaEvo").innerHTML = !info ? "" :
+    info.ambiguos.map((x,i)=>`<div class="evamb"><span><b>${he(x.nome)}</b> (EVO) é qual?</span>${x.opcoes.map(id=>{ const a=alunos.find(z=>z.id===id);
+      return a?`<button class="chname evpick" data-i="${i}" data-id="${a.id}">${he(a.nome)}</button>`:""; }).join("")}</div>`).join("");
+  $("chamadaEvo").querySelectorAll(".evpick").forEach(b=>b.onclick=()=>{
+    const k=presKey(c); chamadaTocada.add(k);
+    if(!(getPresentes(c)||[]).includes(b.dataset.id)) togglePresente(c,b.dataset.id);
+    info.ambiguos.splice(Number(b.dataset.i),1); salvaEvoInfo(k,info); renderPanel(); });
   const sm=$("chModo"); if(sm) sm.querySelectorAll("button").forEach(b=>b.onclick=()=>{ mostrarTodos=b.dataset.t==="1"; renderPanel(); });
 }
 function renderPanel(){
@@ -1497,10 +1601,10 @@ function renderPanel(){
           cargaBox=`<div class="cbox" data-tipo="landmine">${mtog}${pesoIn("Peso")}${peso2In}${mais("peso")}${barra}${totT}</div>`;
         }
       }
-      const repsBox = ex.repsFixas ? `<div class="grp"><span>Reps</span><span class="fixed" title="Fixo na prescrição">${he(ex.repsFixas)}</span></div>` :
-        `<div class="grp"><span>Reps</span><input class="sm" data-f="reps" inputmode="numeric" placeholder="—" value="${attrEsc(r.reps||"")}"></div>`+
+      const repsBox = (ex.repsFixas ? `<div class="grp"><span>Reps</span><span class="fixed" title="Fixo na prescrição">${he(ex.repsFixas)}</span></div>` :
+        `<div class="grp"><span>Reps</span><input class="sm" data-f="reps" inputmode="numeric" placeholder="—" value="${attrEsc(r.reps||"")}"></div>`)+
         (ex.rrFixo ? `<div class="grp"><span>RR</span><span class="fixed" title="Potência: longe da falha, PSE até 4 (esforço leve) · Helms et al. 2016">${he(ex.rrFixo)}</span></div>` :
-        `<div class="grp"><span>RR</span><input class="sm" data-f="rr" placeholder="—" value="${attrEsc(r.rr||"")}"></div>`);
+        ex.repsFixas ? "" : `<div class="grp"><span>RR</span><input class="sm" data-f="rr" placeholder="—" value="${attrEsc(r.rr||"")}"></div>`);
       const aTipo = ex0.adaptado? ex0.tipo : "carga";
       const aImpl = (ex0.adaptado&&ex0.carga) ? ex0.carga : "impl";
       const adaptChip = ex.adaptado? `<span class="adaptado" title="original da turma: ${attrEsc(ex.origNome)}">adaptado</span>` : "";
@@ -1511,12 +1615,13 @@ function renderPanel(){
             <div class="grp aimpl" style="${aTipo==='carga'?'':'display:none'}"><span>Implemento</span><div class="seg">${ab("i","impl",aImpl,"DB")}${ab("i","kb",aImpl,"KB")}${ab("i","barra",aImpl,"BB")}</div></div></div>
           <div class="adapt-acts"><button class="btn-primary adapt-salvar">Salvar como padrão do aluno</button>${ex.adaptado?`<button class="ghost adapt-voltar">Voltar ao original</button>`:""}</div>
         </div>`;
-      return `<div class="exline" data-aluno="${a.id}" data-ex="${ex.id}" data-slot="${exSlot.id}">
+      return `<div class="exline${r.naoRealizou?" nao":""}" data-aluno="${a.id}" data-ex="${ex.id}" data-slot="${exSlot.id}">
         <div class="exhead"><span class="ex">${he(ex.nome)}</span>${vid(ex.nome)}${adaptChip}${ex.presc?`<span class="presc">${fmtPresc(ex.presc)}</span>`:""}<span class="alvo">alvo ${he(ex.alvo)}</span></div>
         <div class="exacts">
           <button class="act btn-troca" title="Trocou só hoje (não vira padrão)">${IC("repeat")}<span>Trocar</span></button>
           <button class="act btn-dor" title="Anotar dor de hoje">${IC("alert")}<span>Dor</span></button>
           <button class="act btn-obs" title="Observação de hoje">${IC("note")}<span>Obs</span></button>
+          <button class="act btn-nao${r.naoRealizou?" open":""}" title="Não fez hoje (fica no histórico como não realizado)">${IC("x")}<span>Não realizou</span></button>
           <span class="asep"></span>
           <button class="act btn-adapt" title="Adaptar o exercício: vira o padrão deste aluno nas próximas semanas deste treino">${IC("swap")}<span>Adaptar</span></button>
         </div>
@@ -1542,10 +1647,15 @@ function wirePanel(c){
     const exSlot=treinosDo(c.mes)[c.treino].find(e=>e.id===slotId);
     const ex=exHoje(exEfetivo(exSlot,aId,c),getRec(c,aId,exId)); // efetivo + implemento de hoje; ex.id === exId
     const tags=()=>{ const r=getRec(c,aId,exId)||{}; let t="";
+      if(r.naoRealizou) t+=`<span class="tag nao">${IC("x")}Não realizou</span>`;
       if(r.dor||r.dorNota) t+=`<span class="tag dor">${IC("alert")}${he(r.dorNota||"dor")}</span>`;
       if(r.troca) t+=`<span class="tag troca">${IC("repeat")}${he(r.troca)}</span>`;
       if(r.obs) t+=`<span class="tag obs">${IC("note")}${he(r.obs)}</span>`;
-      line.querySelector(".tags").innerHTML=t; };
+      const sug=(r.troca||r.naoRealizou)?null:trocaAnterior(aId,exId,c.data);
+      if(sug) t+=`<button type="button" class="tag reuse" title="Usa a mesma troca só hoje (não vira padrão)">${IC("repeat")}Repetir troca de ${fmtD(sug.data)}: ${he(sug.troca)}</button>`;
+      line.querySelector(".tags").innerHTML=t;
+      const rb=line.querySelector(".tag.reuse");
+      if(rb) rb.onclick=()=>{ upsert(c,aluno,ex,{troca:sug.troca}); const ti=line.querySelector('input[data-f="troca"]'); if(ti) ti.value=sug.troca; tags(); flagReps(); }; };
     tags();
     // realça os campos ainda não preenchidos (anti-esquecimento) + selo de pendências no card
     const repsInp=line.querySelector('input[data-f="reps"]');
@@ -1553,6 +1663,7 @@ function wirePanel(c){
     const flagReps=()=>{
       const r=getRec(c,aId,exId)||{}; const falta=faltando(ex,r);
       line.classList.toggle("pend", falta.length>0);
+      line.classList.toggle("nao", !!r.naoRealizou); line.querySelector(".btn-nao").classList.toggle("open", !!r.naoRealizou);
       if(repsInp) repsInp.classList.toggle("faltou", falta.includes("reps"));
       const pesoInp=line.querySelector('.cbox .cin[data-c="peso"]'); if(pesoInp) pesoInp.classList.toggle("faltou", falta.includes("carga"));
       const chips=line.querySelector('.elchips'); if(chips) chips.classList.toggle("faltou", falta.includes("nivel"));
@@ -1639,6 +1750,15 @@ function wirePanel(c){
     line.querySelector(".btn-troca").onclick=function(){ tog(line,".troca-edit",this); };
     line.querySelector(".btn-dor").onclick=function(){ tog(line,".dor-edit",this); };
     line.querySelector(".btn-obs").onclick=function(){ tog(line,".obs-edit",this); };
+    line.querySelector(".btn-nao").onclick=()=>{
+      const r=getRec(c,aId,exId)||{};
+      if(r.naoRealizou){ upsert(c,aluno,ex,{naoRealizou:false}); renderPanel(); return; }
+      const tem=v=>String(v||"").trim()!=="";
+      const digitou=[r.cargaTotal,r.cargaParcial,r.peso,r.peso2,r.troca].some(tem) || (!ex.repsFixas && tem(r.reps)) || (!ex.rrFixo && tem(r.rr));
+      if(digitou && !confirm("Marcar "+ex.nome+" como não realizado? A carga, as reps e a troca anotadas hoje saem.")) return;
+      upsert(c,aluno,ex,{naoRealizou:true,peso:"",peso2:"",cargaParcial:"",cargaTotal:"",reps:"",rr:"",troca:""});
+      renderPanel();
+    };
   });
   $("panel").querySelectorAll(".btn-rename").forEach(b=>b.onclick=()=>renameAluno(b.dataset.aluno));
 }
@@ -1697,10 +1817,10 @@ function renderMaster(){
 function exportCSV(rows, fname){
   rows = rows || records;
   if(!rows.length){ alert("Nada pra exportar ainda."); return; }
-  const cols=["data","turma","treino","bloco","semana","alunoNome","exercicioNome","metodo","cargaParcial","cargaTotal","reps","rr","troca","dorNota","obs"];
-  const head=["Data","Turma","Treino","Bloco","Semana","Aluno","Exercício","Método","Carga parcial","Carga (kg)","Reps","RR","Trocado por","Dor","Obs"];
+  const cols=["data","turma","treino","bloco","semana","alunoNome","exercicioNome","metodo","cargaParcial","cargaTotal","reps","rr","troca","naoRealizou","dorNota","obs"];
+  const head=["Data","Turma","Treino","Bloco","Semana","Aluno","Exercício","Método","Carga parcial","Carga (kg)","Reps","RR","Trocado por","Não realizou","Dor","Obs"];
   const esc=v=>`"${String(v??"").replace(/"/g,'""')}"`;
-  const lines=[head.map(esc).join(",")].concat(rows.map(r=>cols.map(k=>esc(r[k])).join(",")));
+  const lines=[head.map(esc).join(",")].concat(rows.map(r=>cols.map(k=>esc(k==="naoRealizou"?(r.naoRealizou?"sim":""):r[k])).join(",")));
   const blob=new Blob(["\uFEFF"+lines.join("\n")],{type:"text/csv;charset=utf-8"});
   const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download=(fname||"fabrik_cargas_"+today())+".csv"; a.click();
 }
@@ -1776,7 +1896,7 @@ function tabelaHTML(rows){
   const trs=rows.map(r=>{
     const carga = (r.cargaTotal!==""&&r.cargaTotal!=null) ? he(r.cargaTotal)+" kg" : (r.cargaParcial?he(r.cargaParcial):"—");
     const montagem = r.cargaParcial? he(r.cargaParcial) : "—";
-    const flags=[ (r.dor||r.dorNota)?"⚠ "+he(r.dorNota||"dor"):"", r.troca?"↻ "+he(r.troca):"", r.obs?he(r.obs):"" ].filter(Boolean).join(" · ");
+    const flags=[ r.naoRealizou?"✕ não realizou":"", (r.dor||r.dorNota)?"⚠ "+he(r.dorNota||"dor"):"", r.troca?"↻ "+he(r.troca):"", r.obs?he(r.obs):"" ].filter(Boolean).join(" · ");
     return `<tr>
       <td>${fmtD(r.data)}</td><td>T${he(r.treino)} · B${he(r.bloco)}</td>
       <td>${he(r.alunoNome)}</td><td>${he(r.exercicioNome)}</td>
@@ -1906,6 +2026,7 @@ $("syncBadge").onclick=()=>{ if(DataStore.on) DataStore.syncNow(); };
 // menu "⋯": fecha ao escolher uma ação ou ao clicar fora
 document.querySelectorAll("#menu .mi").forEach(b=>b.addEventListener("click",()=>{ $("menu").open=false; }));
 document.addEventListener("click",e=>{ const m=$("menu"); if(m.open && !m.contains(e.target)) m.open=false; });
+document.addEventListener("click",e=>{ document.querySelectorAll("details.evoinfo[open]").forEach(d=>{ if(!d.contains(e.target)) d.open=false; }); }); // ⓘ do EVO fecha ao tocar fora
 // "Salvo hh:mm:ss" e avisos ⚠ aparecem flutuando embaixo (no rodapé ficavam fora da vista)
 (function(){ const s=$("status"); let tm;
   new MutationObserver(()=>{ const t=s.textContent.trim(); clearTimeout(tm);
