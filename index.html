@@ -294,10 +294,20 @@ body:not(.sync-on) .synconly{display:none}
 .row .cbox{row-gap:30px}
 .row .grp{position:relative}
 .row .grp:not(.anilha2)>span:first-child:not(.fixed){position:absolute; bottom:100%; left:50%; transform:translateX(-50%); margin-bottom:6px; line-height:1; white-space:nowrap}
-.row .grp:has(>.barb)>span:first-child{left:30px}
+.row .grp:not(.anilha2):has(>.barb)>span:first-child:not(.fixed){left:30px} /* centro do botão da barra (60 px), sem contar o "kg" */
 .fixed{display:inline-flex; align-items:center; height:var(--h); padding:0 14px; border-radius:var(--r); background:var(--surface2); color:var(--muted); font-size:15px; font-weight:600}
 .cin{width:76px; padding:0 6px; font-size:19px; font-weight:700; text-align:center}
 .cin.barra{width:60px; font-size:16px; font-weight:600}
+/* peso com a unidade (kg|lb) colada dentro do mesmo campo */
+.pesou{display:inline-flex; align-items:center; height:var(--h); padding-right:3px; border:1px solid var(--line2); border-radius:var(--r); background:rgba(241,236,228,.04); transition:border-color .15s, box-shadow .15s}
+.pesou:hover{border-color:var(--line3)}
+.pesou:focus-within{border-color:var(--accent-ink); box-shadow:0 0 0 3px var(--accent-bg)}
+.pesou>.cin{width:64px; height:calc(var(--h) - 2px); border:0; background:none}
+.pesou>.cin:focus{box-shadow:none}
+.pesou>.seg.unit{padding:0; gap:1px; border:0; background:none}
+.pesou>.seg.unit>button{height:30px; min-width:30px; padding:0 8px; font-size:12.5px}
+.pesou:has(.faltou){border-color:var(--falta); background:var(--falta-bg); box-shadow:0 0 0 2px var(--falta-ring)}
+.pesou>.cin.faltou{background:none !important; box-shadow:none !important}
 /* implemento e barra: um botão só mostra o de hoje; ao tocar, a lista abre por cima da tela (como no app Alex Performance) */
 .impb{min-width:64px; padding:0 12px; gap:9px; background:rgba(241,236,228,.04); font-size:15px; font-weight:700; letter-spacing:.02em}
 .impb::after{content:""; border-left:4px solid transparent; border-right:4px solid transparent; border-top:5px solid var(--muted)}
@@ -1475,16 +1485,16 @@ function renderPanel(){
       } else {
         const mtog = impBtn;
         const totT=`<div class="ctot">= <b class="ctotal">${disp}</b> kg</div>`;
-        const pesoIn=lbl=>`<div class="grp"><span>${lbl}</span><input class="cin" data-c="peso" inputmode="decimal" placeholder="0" value="${attrEsc(peso)}"></div>`;
-        const peso2In=`<div class="grp anilha2" style="${peso2?'':'display:none'}"><span>+</span><input class="cin" data-c="peso2" inputmode="decimal" placeholder="0" value="${attrEsc(peso2)}">${unTog('un2',un2)}</div>`;
+        const pesoIn=lbl=>`<div class="grp"><span>${lbl}</span><div class="pesou"><input class="cin" data-c="peso" inputmode="decimal" placeholder="0" value="${attrEsc(peso)}">${unTog('un',un)}</div></div>`;
+        const peso2In=`<div class="grp anilha2" style="${peso2?'':'display:none'}"><span>+</span><div class="pesou"><input class="cin" data-c="peso2" inputmode="decimal" placeholder="0" value="${attrEsc(peso2)}">${unTog('un2',un2)}</div></div>`;
         const mais=txt=>`<button class="icbtn ghost addAnilha" style="${peso2?'display:none':''}">${IC("plus")}${txt}</button>`;
-        const barra=`<div class="grp"><span>+ BB</span><button type="button" class="impb barb" value="${attrEsc(bar)}" aria-haspopup="dialog" title="Peso da barra: toque para trocar (10, 15 ou 20 kg)">${he(bar)}</button><small>kg</small></div>`;
+        const barra=`<div class="grp"><span>Barra</span><button type="button" class="impb barb" value="${attrEsc(bar)}" aria-haspopup="dialog" title="Peso da barra: toque para trocar (10, 15 ou 20 kg)">${he(bar)}</button><small>kg</small></div>`;
         if(isKbLike){
-          cargaBox=`<div class="cbox" data-tipo="${montagem}">${mtog}<div class="grp"><span>Impl.</span><div class="seg"><button class="qbtn ${qtd===1?'on':''}" data-c="qtd" data-v="1">1</button><button class="qbtn ${qtd===2?'on':''}" data-c="qtd" data-v="2">2</button></div></div>${pesoIn("Peso")}${unTog('un',un)}${totT}</div>`;
+          cargaBox=`<div class="cbox" data-tipo="${montagem}">${mtog}<div class="grp"><div class="seg"><button class="qbtn ${qtd===1?'on':''}" data-c="qtd" data-v="1">1</button><button class="qbtn ${qtd===2?'on':''}" data-c="qtd" data-v="2">2</button></div></div>${pesoIn("Peso")}${totT}</div>`;
         } else if(montagem==='barra'){
-          cargaBox=`<div class="cbox" data-tipo="barra">${mtog}${pesoIn("Por lado")}${unTog('un',un)}${peso2In}${mais("anilha")}<span class="x2">×2</span>${barra}${totT}</div>`;
+          cargaBox=`<div class="cbox" data-tipo="barra">${mtog}${barra}${pesoIn("Peso parcial")}${peso2In}${mais("anilha")}<span class="x2">×2</span>${totT}</div>`;
         } else {
-          cargaBox=`<div class="cbox" data-tipo="landmine">${mtog}${pesoIn("Peso")}${unTog('un',un)}${peso2In}${mais("peso")}${barra}${totT}</div>`;
+          cargaBox=`<div class="cbox" data-tipo="landmine">${mtog}${pesoIn("Peso")}${peso2In}${mais("peso")}${barra}${totT}</div>`;
         }
       }
       const repsBox = ex.repsFixas ? `<div class="grp"><span>Reps</span><span class="fixed" title="Fixo na prescrição">${he(ex.repsFixas)}</span></div>` :
