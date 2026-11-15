@@ -372,6 +372,16 @@ input.sm{width:62px; padding:0 6px; font-size:17px; font-weight:600; text-align:
 .chamada.open .chevo:not(:empty){display:flex}
 .chevo b{color:var(--ink2); font-weight:600}
 .chevo .evamb{display:flex; flex-wrap:wrap; align-items:center; gap:8px}
+/* ⓘ das explicações no treino (ramp-up, dead stop, isométrico): passar o mouse ou clicar */
+.dica{position:relative; display:inline-flex; align-items:center; margin:0 2px 0 5px; vertical-align:-2px; color:var(--muted); cursor:help}
+.dica .ic{width:15px; height:15px}
+.dica:hover,.dica.on,.dica:focus-visible{color:var(--accent)}
+.dica:focus{outline:none} .dica:focus-visible{outline:2px solid var(--accent); outline-offset:2px; border-radius:50%}
+.dica-txt{display:none; position:absolute; left:-8px; top:calc(100% + 8px); z-index:40; width:max-content; max-width:320px; padding:10px 14px;
+  background:var(--raised); border:1px solid var(--line2); border-radius:var(--r-lg); box-shadow:0 14px 34px rgba(0,0,0,.5);
+  font-size:14px; line-height:1.5; font-weight:500; color:var(--ink); white-space:normal; text-align:left; letter-spacing:0; cursor:default}
+.dica:hover .dica-txt,.dica.on .dica-txt{display:block}
+.pit b .dica-txt,.presc .dica-txt,.brx b .dica-txt{left:auto; right:-8px} /* ⓘ depois da prescrição (lado direito): abre para a esquerda */
 /* ⓘ EVO no fim dos nomes: o resumo do EVO fica guardado aqui (tela limpa pro treinador) */
 .evoinfo{position:relative}
 .evoinfo summary{display:inline-flex; align-items:center; gap:6px; height:36px; padding:0 12px; border:1px solid var(--line2); border-radius:999px; cursor:pointer; list-style:none; color:var(--muted); font-size:13px; font-weight:600}
@@ -850,12 +860,12 @@ const MESES = {
   },
   "Nov-Dez 26": {
     "1":[
-      {id:"novdez26_t1_slamrot",nome:"Slam rotacional",tipo:"pc",cargaLabel:"livre",repsFixas:"8",rrFixo:RR_POTENCIA,metodo:"EMOM",presc:"4 x 8 (4 cl ALT)",alvo:"potência",bloco:1},
+      {id:"novdez26_t1_slamrot",nome:"Slam rotacional alternado com med ball",tipo:"pc",cargaLabel:"livre",repsFixas:"4 cl",rrFixo:RR_POTENCIA,metodo:"EMOM",presc:"4 x 4 cl",alvo:"potência",bloco:1},
       {id:"novdez26_t1_kbswing",nome:"KB swing",tipo:"carga",carga:"kb",un:"kg",qtd:1,repsFixas:"12",rrFixo:RR_POTENCIA,metodo:"EMOM",presc:"4 x 12",alvo:"potência",bloco:1},
-      {id:"novdez26_t1_agachcaixa",nome:"Agachamento BB c/ caixa, amplitude reduzida",tipo:"carga",carga:"barra",un:"lb",bar:15,metodo:"SUPERSET",presc:"4 x 5 ramp-up",alvo:"1-2RR",bloco:2},
+      {id:"novdez26_t1_agachcaixa",nome:"Box squat — amplitude reduzida (ramp-up)",tipo:"carga",carga:"barra",un:"lb",bar:15,metodo:"SUPERSET",presc:"4 x 5",dica:{em:"ramp-up",txt:"Aumento progressivo da carga a cada série."},alvo:"1-2RR",bloco:2},
       {id:"novdez26_t1_puxadaargolas",nome:"Puxada vertical nas argolas",tipo:"pc",metodo:"SUPERSET",presc:"4 x 5",alvo:"1-2RR",bloco:2},
-      {id:"novdez26_t1_supinoiso",nome:"Supino isométrico na barra (pinos)",tipo:"pc",cargaLabel:"isométrico",repsFixas:"3",metodo:"TRISET",presc:"3 x 3 de 5s",alvo:"esforço máx.",bloco:3},
-      {id:"novdez26_t1_remadadeadstop",nome:"Remada UNL dead stop c/ apoio (step/anilha)",tipo:"carga",carga:"impl",un:"kg",qtd:1,metodo:"TRISET",presc:"3 x 8-5 cl",alvo:"1-2RR",bloco:3},
+      {id:"novdez26_t1_supinoiso",nome:"Supino isométrico na barra (suporte)",tipo:"pc",cargaLabel:"isométrico",repsFixas:"3",metodo:"TRISET",presc:"3 x 3 de 5s / 20s",dica:{txt:"Realizar 3 séries de 3 contrações isométricas de 5 segundos, com 20 segundos de intervalo entre cada contração."},alvo:"esforço máx.",bloco:3},
+      {id:"novdez26_t1_remadadeadstop",nome:"Remada unilateral dead stop com apoio (step/anilha)",dica:{em:"dead stop",txt:"Cada repetição começa com a carga completamente parada e apoiada, sem utilizar impulso."},tipo:"carga",carga:"impl",un:"kg",qtd:1,metodo:"TRISET",presc:"3 x 8-5 cl",alvo:"1-2RR",bloco:3},
       {id:"novdez26_t1_suitcase",nome:"Suitcase carry",tipo:"carga",carga:"kb",un:"kg",qtd:1,repsFixas:"24 m",metodo:"TRISET",presc:"3 x 24 m cl",alvo:"carga pesada",bloco:3}
     ]
   }
@@ -1108,9 +1118,11 @@ const PROGRAMA = {
     ciclo:"Back to Basics · Nov / Dez 2026",
     "1":{ dia:"01 — Treino 1 · Segunda e quinta", titulo:["Potência","e força."], dur:"50'",
       aquec:[
-        ["Respiração, liberação, mobilidade e estabilidade",[["Respiração 90/90","5 ciclos · expira 6–8s"],["LMF flexores do quadril","1 × 30s cl"],["LMF posteriores da coxa","1 × 30s cl"],["Sit through estático","2 × 30s cl"],["Cócoras taça isométrica","2 × 30s · calço = regressão"],["1ª fase do Turkish get-up","2 × 30s cl"],["Prancha lateral c/ abdução de quadril","2 × 30s cl"],["Escada de coordenação (dentro-fora, fila indiana)","3 passagens"]],""]
+        ["Aquecimento 01",[["Respiração 90/90","5 ciclos · expira 6–8s"],["Liberação miofascial dos flexores do quadril","1 × 30s cl"],["Liberação miofascial dos posteriores da coxa","1 × 30s cl"]],""],
+        ["Aquecimento 02",[["Sit through estático","2 × 30s cl"],["Cócoras com taça isométrica","2 × 30s · calço = regressão"]],""],
+        ["Aquecimento 03",[["Primeira fase do Turkish get-up","2 × 30s cl"],["Prancha lateral com abdução de quadril","2 × 30s cl"],["Escada de coordenação (dentro-fora, fila indiana)","3 passagens"]],""]
       ],
-      blocos:{1:["Potência","EMOM 1:30 · 8 rodadas alternadas · 12 min"],2:["Força","Superset · 1:30 a 2:00 entre exercícios"],3:["Força","Triset em rodízio · ~1 min de transição"]},
+      blocos:{1:["Potência","EMOM 1:30 · 8 rodadas alternadas · 12 min"],2:["Força","Superset · 1:30 a 2:00 entre exercícios"],3:["Força","Triset · ~1 min de transição"]},
       legenda:"LMF liberação miofascial · KB kettlebell · BB barra · UNL unilateral · ALT alternado · cl cada lado · EMOM tarefa a cada 1:30, descansa o que sobrar · ramp-up carga sobe a cada série, 1-2RR na última · RR repetições de reserva",
       fecho:"" },
     pse:[["10","Esforço máximo"],["9,5","Não faria mais repetições, mas aumentaria o peso"],["9","1 repetição de reserva (RR)"],["8,5","1-2 repetições de reserva (RR)"],["8","2 repetições de reserva (RR)"],["7,5","2-3 repetições de reserva (RR)"],["7","3 repetições de reserva (RR)"],["5-6","4-6 repetições de reserva (RR)"],["3-4","Esforço leve"],["1-2","Pouco ou nenhum esforço"]],
@@ -1136,6 +1148,14 @@ function vid(nome){
   return `<a class="vid" href="${attrEsc(v.url)}" target="_blank" rel="noopener" title="Abrir o vídeo demo numa aba nova">${IC("play")}Vídeo</a>`;
 }
 function fmtPresc(v){ return he(String(v||"").replace(/ x /g," × ")); }
+// ⓘ com explicação (passar o mouse ou clicar): ex.dica = {em:"termo do nome", txt}; sem "em", o ⓘ vai depois da prescrição
+function dicaIc(e){ return e&&e.dica ? `<span class="dica" tabindex="0" role="button" aria-label="${attrEsc(e.dica.txt)}">${IC("info")}<span class="dica-txt" role="tooltip">${he(e.dica.txt)}</span></span>` : ""; }
+function nomeDica(e){
+  const em=e.dica&&e.dica.em; if(!em) return he(e.nome);
+  const i=e.nome.toLowerCase().indexOf(em.toLowerCase()); if(i<0) return he(e.nome)+dicaIc(e);
+  return he(e.nome.slice(0,i+em.length))+dicaIc(e)+he(e.nome.slice(i+em.length));
+}
+function prescDica(e){ return fmtPresc(e.presc)+(e.dica&&!e.dica.em?dicaIc(e):""); }
 function setModo(m){ modoTela=m; save("fabrik_modo_tela", m); renderBlocks(); renderPanel(); window.scrollTo(0,0); }
 function renderPrograma(){
   const el=$("programa"); if(!el) return;
@@ -1157,7 +1177,7 @@ function renderPrograma(){
     if(bxr.length){ const meta=T&&T.blocos[selBloco];
       res.innerHTML=`<span class="brt">${dash("Bloco "+b2(selBloco)+(meta?" — "+meta[0]:""))}</span>`+
         `<small>${he(meta?meta[1]:bxr[0].metodo)}</small><span class="brx">`+
-        bxr.map(e=>`<span class="${registraCarga(e)?"c":""}">${he(e.nome)}<b>${fmtPresc(e.presc)}</b></span>`).join("")+`</span>`; }
+        bxr.map(e=>`<span class="${registraCarga(e)?"c":""}">${nomeDica(e)}<b>${prescDica(e)}</b></span>`).join("")+`</span>`; }
   }
   if(!exs.length){ el.innerHTML=`<p class="muted">O Treino ${he(t)} de ${he(mes)} ainda não foi cadastrado.</p>`; return; }
   // coluna 1: aquecimento (todo aberto) + PSE; coluna 2: blocos de trabalho
@@ -1170,7 +1190,7 @@ function renderPrograma(){
     const nome="Bloco "+b2(b)+(meta?" — "+meta[0]:"");
     return `<div class="pblk ${comCarga&&b===selBloco?"on":""} ${comCarga?"":"semcarga"}" data-b="${b}"${comCarga?` role="button" tabindex="0" title="Registrar a carga deste bloco"`:""}>`+
       `<div class="psec"><span>${dash(nome)}</span><small>${he(meta?meta[1]:bx[0].metodo)}${comCarga?`<span class="pgo">${IC("right")}</span>`:""}</small></div>`+
-      bx.map(e=>`<div class="pit big"><span>${he(e.nome)}${vid(e.nome)}</span><b>${fmtPresc(e.presc)}</b></div>`).join("")+`</div>`;
+      bx.map(e=>`<div class="pit big"><span>${nomeDica(e)}${vid(e.nome)}</span><b>${prescDica(e)}</b></div>`).join("")+`</div>`;
   }).join("");
   let h = col1 ? `<div class="pcols"><div class="pcol">${col1}</div><div class="pcol">${col2}</div></div>` : col2;
   if(T) h+=`<div class="pfoot"><details class="psiglas"><summary>${IC("info")}Siglas</summary><div class="psiglas-txt">${he(T.legenda)}</div></details><b>${he(T.fecho)}</b></div>`;
@@ -1178,8 +1198,8 @@ function renderPrograma(){
   // tocar num bloco do treino abre o registro naquele bloco
   el.querySelectorAll(".pblk:not(.semcarga)").forEach(d=>{
     const ir=()=>{ selBloco=Number(d.dataset.b); setModo("registro"); };
-    d.onclick=e=>{ if(!e.target.closest(".vid")) ir(); };
-    d.onkeydown=e=>{ if(e.target.closest(".vid")) return; if(e.key==="Enter"||e.key===" "){ e.preventDefault(); ir(); } };
+    d.onclick=e=>{ if(!e.target.closest(".vid,.dica")) ir(); };
+    d.onkeydown=e=>{ if(e.target.closest(".vid,.dica")) return; if(e.key==="Enter"||e.key===" "){ e.preventDefault(); ir(); } };
   });
 }
 function treinosDo(mes){ return MESES[mes] || MESES[Object.keys(MESES)[0]]; }
@@ -1639,7 +1659,7 @@ function renderPanel(){
           <div class="adapt-acts"><button class="btn-primary adapt-salvar">Salvar como padrão do aluno</button>${ex.adaptado?`<button class="ghost adapt-voltar">Voltar ao original</button>`:""}</div>
         </div>`;
       return `<div class="exline${r.naoRealizou?" nao":""}" data-aluno="${a.id}" data-ex="${ex.id}" data-slot="${exSlot.id}">
-        <div class="exhead"><span class="ex">${he(ex.nome)}</span>${vid(ex.nome)}${adaptChip}${ex.presc?`<span class="presc">${fmtPresc(ex.presc)}</span>`:""}<span class="alvo">alvo ${he(ex.alvo)}</span></div>
+        <div class="exhead"><span class="ex">${nomeDica(ex)}</span>${vid(ex.nome)}${adaptChip}${ex.presc?`<span class="presc">${prescDica(ex)}</span>`:""}<span class="alvo">alvo ${he(ex.alvo)}</span></div>
         <div class="exacts">
           <button class="act btn-troca" title="Trocou só hoje (não vira padrão)">${IC("repeat")}<span>Trocar</span></button>
           <button class="act btn-dor" title="Anotar dor de hoje">${IC("alert")}<span>Dor</span></button>
@@ -2049,6 +2069,9 @@ $("syncBadge").onclick=()=>{ if(DataStore.on) DataStore.syncNow(); };
 // menu "⋯": fecha ao escolher uma ação ou ao clicar fora
 document.querySelectorAll("#menu .mi").forEach(b=>b.addEventListener("click",()=>{ $("menu").open=false; }));
 document.addEventListener("click",e=>{ const m=$("menu"); if(m.open && !m.contains(e.target)) m.open=false; });
+document.addEventListener("click",e=>{ const d=e.target.closest(".dica"); // ⓘ das explicações: clique abre/fecha, clique fora fecha
+  document.querySelectorAll(".dica.on").forEach(x=>{ if(x!==d) x.classList.remove("on"); }); if(d) d.classList.toggle("on"); });
+document.addEventListener("keydown",e=>{ const d=e.target.closest&&e.target.closest(".dica"); if(d&&(e.key==="Enter"||e.key===" ")){ e.preventDefault(); d.classList.toggle("on"); } if(e.key==="Escape") document.querySelectorAll(".dica.on").forEach(x=>x.classList.remove("on")); });
 document.addEventListener("click",e=>{ document.querySelectorAll("details.evoinfo[open]").forEach(d=>{ if(!d.contains(e.target)) d.open=false; }); }); // ⓘ do EVO fecha ao tocar fora
 // "Salvo hh:mm:ss" e avisos ⚠ aparecem flutuando embaixo (no rodapé ficavam fora da vista)
 (function(){ const s=$("status"); let tm;
