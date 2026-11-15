@@ -381,7 +381,7 @@ input.sm{width:62px; padding:0 6px; font-size:17px; font-weight:600; text-align:
   background:var(--raised); border:1px solid var(--line2); border-radius:var(--r-lg); box-shadow:0 14px 34px rgba(0,0,0,.5);
   font-size:14px; line-height:1.5; font-weight:500; color:var(--ink); white-space:normal; text-align:left; letter-spacing:0; cursor:default}
 .dica:hover .dica-txt,.dica.on .dica-txt{display:block}
-.pit b .dica-txt,.presc .dica-txt,.brx b .dica-txt{left:auto; right:-8px} /* ⓘ depois da prescrição (lado direito): abre para a esquerda */
+.pit b .dica-txt,.presc .dica-txt{left:auto; right:-8px} /* ⓘ depois da prescrição (lado direito): abre para a esquerda */
 /* ⓘ EVO no fim dos nomes: o resumo do EVO fica guardado aqui (tela limpa pro treinador) */
 .evoinfo{position:relative}
 .evoinfo summary{display:inline-flex; align-items:center; gap:6px; height:36px; padding:0 12px; border:1px solid var(--line2); border-radius:999px; cursor:pointer; list-style:none; color:var(--muted); font-size:13px; font-weight:600}
@@ -1122,7 +1122,7 @@ const PROGRAMA = {
         ["Aquecimento 02",[["Sit through estático","2 × 30s cl"],["Cócoras com taça isométrica","2 × 30s · calço = regressão"]],""],
         ["Aquecimento 03",[["Primeira fase do Turkish get-up","2 × 30s cl"],["Prancha lateral com abdução de quadril","2 × 30s cl"],["Escada de coordenação (dentro-fora, fila indiana)","3 passagens"]],""]
       ],
-      blocos:{1:["Potência","EMOM 1:30 · 8 rodadas alternadas · 12 min"],2:["Força","Superset · 1:30 a 2:00 entre exercícios"],3:["Força","Triset · ~1 min de transição"]},
+      blocos:{1:["Potência","EMOM · 1:30"],2:["Força","Superset · 1:30 a 2:00"],3:["Força","Triset · 1 min"]},
       legenda:"LMF liberação miofascial · KB kettlebell · BB barra · UNL unilateral · ALT alternado · cl cada lado · EMOM tarefa a cada 1:30, descansa o que sobrar · ramp-up carga sobe a cada série, 1-2RR na última · RR repetições de reserva",
       fecho:"" },
     pse:[["10","Esforço máximo"],["9,5","Não faria mais repetições, mas aumentaria o peso"],["9","1 repetição de reserva (RR)"],["8,5","1-2 repetições de reserva (RR)"],["8","2 repetições de reserva (RR)"],["7,5","2-3 repetições de reserva (RR)"],["7","3 repetições de reserva (RR)"],["5-6","4-6 repetições de reserva (RR)"],["3-4","Esforço leve"],["1-2","Pouco ou nenhum esforço"]],
@@ -1177,7 +1177,7 @@ function renderPrograma(){
     if(bxr.length){ const meta=T&&T.blocos[selBloco];
       res.innerHTML=`<span class="brt">${dash("Bloco "+b2(selBloco)+(meta?" — "+meta[0]:""))}</span>`+
         `<small>${he(meta?meta[1]:bxr[0].metodo)}</small><span class="brx">`+
-        bxr.map(e=>`<span class="${registraCarga(e)?"c":""}">${nomeDica(e)}<b>${prescDica(e)}</b></span>`).join("")+`</span>`; }
+        bxr.map(e=>`<span class="${registraCarga(e)?"c":""}">${he(e.nome)}<b>${fmtPresc(e.presc)}</b></span>`).join("")+`</span>`; }
   }
   if(!exs.length){ el.innerHTML=`<p class="muted">O Treino ${he(t)} de ${he(mes)} ainda não foi cadastrado.</p>`; return; }
   // coluna 1: aquecimento (todo aberto) + PSE; coluna 2: blocos de trabalho
