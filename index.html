@@ -866,6 +866,15 @@ const MESES = {
       {id:"novdez26_t1_supinoiso",nome:"Supino isométrico na barra (suporte)",tipo:"pc",cargaLabel:"isométrico",repsFixas:"3",metodo:"TRISET",presc:"3 x 3 de 5s / 20s",dica:{txt:"Realizar 3 séries de 3 contrações isométricas de 5 segundos, com 20 segundos de intervalo entre cada contração."},alvo:"esforço máx.",bloco:3},
       {id:"novdez26_t1_remadadeadstop",nome:"Remada unilateral dead stop com apoio (step/anilha)",dica:{em:"dead stop",txt:"Cada repetição começa com a carga completamente parada e apoiada, sem utilizar impulso."},tipo:"carga",carga:"impl",un:"kg",qtd:1,metodo:"TRISET",presc:"3 x 8-5 cl",alvo:"1-2RR",bloco:3},
       {id:"novdez26_t1_suitcase",nome:"Suitcase carry",tipo:"carga",carga:"kb",un:"kg",qtd:1,repsFixas:"24 m",metodo:"TRISET",presc:"3 x 24 m cl",alvo:"carga pesada",bloco:3}
+    ],
+    "2":[
+      {id:"novdez26_t2_sumobb",nome:"Deadlift sumô BB",tipo:"carga",carga:"barra",un:"lb",bar:15,metodo:"SUPERSET",presc:"4 x 8",alvo:"1-2RR",bloco:1},
+      {id:"novdez26_t2_pressvert",nome:"Press vertical unilateral sentado em L",tipo:"carga",carga:"impl",un:"kg",qtd:1,metodo:"SUPERSET",presc:"4 x 8 cl",alvo:"1-2RR",bloco:1},
+      {id:"novdez26_t2_remadaelastico",nome:"Remada com elástico em base assimétrica",tipo:"elastico",metodo:"TRISET",presc:"3 x 15-12 cl",alvo:"1-2RR",bloco:2},
+      {id:"novdez26_t2_stepup",nome:"Step-up lateral com taça",tipo:"carga",carga:"impl",un:"kg",qtd:1,metodo:"TRISET",presc:"3 x 12-10 cl",alvo:"1-2RR",bloco:2},
+      {id:"novdez26_t2_flexjoelho",nome:"Flexão de joelhos nas argolas",tipo:"pc",metodo:"TRISET",presc:"3 x 12-10",alvo:"1-2RR",bloco:2},
+      {id:"novdez26_t2_prancha",nome:"Prancha",tipo:"tempo",metodo:"DESAFIO",presc:"1 x máx.",alvo:"parar ao perder a posição",bloco:3},
+      {id:"novdez26_t2_deadhang",nome:"Dead hang nas argolas",tipo:"tempo",metodo:"DESAFIO",presc:"1 x máx.",alvo:"máximo de tempo",bloco:3}
     ]
   }
 };
@@ -1125,6 +1134,16 @@ const PROGRAMA = {
       blocos:{1:["Potência","EMOM · 1:30","A cada 1:30 começa uma rodada: faz o exercício e descansa o que sobrar até fechar 1:30. As rodadas alternam os dois exercícios (slam, KB swing, slam…) até 8 rodadas, 4 de cada, 12 min no total."],2:["Força","Superset · 1:30 a 2:00","Uma série do box squat, descansa 1:30 a 2:00, uma série da puxada nas argolas, descansa 1:30 a 2:00 e volta ao box squat, até fechar as 4 séries de cada."],3:["Força","Triset · 1 min"]},
       legenda:"LMF liberação miofascial · KB kettlebell · BB barra · UNL unilateral · ALT alternado · cl cada lado · EMOM tarefa a cada 1:30, descansa o que sobrar · ramp-up carga sobe a cada série, 1-2RR na última · RR repetições de reserva",
       fecho:"" },
+    "2":{ dia:"02 — Treino 2 · Terça e sexta", titulo:["Força","e hipertrofia."], dur:"50'",
+      aquec:[
+        ["Aquecimento 01",[["Respiração 360°","1 min"],["Liberação miofascial do glúteo","1 × 30s cl"],["Liberação miofascial do TFL","1 × 30s cl"]],"Circuito"],
+        ["Aquecimento 02",[["Frog pose dinâmico","2 × 8"],["Deslizamento lateral para adutores","2 × 8 cl"]],"Circuito"],
+        ["Aquecimento 03",[["Hollow body (regressão: joelhos flexionados)","2 × 20s"],["Perdigueiro","2 × 6 cl · pausa 2s"]],"Circuito"],
+        ["Aquecimento 03 · técnica",[["Deadlift sumô com KB (técnica)","1 × 5"]],""]
+      ],
+      blocos:{1:["Força","Superset · 90s"],2:["Hipertrofia","Triset · 1 min"],3:["Desafio isométrico","Duplas alternando","Em dupla: um faz enquanto o outro descansa. Cada um vai até o máximo de tempo; na prancha, para ao perder a posição."]},
+      legenda:"TFL tensor da fáscia lata · BB barra · KB kettlebell · cl cada lado · RR repetições de reserva",
+      fecho:"Respiração de volta à calma · 2 min" },
     pse:[["10","Esforço máximo"],["9,5","Não faria mais repetições, mas aumentaria o peso"],["9","1 repetição de reserva (RR)"],["8,5","1-2 repetições de reserva (RR)"],["8","2 repetições de reserva (RR)"],["7,5","2-3 repetições de reserva (RR)"],["7","3 repetições de reserva (RR)"],["5-6","4-6 repetições de reserva (RR)"],["3-4","Esforço leve"],["1-2","Pouco ou nenhum esforço"]],
     pseNota:"RR repetições de reserva · Progressão em 4 semanas: agachamento e puxada sobem a carga mantendo as reps no RR · remada desce de 8 para 5 reps com a carga subindo · supino isométrico passa para 4 séries"
   }
