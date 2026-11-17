@@ -666,6 +666,10 @@ const TURMAS = ["06:00","07:00","08:00","09:00","10:00","11:00","12:30","16:30",
 const NIVEIS_ELASTICO = ["Leve","Média","Forte","Extra"];
 // caixas de salto da Fabrik (cm): a pequena tem 35/40/45, a grande 50/60/75
 const ALTURAS_CAIXA = [["pequena",[35,40,45]],["grande",[50,60,75]]];
+// exercício com carga + caixa (ex.caixa): a altura vai no fim da montagem parcial, sem mexer no kg total
+const CAIXA_RE=/\s*(?:·\s*)?caixa \d+ cm$/;
+const altDe = parcial => { const m=String(parcial||"").match(/caixa (\d+ cm)$/); return m?m[1]:""; };
+const juntaCaixa = (parcial,alt) => { const base=String(parcial||"").replace(CAIXA_RE,"").trim(); return alt ? (base? base+" · caixa "+alt : "caixa "+alt) : base; };
 // Implemento de hoje: um botão só mostra o prescrito; ao tocar abre a lista com os outros.
 // [valor gravado em montagem, sigla no botão, nome na lista]
 const IMPLEMENTOS = [["impl","DB","halter"],["kb","KB","kettlebell"],["barra","BB","barra"],["landmine","LM","landmine"],["pc","PC","peso corporal"],["elastico","EL","elástico"]];
@@ -870,8 +874,8 @@ const MESES = {
     "2":[
       {id:"novdez26_t2_sumobb",nome:"Deadlift sumô BB",tipo:"carga",carga:"barra",un:"lb",bar:15,metodo:"SUPERSET",presc:"4 x 8",alvo:"1-2RR",bloco:1},
       {id:"novdez26_t2_pressvert",nome:"Press vertical unilateral sentado em L",tipo:"carga",carga:"impl",un:"kg",qtd:1,metodo:"SUPERSET",presc:"4 x 8 cl",alvo:"1-2RR",bloco:1},
-      {id:"novdez26_t2_remadaelastico",nome:"Remada com elástico em base assimétrica",tipo:"elastico",metodo:"TRISET",presc:"3 x 12-10 cl",alvo:"1-2RR",bloco:2},
-      {id:"novdez26_t2_stepup",nome:"Step-up lateral com taça",tipo:"carga",carga:"impl",un:"kg",qtd:1,metodo:"TRISET",presc:"3 x 12-10 cl",alvo:"1-2RR",bloco:2},
+      {id:"novdez26_t2_remadaelastico",nome:"Remada c/ SB em base assimétrica",nomesAntigos:["Remada com elástico em base assimétrica"],tipo:"elastico",metodo:"TRISET",presc:"3 x 12-10 cl",alvo:"1-2RR",bloco:2},
+      {id:"novdez26_t2_stepup",nome:"Step-up lateral com taça",tipo:"carga",caixa:true,carga:"impl",un:"kg",qtd:1,metodo:"TRISET",presc:"3 x 12-10 cl",alvo:"1-2RR",bloco:2},
       {id:"novdez26_t2_flexjoelho",nome:"Flexão de joelhos nas argolas",tipo:"pc",metodo:"TRISET",presc:"3 x 12-10",alvo:"1-2RR",bloco:2},
       {id:"novdez26_t2_prancha",nome:"Prancha",tipo:"tempo",soTempo:true,metodo:"DESAFIO",presc:"2 x máx.",alvo:"parar ao perder a posição",bloco:3},
       {id:"novdez26_t2_deadhang",nome:"Dead hang nas argolas",tipo:"tempo",soTempo:true,metodo:"DESAFIO",presc:"2 x máx.",alvo:"máximo de tempo",bloco:3}
@@ -1138,11 +1142,11 @@ const PROGRAMA = {
       aquec:[
         ["Aquecimento 01",[["Respiração 360°","1 min"],["Liberação miofascial do glúteo","1 × 30s cl"],["Liberação miofascial do TFL","1 × 30s cl"]],"Circuito"],
         ["Aquecimento 02",[["Frog pose dinâmico","2 × 8"],["Deslizamento lateral para adutores","2 × 8 cl"]],"Circuito"],
-        ["Aquecimento 03",[["Hollow body (regressão: joelhos flexionados)","2 × 20s"],["Perdigueiro","2 × 20s cl"]],"Circuito"],
-        ["Aquecimento 03 · técnica",[["Deadlift sumô com KB (técnica)","1 × 5"]],""]
+        ["Aquecimento 03",[["Hollow body","2 × 20s","Regressão: joelhos flexionados."],["Perdigueiro","2 × 20s cl"]],"Circuito"],
+        ["Aquecimento 03 · técnica",[["KB deadlift sumô (4s EXC / 1s CC)","1 × 5"]],""]
       ],
       blocos:{1:["Força","Superset · 90s"],2:["Hipertrofia","Triset · 1 min"],3:["Desafio isométrico","Duplas alternando","Em dupla: um faz enquanto o outro descansa. Cada um vai até o máximo de tempo; na prancha, para ao perder a posição."]},
-      legenda:"TFL tensor da fáscia lata · BB barra · KB kettlebell · cl cada lado · RR repetições de reserva",
+      legenda:"TFL tensor da fáscia lata · BB barra · KB kettlebell · SB superband · EXC excêntrica · CC concêntrica · cl cada lado · RR repetições de reserva",
       fecho:"Respiração de volta à calma · 2 min" },
     pse:[["10","Esforço máximo"],["9,5","Não faria mais repetições, mas aumentaria o peso"],["9","1 repetição de reserva (RR)"],["8,5","1-2 repetições de reserva (RR)"],["8","2 repetições de reserva (RR)"],["7,5","2-3 repetições de reserva (RR)"],["7","3 repetições de reserva (RR)"],["5-6","4-6 repetições de reserva (RR)"],["3-4","Esforço leve"],["1-2","Pouco ou nenhum esforço"]],
     pseNota:"RR repetições de reserva · Progressão em 4 semanas: agachamento e puxada sobem a carga mantendo as reps no RR · remada desce de 8 para 5 reps com a carga subindo · supino isométrico passa para 4 séries"
@@ -1317,9 +1321,10 @@ function saveAdapt(aId,c,slotId,def){ const k=adaptKey(aId,c,slotId); adapts[k]=
 // órfão, não há colisão de id, e o registro passa a guardar o nome adaptado em exercicioNome.
 // reconstrói a adaptação p/ outro laptop: registro mais recente do slot cujo nome ≠ o prescrito.
 function adaptDeRecords(aId,c,slotId){
-  const prescrito=((treinosDo(c.mes)[c.treino]||[]).find(e=>e.id===slotId)||{}).nome;
+  const slot=(treinosDo(c.mes)[c.treino]||[]).find(e=>e.id===slotId)||{}, prescrito=slot.nome;
+  const antigos=slot.nomesAntigos||[]; // nome que o programa já teve: registro com ele não é adaptação
   const rs=records.filter(r=>r.alunoId===aId && r.exercicioId===slotId && String(r.treino)===String(c.treino)
-                  && r.exercicioNome && r.exercicioNome!==prescrito)
+                  && r.exercicioNome && r.exercicioNome!==prescrito && !antigos.includes(r.exercicioNome))
                   .sort((x,y)=>String(y.data).localeCompare(String(x.data)));
   if(!rs.length) return null;
   // nome = o da adaptação mais recente; tipo/implemento = o mais usado com esse nome (empate: o mais recente).
@@ -1665,6 +1670,11 @@ function renderPanel(){
           cargaBox=`<div class="cbox" data-tipo="landmine">${mtog}${pesoIn("Peso")}${peso2In}${mais("peso")}${barra}${totT}</div>`;
         }
       }
+      if(ex.caixa && isCarga){
+        const alt=altDe(r.cargaParcial);
+        cargaBox+=`<div class="cbox caixa">`+ALTURAS_CAIXA.map(([nome,hs])=>`<div class="grp"><span>Caixa ${nome}</span><div class="seg cxalt">`+
+          hs.map(h=>`<button class="cxa ${alt===h+" cm"?'on':''}" data-alt="${h} cm">${h}</button>`).join("")+`</div></div>`).join("")+`<small>cm</small></div>`;
+      }
       const repsBox = (ex.repsFixas ? `<div class="grp"><span>Reps</span><span class="fixed" title="Fixo na prescrição">${he(ex.repsFixas)}</span></div>` :
         `<div class="grp"><span>Reps</span><input class="sm" data-f="reps" inputmode="numeric" placeholder="—" value="${attrEsc(r.reps||"")}"></div>`)+
         (ex.rrFixo ? `<div class="grp"><span>RR</span><span class="fixed" title="Potência: longe da falha, PSE até 4 (esforço leve) · Helms et al. 2016">${he(ex.rrFixo)}</span></div>` :
@@ -1755,7 +1765,7 @@ function wirePanel(c){
         const peso=gv('[data-c="peso"]'), peso2=gv('[data-c="peso2"]'), bar=bb?bb.value:"";
         const out=calcCarga(montagem,qtd,peso,un,peso2,un2,bar);
         line.querySelector('.ctotal').textContent=out.total||'—';
-        upsert(c,aluno,ex,{montagem,qtd:String(qtd),peso:String(peso||""),un,peso2:String(peso2||""),un2,bar:String(bar),cargaParcial:out.parcial,cargaTotal:out.total});
+        upsert(c,aluno,ex,{montagem,qtd:String(qtd),peso:String(peso||""),un,peso2:String(peso2||""),un2,bar:String(bar),cargaParcial:ex.caixa?juntaCaixa(out.parcial,altDe((getRec(c,aId,exId)||{}).cargaParcial)):out.parcial,cargaTotal:out.total});
         flagReps();
       };
       line.querySelectorAll("[data-c]").forEach(el=>{
@@ -1778,6 +1788,12 @@ function wirePanel(c){
         flagReps();
       });
     }
+    line.querySelectorAll(".cxa").forEach(b=>b.onclick=()=>{
+      const alt=b.classList.contains("on") ? "" : b.dataset.alt;
+      line.querySelectorAll(".cxa").forEach(x=>x.classList.toggle("on", x===b && !!alt));
+      upsert(c,aluno,ex,{cargaParcial:juntaCaixa((getRec(c,aId,exId)||{}).cargaParcial,alt)});
+      flagReps();
+    });
     if(ex.tipo==="caixa"){
       // altura da caixa (cm, não é carga): guarda em cargaParcial ("45 cm"), sem cargaTotal
       line.querySelectorAll(".cxch").forEach(b=>b.onclick=()=>{
