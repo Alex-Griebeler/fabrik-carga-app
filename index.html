@@ -870,11 +870,11 @@ const MESES = {
     "2":[
       {id:"novdez26_t2_sumobb",nome:"Deadlift sumô BB",tipo:"carga",carga:"barra",un:"lb",bar:15,metodo:"SUPERSET",presc:"4 x 8",alvo:"1-2RR",bloco:1},
       {id:"novdez26_t2_pressvert",nome:"Press vertical unilateral sentado em L",tipo:"carga",carga:"impl",un:"kg",qtd:1,metodo:"SUPERSET",presc:"4 x 8 cl",alvo:"1-2RR",bloco:1},
-      {id:"novdez26_t2_remadaelastico",nome:"Remada com elástico em base assimétrica",tipo:"elastico",metodo:"TRISET",presc:"3 x 15-12 cl",alvo:"1-2RR",bloco:2},
+      {id:"novdez26_t2_remadaelastico",nome:"Remada com elástico em base assimétrica",tipo:"elastico",metodo:"TRISET",presc:"3 x 12-10 cl",alvo:"1-2RR",bloco:2},
       {id:"novdez26_t2_stepup",nome:"Step-up lateral com taça",tipo:"carga",carga:"impl",un:"kg",qtd:1,metodo:"TRISET",presc:"3 x 12-10 cl",alvo:"1-2RR",bloco:2},
       {id:"novdez26_t2_flexjoelho",nome:"Flexão de joelhos nas argolas",tipo:"pc",metodo:"TRISET",presc:"3 x 12-10",alvo:"1-2RR",bloco:2},
-      {id:"novdez26_t2_prancha",nome:"Prancha",tipo:"tempo",metodo:"DESAFIO",presc:"1 x máx.",alvo:"parar ao perder a posição",bloco:3},
-      {id:"novdez26_t2_deadhang",nome:"Dead hang nas argolas",tipo:"tempo",metodo:"DESAFIO",presc:"1 x máx.",alvo:"máximo de tempo",bloco:3}
+      {id:"novdez26_t2_prancha",nome:"Prancha",tipo:"tempo",soTempo:true,metodo:"DESAFIO",presc:"2 x máx.",alvo:"parar ao perder a posição",bloco:3},
+      {id:"novdez26_t2_deadhang",nome:"Dead hang nas argolas",tipo:"tempo",soTempo:true,metodo:"DESAFIO",presc:"2 x máx.",alvo:"máximo de tempo",bloco:3}
     ]
   }
 };
@@ -1138,7 +1138,7 @@ const PROGRAMA = {
       aquec:[
         ["Aquecimento 01",[["Respiração 360°","1 min"],["Liberação miofascial do glúteo","1 × 30s cl"],["Liberação miofascial do TFL","1 × 30s cl"]],"Circuito"],
         ["Aquecimento 02",[["Frog pose dinâmico","2 × 8"],["Deslizamento lateral para adutores","2 × 8 cl"]],"Circuito"],
-        ["Aquecimento 03",[["Hollow body (regressão: joelhos flexionados)","2 × 20s"],["Perdigueiro","2 × 6 cl · pausa 2s"]],"Circuito"],
+        ["Aquecimento 03",[["Hollow body (regressão: joelhos flexionados)","2 × 20s"],["Perdigueiro","2 × 20s cl"]],"Circuito"],
         ["Aquecimento 03 · técnica",[["Deadlift sumô com KB (técnica)","1 × 5"]],""]
       ],
       blocos:{1:["Força","Superset · 90s"],2:["Hipertrofia","Triset · 1 min"],3:["Desafio isométrico","Duplas alternando","Em dupla: um faz enquanto o outro descansa. Cada um vai até o máximo de tempo; na prancha, para ao perder a posição."]},
@@ -1530,7 +1530,7 @@ function calcCarga(montagem,qtd,peso,un,peso2,un2,bar){
   const valido = comBarra ? (preencheu && total>0) : p>0;
   return valido? {total:String(total), parcial} : {total:"", parcial:""};
 }
-function histBlock(aId,eId,before){
+function histBlock(aId,eId,before,soTempo){
   const h=hist(aId,eId,before,3);
   if(!h.length) return "";
   const lines=h.map(r=>{
@@ -1538,7 +1538,7 @@ function histBlock(aId,eId,before){
     const parcial = r.cargaParcial? he(r.cargaParcial) : "";
     // total + montagem parcial (ajuda a remontar a barra) — sugestão do Diego
     const carga = (total && parcial) ? total+` <span class="hmont">(${parcial})</span>` : (total || parcial);
-    const det=[carga, r.reps?he(r.reps)+" reps":"", r.rr?"RR "+he(r.rr):""].filter(Boolean).join(" · ");
+    const det=[carga, r.reps?he(r.reps)+(soTempo?" s":" reps"):"", r.rr?"RR "+he(r.rr):""].filter(Boolean).join(" · ");
     let flags=r.naoRealizou?`<span class="hflag nao">Não realizou</span>`:"";
     if(r.dor||r.dorNota) flags+=`<span class="hflag dor">⚠ ${he(r.dorNota||"dor")}</span>`;
     if(r.troca) flags+=`<span class="hflag troca">↻ ${he(r.troca)}</span>`;
@@ -1689,13 +1689,13 @@ function renderPanel(){
           <span class="asep"></span>
           <button class="act btn-adapt" title="Adaptar o exercício: vira o padrão deste aluno nas próximas semanas deste treino">${IC("swap")}<span>Adaptar</span></button>
         </div>
-        <div class="row">${cargaBox}<span class="vsep"></span>${repsBox}</div>
+        <div class="row">${ex.soTempo ? `<div class="grp"><span>Tempo</span><input class="sm" data-f="reps" inputmode="numeric" placeholder="—" value="${attrEsc(r.reps||"")}"><small>s</small></div>` : `${cargaBox}<span class="vsep"></span>${repsBox}`}</div>
         ${adaptForm}
         <div class="troca-edit"><input data-f="troca" placeholder="Trocou só hoje? Anote o exercício (não vira padrão)" value="${attrEsc(r.troca||"")}"></div>
         <div class="dor-edit"><input data-f="dorNota" placeholder="O que foi? (ex: joelho D, amplitude parcial)" value="${attrEsc(r.dorNota||"")}"></div>
         <div class="obs-edit"><input data-f="obs" placeholder="Observação (cansaço, técnica…)" value="${attrEsc(r.obs||"")}"></div>
         <div class="tags"></div>
-        ${histBlock(a.id,ex.id,c.data)}
+        ${histBlock(a.id,ex.id,c.data,ex.soTempo)}
       </div>`;
     }).join("");
     return `<div class="scard"><div class="shead"><div class="avatar">${initials(a.nome)}</div><div class="nm">${he(a.nome)}</div><span class="pendbadge"></span><button class="iconbtn btn-rename" data-aluno="${a.id}" title="Renomear aluno" aria-label="Renomear aluno">${IC("pencil")}</button></div>${lines}</div>`;
