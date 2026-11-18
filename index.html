@@ -881,6 +881,15 @@ const MESES = {
       {id:"novdez26_t2_flexjoelho",nome:"Flexão de joelhos nas argolas",tipo:"pc",metodo:"TRISET",presc:"3 x 12-10",alvo:"1-2RR",bloco:2},
       {id:"novdez26_t2_prancha",nome:"Prancha baixa",nomesAntigos:["Prancha"],tipo:"tempo",soTempo:true,metodo:"DESAFIO",presc:"2 x máx.",alvo:"parar ao perder a posição",bloco:3},
       {id:"novdez26_t2_deadhang",nome:"Dead hang na barra fixa",nomesAntigos:["Dead hang nas argolas"],tipo:"tempo",soTempo:true,metodo:"DESAFIO",presc:"2 x máx.",alvo:"máximo de tempo",bloco:3}
+    ],
+    "3":[
+      {id:"novdez26_t3_remadalandmine",nome:"Remada curvada landmine, pegada fechada",tipo:"carga",carga:"landmine",un:"lb",bar:10,metodo:"SUPERSET",presc:"3 x 8",alvo:"1-2RR",bloco:1},
+      {id:"novdez26_t3_hipthrustunl",nome:"Hip thrust UNL c/ DB, ombros na caixa",tipo:"carga",carga:"impl",un:"kg",qtd:1,metodo:"SUPERSET",presc:"3 x 12-10 cl",alvo:"1-2RR",bloco:1},
+      {id:"novdez26_t3_pressdiag",nome:"Press diagonal UNL landmine",tipo:"carga",carga:"landmine",un:"lb",bar:10,metodo:"SUPERSET",presc:"3 x 12 cl",alvo:"1-2RR",bloco:2},
+      {id:"novdez26_t3_afundoiso",nome:"Afundo isométrico c/ 2KB",tipo:"carga",carga:"kb",un:"kg",qtd:2,repsFixas:"30s",metodo:"SUPERSET",presc:"3 x 30s cl",alvo:"esforço alto",bloco:2},
+      {id:"novdez26_t3_carregassim",nome:"Carregamento assimétrico (1 KB overhead + 1 KB ao lado)",tipo:"carga",carga:"kb",un:"kg",qtd:1,repsFixas:"24 m",metodo:"CIRCUITO",presc:"3 x 24 m",dica:{txt:"Anote o peso do KB de cima (overhead)."},alvo:"carga moderada",bloco:3},
+      {id:"novdez26_t3_twist",nome:"Twist landmine base assimétrica",tipo:"carga",carga:"landmine",un:"lb",bar:10,metodo:"CIRCUITO",presc:"3 x 10 cl",alvo:"2-3RR",bloco:3},
+      {id:"novdez26_t3_flexplantariso",nome:"Flexão plantar isométrica UNL contra a parede",tipo:"pc",cargaLabel:"isométrico",repsFixas:"30s",metodo:"CIRCUITO",presc:"3 x 30s cl",alvo:"esforço alto",bloco:3}
     ]
   }
 };
@@ -1149,6 +1158,15 @@ const PROGRAMA = {
       ],
       blocos:{1:["Força","Superset · 90s"],2:["Hipertrofia","Triset · 1 min"],3:["Desafio isométrico","Duplas alternando","Em dupla: um faz enquanto o outro descansa. Cada um vai até o máximo de tempo; na prancha, para ao perder a posição."]},
       legenda:"LMF liberação miofascial · TFL tensor da fáscia lata · BB barra · KB kettlebell · SB superband · EXC excêntrica · CC concêntrica · cl cada lado · RR repetições de reserva",
+      fecho:"Respiração de volta à calma · 2 min" },
+    "3":{ dia:"03 — Treino 3 · Quarta e sábado", titulo:["Hipertrofia."], dur:"50'",
+      aquec:[
+        ["Aquecimento 01 — Liberação miofascial",[["Respiração 90/90","1 min"],["LMF peitoral","1 × 30s cl"],["LMF quadríceps","1 × 30s cl"]],"Circuito"],
+        ["Aquecimento 02 — Mobilidade",[["Postura do filhote (puppy pose)","2 × 5"],["Windmill semiajoelhado","2 × 5 cl"]],"Circuito"],
+        ["Aquecimento 03 — Estabilidade e ativação",[["Prancha reversa – tabletop","2 × 20s"],["Bear hold + shoulder taps c/ anel entre os joelhos","2 × 20s"]],"Circuito"]
+      ],
+      blocos:{1:["Hipertrofia","Superset · 1 min"],2:["Hipertrofia","Superset · 1 min"],3:["Hipertrofia","Circuito · sem intervalo"]},
+      legenda:"LMF liberação miofascial · UNL unilateral · DB halter · KB kettlebell · cl cada lado · RR repetições de reserva",
       fecho:"Respiração de volta à calma · 2 min" },
     pse:[["10","Esforço máximo"],["9,5","Não faria mais repetições, mas aumentaria o peso"],["9","1 repetição de reserva (RR)"],["8,5","1-2 repetições de reserva (RR)"],["8","2 repetições de reserva (RR)"],["7,5","2-3 repetições de reserva (RR)"],["7","3 repetições de reserva (RR)"],["5-6","4-6 repetições de reserva (RR)"],["3-4","Esforço leve"],["1-2","Pouco ou nenhum esforço"]],
     pseNota:"RR repetições de reserva · Progressão em 4 semanas: agachamento e puxada sobem a carga mantendo as reps no RR · remada desce de 8 para 5 reps com a carga subindo · supino isométrico passa para 4 séries"
