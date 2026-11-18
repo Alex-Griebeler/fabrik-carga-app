@@ -381,6 +381,9 @@ input.sm{width:62px; padding:0 6px; font-size:17px; font-weight:600; text-align:
   background:var(--raised); border:1px solid var(--line2); border-radius:var(--r-lg); box-shadow:0 14px 34px rgba(0,0,0,.5);
   font-size:14px; line-height:1.5; font-weight:500; color:var(--ink); white-space:normal; text-align:left; letter-spacing:0; text-transform:none; cursor:default}
 .dica:hover .dica-txt,.dica.on .dica-txt{display:block}
+.dica-fig{width:300px}
+.dica-fig svg{display:block; width:100%; height:auto; margin:2px 0 8px}
+.dica-fig em{display:block; font-style:normal}
 /* explicação na prescrição ou no método do bloco (lado direito): abre para a esquerda */
 .pit b .dica-txt,.presc .dica-txt,.pblk .psec small .dica-txt{left:auto; right:-8px}
 /* ⓘ EVO no fim dos nomes: o resumo do EVO fica guardado aqui (tela limpa pro treinador) */
@@ -883,8 +886,8 @@ const MESES = {
       {id:"novdez26_t2_deadhang",nome:"Dead hang na barra fixa",nomesAntigos:["Dead hang nas argolas"],tipo:"tempo",soTempo:true,metodo:"DESAFIO",presc:"2 x máx.",alvo:"máximo de tempo",bloco:3}
     ],
     "3":[
-      {id:"novdez26_t3_remadalandmine",nome:"Remada curvada landmine, pegada fechada",tipo:"carga",carga:"landmine",un:"lb",bar:10,metodo:"SUPERSET",presc:"3 x 8",alvo:"1-2RR",bloco:1},
-      {id:"novdez26_t3_hipthrustunl",nome:"Hip thrust UNL c/ DB, ombros na caixa",tipo:"carga",carga:"impl",un:"kg",qtd:1,metodo:"SUPERSET",presc:"3 x 12-10 cl",alvo:"1-2RR",bloco:1},
+      {id:"novdez26_t3_remadalandmine",nome:"Remada curvada landmine",nomesAntigos:["Remada curvada landmine, pegada fechada"],tipo:"carga",carga:"landmine",un:"lb",bar:10,metodo:"SUPERSET",presc:"3 x 8",alvo:"1-2RR",bloco:1},
+      {id:"novdez26_t3_hipthrustunl",nome:"Hip thrust UNL c/ DB",nomesAntigos:["Hip thrust UNL c/ DB, ombros na caixa"],tipo:"carga",carga:"impl",un:"kg",qtd:1,metodo:"SUPERSET",presc:"3 x 12-10 cl",alvo:"1-2RR",bloco:1},
       {id:"novdez26_t3_pressdiag",nome:"Press diagonal UNL landmine",tipo:"carga",carga:"landmine",un:"lb",bar:10,metodo:"SUPERSET",presc:"3 x 12 cl",alvo:"1-2RR",bloco:2},
       {id:"novdez26_t3_afundoiso",nome:"Afundo isométrico c/ 2KB",tipo:"carga",carga:"kb",un:"kg",qtd:2,repsFixas:"30s",metodo:"SUPERSET",presc:"3 x 30s cl",alvo:"esforço alto",bloco:2},
       {id:"novdez26_t3_carregassim",nome:"Carregamento assimétrico (1 KB overhead + 1 KB ao lado)",tipo:"carga",carga:"kb",un:"kg",qtd:1,repsFixas:"24 m",metodo:"CIRCUITO",presc:"3 x 24 m",dica:{txt:"Anote o peso do KB de cima (overhead)."},alvo:"carga moderada",bloco:3},
@@ -1162,7 +1165,7 @@ const PROGRAMA = {
     "3":{ dia:"03 — Treino 3 · Quarta e sábado", titulo:["Hipertrofia."], dur:"50'",
       aquec:[
         ["Aquecimento 01 — Liberação miofascial",[["Respiração 90/90","1 min"],["LMF peitoral","1 × 30s cl"],["LMF quadríceps","1 × 30s cl"]],"Circuito"],
-        ["Aquecimento 02 — Mobilidade",[["Postura do filhote (puppy pose)","2 × 5"],["Windmill semiajoelhado","2 × 5 cl"]],"Circuito"],
+        ["Aquecimento 02 — Mobilidade",[["Postura do filhote","2 × 5"],["Windmill semiajoelhado","2 × 5 cl"]],"Circuito"],
         ["Aquecimento 03 — Estabilidade e ativação",[["Prancha reversa – tabletop","2 × 20s"],["Bear hold + shoulder taps c/ anel entre os joelhos","2 × 20s"]],"Circuito"]
       ],
       blocos:{1:["Hipertrofia","Superset · 1 min"],2:["Hipertrofia","Superset · 1 min"],3:["Hipertrofia","Circuito · sem intervalo"]},
@@ -1190,6 +1193,12 @@ function vid(nome){
   const v=VIDEOS_N[normNome(nome)]; if(!v || (v.ate && today()>v.ate)) return "";
   return `<a class="vid" href="${attrEsc(v.url)}" target="_blank" rel="noopener" title="Abrir o vídeo demo numa aba nova">${IC("play")}Vídeo</a>`;
 }
+// Figura do exercício no aquecimento: passar o mouse (ou tocar) no nome mostra o desenho. Pelo nome, vale para qualquer mês.
+const FIGURAS={
+  "Postura do filhote":{svg:'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 260 140" fill="none" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="124" x2="252" y2="124" stroke="#6f675d" stroke-width="2"/><g stroke="#f1ece4" stroke-width="9"><path d="M226 116 L172 116 L170 64"/><path d="M170 64 L98 101"/><path d="M98 101 L26 114"/></g><circle cx="80" cy="110" r="10" fill="#f1ece4"/><path d="M226 116 l9 -6" stroke="#f1ece4" stroke-width="7"/><path d="M136 92 v18 m-6 -6 l6 6 l6 -6" stroke="#d9785a" stroke-width="2.5"/></svg>', txt:"Joelhos sob o quadril, braços estendidos à frente, peito desce em direção ao chão."}
+};
+const FIGURAS_N = Object.fromEntries(Object.entries(FIGURAS).map(([k,v])=>[normNome(k),v]));
+const figWrap=(html,f)=>`<span class="dica" tabindex="0" role="button">${html}<span class="dica-txt dica-fig" role="tooltip">${f.svg}<em>${he(f.txt)}</em></span></span>`;
 function fmtPresc(v){ return he(String(v||"").replace(/ x /g," × ")); }
 // explicação na própria palavra (sem marca): passar o mouse ou clicar abre a caixinha
 // ex.dica = {em:"termo do nome", txt}; sem "em", a palavra é a prescrição. Bloco: 3º item de blocos. Aquecimento: 3º item do exercício.
@@ -1227,7 +1236,8 @@ function renderPrograma(){
   if(!exs.length){ el.innerHTML=`<p class="muted">O Treino ${he(t)} de ${he(mes)} ainda não foi cadastrado.</p>`; return; }
   // coluna 1: aquecimento (todo aberto) + PSE; coluna 2: blocos de trabalho
   const col1 = T ? T.aquec.map(([nome,itens,metodo])=>`<div class="psec"><span>${dash(nome)}</span>${metodo?`<small>${he(metodo)}</small>`:""}</div>`+
-      itens.map(([n,q,d])=>`<div class="pit"><span>${d?dicaWrap(he(n),d):he(n)}${vid(n)}</span><b>${he(q)}</b></div>`).join("")).join("")+
+      itens.map(([n,q,d])=>{ const f=FIGURAS_N[normNome(n)];
+        return `<div class="pit"><span>${f?figWrap(he(n),f):d?dicaWrap(he(n),d):he(n)}${vid(n)}</span><b>${he(q)}</b></div>`; }).join("")).join("")+
     (P&&P.pse?`<details class="ppse"><summary>${IC("right")}PSE · esforço percebido</summary><table>`+
       P.pse.map(([n,d])=>`<tr><td>${he(n)}</td><td>${he(d)}</td></tr>`).join("")+`</table><p>${he(P.pseNota)}</p></details>`:"") : "";
   const col2 = bs.map(b=>{
