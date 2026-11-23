@@ -670,6 +670,14 @@ const SUPABASE_CONFIG = {
 const TURMAS = ["06:00","07:00","08:00","09:00","10:00","11:00","12:30","16:30","17:30","18:30"];
 // níveis de resistência de elástico (superband/miniband) — ordinal, não é kg
 const NIVEIS_ELASTICO = ["Leve","Média","Forte","Extra"];
+const AUX_SB = "auxílio SB ";
+// Reps já vêm preenchidas com a prescrição, em aulas a partir desta data (pedido do Alex, 23/11).
+// Só número único ("4 x 5", "3 x 12 cl"); faixa ("3 x 8-5 cl") continua em branco. Registro antigo nunca muda.
+const REPS_PRE_DESDE = "2026-11-23";
+function repsPrescritas(ex,data){
+  if(ex.repsFixas||ex.soTempo||ex.tipo==="tempo"||!ex.presc||String(data)<REPS_PRE_DESDE) return "";
+  const m=String(ex.presc).match(/^\d+\s*x\s*(\d+)(?:\s*cl)?$/i); return m?m[1]:"";
+}
 // caixas de salto da Fabrik (cm): a pequena tem 35/40/45, a grande 50/60/75
 const ALTURAS_CAIXA = [["pequena",[35,40,45]],["grande",[50,60,75]]];
 // exercício com carga + caixa (ex.caixa): a altura vai no fim da montagem parcial, sem mexer no kg total.
@@ -874,9 +882,9 @@ const MESES = {
       {id:"novdez26_t1_slamrot",nome:"Slam rotacional ALT c/ medball",nomesAntigos:["Slam rotacional alternado com med ball"],tipo:"pc",cargaLabel:"livre",repsFixas:"4 cl",rrFixo:RR_POTENCIA,metodo:"EMOM",presc:"4 x 4 cl",alvo:"potência",bloco:1},
       {id:"novdez26_t1_kbswing",nome:"KB swing",tipo:"carga",carga:"kb",un:"kg",qtd:1,repsFixas:"12",rrFixo:RR_POTENCIA,metodo:"EMOM",presc:"4 x 12",alvo:"potência",bloco:1},
       {id:"novdez26_t1_agachcaixa",nome:"Box squat — amplitude reduzida (ramp-up)",tipo:"carga",caixa:true,carga:"barra",un:"lb",bar:15,metodo:"SUPERSET",presc:"4 x 5",dica:{em:"ramp-up",txt:"Aumento progressivo da carga a cada série."},alvo:"1-2RR",bloco:2},
-      {id:"novdez26_t1_puxadaargolas",nome:"Puxada vertical nas argolas",tipo:"pc",metodo:"SUPERSET",presc:"4 x 5",alvo:"1-2RR",bloco:2},
+      {id:"novdez26_t1_puxadaargolas",nome:"Puxada vertical nas argolas",tipo:"pc",auxilioSB:true,metodo:"SUPERSET",presc:"4 x 5",alvo:"1-2RR",bloco:2},
       {id:"novdez26_t1_supinoiso",nome:"Supino isométrico na barra (suporte)",tipo:"pc",cargaLabel:"isométrico",repsFixas:"3",metodo:"TRISET",presc:"3 x 3 de 5s / 20s",dica:{txt:"Realizar 3 séries de 3 contrações isométricas de 5 segundos, com 20 segundos de intervalo entre cada contração."},alvo:"esforço máx.",bloco:3},
-      {id:"novdez26_t1_remadadeadstop",nome:"Remada unilateral dead stop com apoio (step/anilha)",dica:{em:"dead stop",txt:"Cada repetição começa com a carga completamente parada e apoiada, sem utilizar impulso."},tipo:"carga",carga:"impl",un:"kg",qtd:1,metodo:"TRISET",presc:"3 x 8-5 cl",alvo:"1-2RR",bloco:3},
+      {id:"novdez26_t1_remadadeadstop",nome:"Remada unilateral dead stop com apoio",nomesAntigos:["Remada unilateral dead stop com apoio (step/anilha)"],dica:{em:"dead stop",txt:"Cada repetição começa com a carga completamente parada e apoiada, sem utilizar impulso."},tipo:"carga",carga:"impl",un:"kg",qtd:1,metodo:"TRISET",presc:"3 x 8-5 cl",alvo:"1-2RR",bloco:3},
       {id:"novdez26_t1_suitcase",nome:"Suitcase carry",tipo:"carga",carga:"kb",un:"kg",qtd:1,repsFixas:"24 m",metodo:"TRISET",presc:"3 x 24 m cl",alvo:"carga pesada",bloco:3}
     ],
     "2":[
@@ -1601,10 +1609,11 @@ function histBlock(aId,eId,before,soTempo){
 }
 function upsert(c,aluno,ex,patch){
   if(!c.data || !/^\d{4}-\d{2}-\d{2}$/.test(c.data)){ $("status").textContent="⚠ Defina a data antes de registrar"; return; }
-  let r=getRec(c,aluno.id,ex.id);
+  let r=getRec(c,aluno.id,ex.id); const novo=!r;
   if(!r){ r={alunoId:aluno.id,alunoNome:aluno.nome,turma:c.turma,treino:c.treino,semana:c.semana,data:c.data,exercicioId:ex.id,exercicioNome:ex.nome,metodo:ex.metodo,bloco:ex.bloco,montagem:"",qtd:"",peso:"",un:"",peso2:"",un2:"",bar:"",cargaParcial:"",cargaTotal:"",reps:"",rr:"",troca:"",naoRealizou:false,dor:false,dorNota:"",obs:""}; records.push(r); }
   Object.assign(r,patch,{semana:c.semana});
   if(patch.troca && r.naoRealizou) r.naoRealizou=false; // anotou troca: fez outro exercício
+  if(novo && !r.naoRealizou && !patch.troca && !("reps" in patch)) r.reps=repsPrescritas(ex,c.data); // 1º toque grava as reps prescritas
   if(!r.naoRealizou){ // não realizou: reps/RR fixos não entram
     if(ex.repsFixas){ r.reps=ex.repsFixas; r.rr=""; }
     if(ex.rrFixo) r.rr=ex.rrFixo;
@@ -1699,7 +1708,7 @@ function renderPanel(){
         cargaBox=`<div class="cbox caixa">`+ALTURAS_CAIXA.map(([nome,hs])=>`<div class="grp"><span>Caixa ${nome}</span><div class="seg cxchips">`+
           hs.map(h=>`<button class="cxch ${alt===h+" cm"?'on':''}" data-alt="${h} cm">${h}</button>`).join("")+`</div></div>`).join("")+`<small>cm</small></div>`;
       } else if(!isCarga && impBtn){
-        cargaBox=`<div class="cbox" data-tipo="pc">${impBtn}</div>`; // peso corporal: só o botão (as reps ficam ao lado)
+        cargaBox=`<div class="cbox" data-tipo="pc">${impBtn}${ex.auxilioSB?`<div class="grp"><span>Auxílio SB</span><div class="seg auxchips">`+NIVEIS_ELASTICO.map(n=>`<button class="elch aux ${r.cargaParcial===AUX_SB+n?'on':''}" data-nivel="${attrEsc(n)}">${he(n)}</button>`).join("")+`</div></div>`:""}</div>`; // peso corporal: só o botão (as reps ficam ao lado)
       } else if(!isCarga){
         cargaBox=`<div class="grp"><span>Carga</span><span class="fixed">${he(ex.cargaLabel || (ex.tipo==='pc'?'PC':'tempo'))}</span></div>`;
       } else {
@@ -1723,7 +1732,7 @@ function renderPanel(){
           hs.map(h=>`<button class="cxa ${alt===h+" cm"?'on':''}" data-alt="${h} cm">${h}</button>`).join("")+`</div></div>`).join("")+`<small>cm</small></div>`;
       }
       const repsBox = (ex.repsFixas ? `<div class="grp"><span>Reps</span><span class="fixed" title="Fixo na prescrição">${he(ex.repsFixas)}</span></div>` :
-        `<div class="grp"><span>Reps</span><input class="sm" data-f="reps" inputmode="numeric" placeholder="—" value="${attrEsc(r.reps||"")}"></div>`)+
+        `<div class="grp"><span>Reps</span><input class="sm" data-f="reps" inputmode="numeric" placeholder="—" value="${attrEsc(r.alunoId ? (r.reps||"") : repsPrescritas(ex,c.data))}"></div>`)+
         (ex.rrFixo ? `<div class="grp"><span>RR</span><span class="fixed" title="Potência: longe da falha, PSE até 4 (esforço leve) · Helms et al. 2016">${he(ex.rrFixo)}</span></div>` :
         ex.repsFixas ? "" : `<div class="grp"><span>RR</span><input class="sm" data-f="rr" placeholder="—" value="${attrEsc(r.rr||"")}"></div>`);
       const aTipo = ex0.adaptado? ex0.tipo : "carga";
@@ -1785,7 +1794,9 @@ function wirePanel(c){
       const r=getRec(c,aId,exId)||{}; const falta=faltando(ex,r);
       line.classList.toggle("pend", falta.length>0);
       line.classList.toggle("nao", !!r.naoRealizou); line.querySelector(".btn-nao").classList.toggle("open", !!r.naoRealizou);
-      if(repsInp) repsInp.classList.toggle("faltou", falta.includes("reps"));
+      const pre=!getRec(c,aId,exId) && !!repsPrescritas(ex,c.data); // reps sugeridas: sem registro, a cobrança vai para o RR no peso corporal
+      if(repsInp) repsInp.classList.toggle("faltou", falta.includes("reps") && !pre);
+      const rrInp=line.querySelector('input[data-f="rr"]'); if(rrInp) rrInp.classList.toggle("faltou", pre && ex.tipo==="pc");
       const pesoInp=line.querySelector('.cbox .cin[data-c="peso"]'); if(pesoInp) pesoInp.classList.toggle("faltou", falta.includes("carga"));
       const chips=line.querySelector('.elchips'); if(chips) chips.classList.toggle("faltou", falta.includes("nivel"));
       line.querySelectorAll('.cxchips').forEach(x=>x.classList.toggle("faltou", falta.includes("altura")));
@@ -1835,6 +1846,13 @@ function wirePanel(c){
         flagReps();
       });
     }
+    // auxílio da superband (opcional): tocar de novo desmarca; guarda em cargaParcial, sem cargaTotal
+    line.querySelectorAll(".elch.aux").forEach(b=>b.onclick=()=>{
+      const liga=!b.classList.contains("on");
+      line.querySelectorAll(".elch.aux").forEach(x=>x.classList.toggle("on", x===b && liga));
+      upsert(c,aluno,ex,{cargaParcial: liga ? AUX_SB+b.dataset.nivel : "", cargaTotal:""});
+      flagReps();
+    });
     line.querySelectorAll(".cxa").forEach(b=>b.onclick=()=>{
       const alt=b.classList.contains("on") ? "" : b.dataset.alt;
       line.querySelectorAll(".cxa").forEach(x=>x.classList.toggle("on", x===b && !!alt));
