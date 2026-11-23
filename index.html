@@ -1607,6 +1607,16 @@ function histBlock(aId,eId,before,soTempo){
   }).join("");
   return `<div class="hist"><span class="hlbl">Histórico</span><div class="hlines">${lines}</div></div>`;
 }
+// Peso corporal com reps prescritas: grava sozinho quando o treinador registra qualquer coisa do aluno na aula.
+// Só a chamada não basta: o EVO pré-marca quem se inscreveu, e quem faltou não pode ganhar registro. Continua editável.
+let gravandoRepsPC=false;
+function gravaRepsPC(c,aluno){
+  const pres=presentesValidos(c); if(pres && !pres.includes(aluno.id)) return;
+  gravandoRepsPC=true;
+  try{ (treinosDo(c.mes)[c.treino]||[]).forEach(slot=>{ const ex=exDoAluno(slot,aluno.id,c);
+    if(ex.tipo==="pc" && !getRec(c,aluno.id,ex.id) && repsPrescritas(ex,c.data)) upsert(c,aluno,ex,{}); }); }
+  finally{ gravandoRepsPC=false; }
+}
 function upsert(c,aluno,ex,patch){
   if(!c.data || !/^\d{4}-\d{2}-\d{2}$/.test(c.data)){ $("status").textContent="⚠ Defina a data antes de registrar"; return; }
   let r=getRec(c,aluno.id,ex.id); const novo=!r;
@@ -1619,6 +1629,7 @@ function upsert(c,aluno,ex,patch){
     if(ex.rrFixo) r.rr=ex.rrFixo;
   }
   DataStore.putRegistro(r);
+  if(!gravandoRepsPC && !r.naoRealizou) gravaRepsPC(c,aluno);
   $("status").textContent="Salvo "+new Date().toLocaleTimeString("pt-BR",{hour:'2-digit',minute:'2-digit',second:'2-digit'});
 }
 
@@ -1792,11 +1803,10 @@ function wirePanel(c){
     const card=line.closest(".scard");
     const flagReps=()=>{
       const r=getRec(c,aId,exId)||{}; const falta=faltando(ex,r);
-      line.classList.toggle("pend", falta.length>0);
+      const pre=!getRec(c,aId,exId) && !!repsPrescritas(ex,c.data); // reps já sugeridas pela prescrição
+      line.classList.toggle("pend", falta.length>0 && !(pre && ex.tipo==="pc"));
       line.classList.toggle("nao", !!r.naoRealizou); line.querySelector(".btn-nao").classList.toggle("open", !!r.naoRealizou);
-      const pre=!getRec(c,aId,exId) && !!repsPrescritas(ex,c.data); // reps sugeridas: sem registro, a cobrança vai para o RR no peso corporal
       if(repsInp) repsInp.classList.toggle("faltou", falta.includes("reps") && !pre);
-      const rrInp=line.querySelector('input[data-f="rr"]'); if(rrInp) rrInp.classList.toggle("faltou", pre && ex.tipo==="pc");
       const pesoInp=line.querySelector('.cbox .cin[data-c="peso"]'); if(pesoInp) pesoInp.classList.toggle("faltou", falta.includes("carga"));
       const chips=line.querySelector('.elchips'); if(chips) chips.classList.toggle("faltou", falta.includes("nivel"));
       line.querySelectorAll('.cxchips').forEach(x=>x.classList.toggle("faltou", falta.includes("altura")));
@@ -1897,9 +1907,9 @@ function wirePanel(c){
     line.querySelector(".btn-obs").onclick=function(){ tog(line,".obs-edit",this); };
     line.querySelector(".btn-nao").onclick=()=>{
       const r=getRec(c,aId,exId)||{};
-      if(r.naoRealizou){ upsert(c,aluno,ex,{naoRealizou:false}); renderPanel(); return; }
+      if(r.naoRealizou){ upsert(c,aluno,ex,{naoRealizou:false,reps:repsPrescritas(ex,c.data)}); renderPanel(); return; }
       const tem=v=>String(v||"").trim()!=="";
-      const digitou=[r.cargaTotal,r.cargaParcial,r.peso,r.peso2,r.troca].some(tem) || (!ex.repsFixas && tem(r.reps)) || (!ex.rrFixo && tem(r.rr));
+      const digitou=[r.cargaTotal,r.cargaParcial,r.peso,r.peso2,r.troca].some(tem) || (!ex.repsFixas && tem(r.reps) && String(r.reps)!==repsPrescritas(ex,c.data)) || (!ex.rrFixo && tem(r.rr));
       if(digitou && !confirm("Marcar "+ex.nome+" como não realizado? A carga, as reps e a troca anotadas hoje saem.")) return;
       upsert(c,aluno,ex,{naoRealizou:true,peso:"",peso2:"",cargaParcial:"",cargaTotal:"",reps:"",rr:"",troca:""});
       renderPanel();
