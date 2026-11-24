@@ -328,6 +328,7 @@ body:not(.sync-on) .synconly{display:none}
 #folha .veu.limpo{background:transparent}
 #folha .sheet.pop{right:auto; bottom:auto; transform:none; width:260px; max-width:calc(100vw - 16px); padding:6px; border-radius:var(--r-lg)}
 input.sm{width:62px; padding:0 6px; font-size:17px; font-weight:600; text-align:center}
+input.sm.tser{width:76px} /* cabe "mm:ss" no campo vazio */
 .cbox small{font-size:12px; color:var(--muted)}
 .x2{font-weight:600; color:var(--muted)}
 .ctot{display:inline-flex; align-items:baseline; gap:6px; padding-left:2px; color:var(--muted); font-size:14px; white-space:nowrap}
@@ -674,6 +675,12 @@ const AUX_SB = "auxílio SB ";
 // Reps já vêm preenchidas com a prescrição, em aulas a partir desta data (pedido do Alex, 23/11).
 // Só número único ("4 x 5", "3 x 12 cl"); faixa ("3 x 8-5 cl") continua em branco. Registro antigo nunca muda.
 const REPS_PRE_DESDE = "2026-11-23";
+// 24/11: tempo digitado em mm:ss; no banco continua em segundos ("90/75") para os relatórios
+function segParaMMSS(v){ v=String(v||"").trim(); if(!/^\d+$/.test(v)) return v; const n=+v; return Math.floor(n/60)+":"+String(n%60).padStart(2,"0"); }
+function mmssParaSeg(v){ v=String(v||"").trim(); if(!v) return "";
+  let m=v.match(/^(\d+)\s*[:.,]\s*(\d{1,2})$/); if(m) return String(+m[1]*60 + +m[2]);
+  const d=v.replace(/\D/g,""); if(!d) return "";
+  return d.length>2 ? String(+d.slice(0,-2)*60 + +d.slice(-2)) : String(+d); }
 function repsPrescritas(ex,data){
   if(ex.repsFixas||ex.soTempo||ex.tipo==="tempo"||!ex.presc||String(data)<REPS_PRE_DESDE) return "";
   const m=String(ex.presc).match(/^\d+\s*x\s*(\d+)(?:\s*cl)?$/i); return m?m[1]:"";
@@ -1599,7 +1606,7 @@ function histBlock(aId,eId,before,soTempo){
     const parcial = r.cargaParcial? he(r.cargaParcial) : "";
     // total + montagem parcial (ajuda a remontar a barra) — sugestão do Diego
     const carga = (total && parcial) ? total+` <span class="hmont">(${parcial})</span>` : (total || parcial);
-    const det=[carga, r.reps?he(r.reps)+(soTempo?" s":" reps"):"", r.rr?"RR "+he(r.rr):""].filter(Boolean).join(" · ");
+    const det=[carga, r.reps?(soTempo?he(String(r.reps).split("/").map(segParaMMSS).join(" / ")):he(r.reps)+" reps"):"", r.rr?"RR "+he(r.rr):""].filter(Boolean).join(" · ");
     let flags=r.naoRealizou?`<span class="hflag nao">Não realizou</span>`:"";
     if(r.dor||r.dorNota) flags+=`<span class="hflag dor">⚠ ${he(r.dorNota||"dor")}</span>`;
     if(r.troca) flags+=`<span class="hflag troca">↻ ${he(r.troca)}</span>`;
@@ -1768,7 +1775,7 @@ function renderPanel(){
           <button class="act btn-adapt" title="Adaptar o exercício: vira o padrão deste aluno nas próximas semanas deste treino">${IC("swap")}<span>Adaptar</span></button>
         </div>
         <div class="row">${ex.soTempo && ex.tempoSeries ? (()=>{ const v=String(r.reps||"").split("/"); // uma caixa por série; grava "40/35" em reps
-          return Array.from({length:ex.tempoSeries},(_,i)=>`<div class="grp"><span>Série ${i+1}</span><input class="sm tser" data-i="${i}" inputmode="numeric" placeholder="—" value="${attrEsc((v[i]||"").trim())}"><small>s</small></div>`).join(""); })()
+          return Array.from({length:ex.tempoSeries},(_,i)=>`<div class="grp"><span>Série ${i+1}</span><input class="sm tser" data-i="${i}" inputmode="numeric" placeholder="mm:ss" value="${attrEsc(segParaMMSS(v[i]))}"></div>`).join(""); })()
           : ex.soTempo ? `<div class="grp"><span>Tempo</span><input class="sm" data-f="reps" inputmode="numeric" placeholder="—" value="${attrEsc(r.reps||"")}"><small>s</small></div>` : `${cargaBox}<span class="vsep"></span>${repsBox}`}</div>
         ${adaptForm}
         <div class="troca-edit"><input data-f="troca" placeholder="Trocou só hoje? Anote o exercício (não vira padrão)" value="${attrEsc(r.troca||"")}"></div>
@@ -1818,8 +1825,11 @@ function wirePanel(c){
     };
     flagReps();
     const tser=[...line.querySelectorAll("input.tser")];
+    tser.forEach(inp=>inp.addEventListener("input",()=>{ // máscara: 130 → 1:30
+      const d=inp.value.replace(/\D/g,"").slice(0,4); inp.value = d.length>2 ? d.slice(0,-2)+":"+d.slice(-2) : d; }));
     tser.forEach(inp=>inp.addEventListener("change",()=>{
-      const vs=tser.map(x=>x.value.trim()); while(vs.length && !vs[vs.length-1]) vs.pop();
+      tser.forEach(x=>{ x.value=segParaMMSS(mmssParaSeg(x.value)); });
+      const vs=tser.map(x=>mmssParaSeg(x.value)); while(vs.length && !vs[vs.length-1]) vs.pop();
       upsert(c,aluno,ex,{reps:vs.join("/")}); tags(); flagReps();
     }));
     line.querySelectorAll("input[data-f]").forEach(inp=>inp.addEventListener("change",()=>{
