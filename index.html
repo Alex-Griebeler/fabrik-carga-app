@@ -890,11 +890,12 @@ const MESES = {
     "2":[
       {id:"novdez26_t2_sumobb",nome:"Deadlift sumô BB",tipo:"carga",carga:"barra",un:"lb",bar:15,metodo:"SUPERSET",presc:"4 x 8",alvo:"1-2RR",bloco:1},
       {id:"novdez26_t2_pressvert",nome:"Press vertical unilateral sentado em L",tipo:"carga",carga:"impl",un:"kg",qtd:1,metodo:"SUPERSET",presc:"4 x 8 cl",alvo:"1-2RR",bloco:1},
-      {id:"novdez26_t2_remadaelastico",nome:"Remada c/ SB em base assimétrica",nomesAntigos:["Remada com elástico em base assimétrica"],tipo:"elastico",metodo:"TRISET",presc:"3 x 12-10 cl",alvo:"1-2RR",bloco:2},
+      // 24/11: a remada c/ SB em base assimétrica (id novdez26_t2_remadaelastico) saiu; os registros dela continuam no banco
+      {id:"novdez26_t2_facepull",nome:"Face pull na corda c/ SB deitado (step)",tipo:"elastico",metodo:"TRISET",presc:"3 x 12",alvo:"1-2RR",bloco:2},
       {id:"novdez26_t2_stepup",nome:"Step-up lateral taça",nomesAntigos:["Step-up lateral com taça"],tipo:"carga",caixa:true,carga:"impl",un:"kg",qtd:1,metodo:"TRISET",presc:"3 x 12-10 cl",alvo:"1-2RR",bloco:2},
       {id:"novdez26_t2_flexjoelho",nome:"Flexão de joelhos nas argolas",tipo:"pc",metodo:"TRISET",presc:"3 x 12-10",alvo:"1-2RR",bloco:2},
-      {id:"novdez26_t2_prancha",nome:"Prancha baixa",nomesAntigos:["Prancha"],tipo:"tempo",soTempo:true,metodo:"DESAFIO",presc:"2 x máx.",alvo:"parar ao perder a posição",bloco:3},
-      {id:"novdez26_t2_deadhang",nome:"Dead hang na barra fixa",nomesAntigos:["Dead hang nas argolas"],tipo:"tempo",soTempo:true,metodo:"DESAFIO",presc:"2 x máx.",alvo:"máximo de tempo",bloco:3}
+      {id:"novdez26_t2_prancha",nome:"Prancha baixa",nomesAntigos:["Prancha"],tipo:"tempo",soTempo:true,tempoSeries:2,metodo:"DESAFIO",presc:"2 x máx.",alvo:"parar ao perder a posição",bloco:3},
+      {id:"novdez26_t2_deadhang",nome:"Dead hang na barra fixa",nomesAntigos:["Dead hang nas argolas"],tipo:"tempo",soTempo:true,tempoSeries:2,metodo:"DESAFIO",presc:"2 x máx.",alvo:"máximo de tempo",bloco:3}
     ],
     "3":[
       {id:"novdez26_t3_remadalandmine",nome:"Remada curvada landmine",nomesAntigos:["Remada curvada landmine, pegada fechada"],tipo:"carga",carga:"landmine",un:"lb",bar:10,metodo:"SUPERSET",presc:"3 x 8",alvo:"1-2RR",bloco:1},
@@ -1766,7 +1767,9 @@ function renderPanel(){
           <span class="asep"></span>
           <button class="act btn-adapt" title="Adaptar o exercício: vira o padrão deste aluno nas próximas semanas deste treino">${IC("swap")}<span>Adaptar</span></button>
         </div>
-        <div class="row">${ex.soTempo ? `<div class="grp"><span>Tempo</span><input class="sm" data-f="reps" inputmode="numeric" placeholder="—" value="${attrEsc(r.reps||"")}"><small>s</small></div>` : `${cargaBox}<span class="vsep"></span>${repsBox}`}</div>
+        <div class="row">${ex.soTempo && ex.tempoSeries ? (()=>{ const v=String(r.reps||"").split("/"); // uma caixa por série; grava "40/35" em reps
+          return Array.from({length:ex.tempoSeries},(_,i)=>`<div class="grp"><span>Série ${i+1}</span><input class="sm tser" data-i="${i}" inputmode="numeric" placeholder="—" value="${attrEsc((v[i]||"").trim())}"><small>s</small></div>`).join(""); })()
+          : ex.soTempo ? `<div class="grp"><span>Tempo</span><input class="sm" data-f="reps" inputmode="numeric" placeholder="—" value="${attrEsc(r.reps||"")}"><small>s</small></div>` : `${cargaBox}<span class="vsep"></span>${repsBox}`}</div>
         ${adaptForm}
         <div class="troca-edit"><input data-f="troca" placeholder="Trocou só hoje? Anote o exercício (não vira padrão)" value="${attrEsc(r.troca||"")}"></div>
         <div class="dor-edit"><input data-f="dorNota" placeholder="O que foi? (ex: joelho D, amplitude parcial)" value="${attrEsc(r.dorNota||"")}"></div>
@@ -1814,6 +1817,11 @@ function wirePanel(c){
         if(b){ b.textContent = n? n+" pendente"+(n>1?"s":"") : "completo"; b.classList.toggle("ok", n===0); } }
     };
     flagReps();
+    const tser=[...line.querySelectorAll("input.tser")];
+    tser.forEach(inp=>inp.addEventListener("change",()=>{
+      const vs=tser.map(x=>x.value.trim()); while(vs.length && !vs[vs.length-1]) vs.pop();
+      upsert(c,aluno,ex,{reps:vs.join("/")}); tags(); flagReps();
+    }));
     line.querySelectorAll("input[data-f]").forEach(inp=>inp.addEventListener("change",()=>{
       const p={}; p[inp.dataset.f]=inp.value;
       if(inp.dataset.f==="dorNota") p.dor=!!inp.value;
