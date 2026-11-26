@@ -886,7 +886,7 @@ const MESES = {
   },
   "Nov-Dez 26": {
     "1":[
-      {id:"novdez26_t1_slamrot",nome:"Slam rotacional ALT c/ medball",nomesAntigos:["Slam rotacional alternado com med ball"],tipo:"pc",cargaLabel:"livre",repsFixas:"4 cl",rrFixo:RR_POTENCIA,metodo:"EMOM",presc:"4 x 4 cl",alvo:"potência",bloco:1},
+      {id:"novdez26_t1_slamrot",nome:"Slam rotacional ALT c/ medball",nomesAntigos:["Slam rotacional alternado com med ball"],tipo:"pc",medball:["8","12"],repsFixas:"4 cl",rrFixo:RR_POTENCIA,metodo:"EMOM",presc:"4 x 4 cl",alvo:"potência",bloco:1},
       {id:"novdez26_t1_kbswing",nome:"KB swing",tipo:"carga",carga:"kb",un:"kg",qtd:1,repsFixas:"12",rrFixo:RR_POTENCIA,metodo:"EMOM",presc:"4 x 12",alvo:"potência",bloco:1},
       {id:"novdez26_t1_agachcaixa",nome:"Box squat — amplitude reduzida (ramp-up)",tipo:"carga",caixa:true,carga:"barra",un:"lb",bar:15,metodo:"SUPERSET",presc:"4 x 5",dica:{em:"ramp-up",txt:"Aumento progressivo da carga a cada série."},alvo:"1-2RR",bloco:2},
       {id:"novdez26_t1_puxadaargolas",nome:"Puxada vertical nas argolas",tipo:"pc",auxilioSB:true,metodo:"SUPERSET",presc:"4 x 5",alvo:"1-2RR",bloco:2},
@@ -1577,7 +1577,7 @@ function faltando(ex,r){
   if(ex.tipo==="carga"){ if(String(r.cargaTotal||"").trim()==="") f.push("carga"); if(!temReps) f.push("reps"); }
   else if(ex.tipo==="elastico"){ if(String(r.cargaParcial||"").trim()==="") f.push("nivel"); if(!temReps) f.push("reps"); }
   else if(ex.tipo==="caixa"){ if(String(r.cargaParcial||"").trim()==="") f.push("altura"); if(!temReps) f.push("reps"); }
-  else if(ex.tipo==="pc"){ if(!temReps) f.push("reps"); }
+  else if(ex.tipo==="pc"){ if(ex.medball && !/^\d+ lb$/.test(String(r.cargaParcial||""))) f.push("medball"); if(!temReps) f.push("reps"); }
   return f; // tempo: nada obrigatório
 }
 function calcCarga(montagem,qtd,peso,un,peso2,un2,bar){
@@ -1726,6 +1726,10 @@ function renderPanel(){
         const alt=r.cargaParcial||"";
         cargaBox=`<div class="cbox caixa">`+ALTURAS_CAIXA.map(([nome,hs])=>`<div class="grp"><span>Caixa ${nome}</span><div class="seg cxchips">`+
           hs.map(h=>`<button class="cxch ${alt===h+" cm"?'on':''}" data-alt="${h} cm">${h}</button>`).join("")+`</div></div>`).join("")+`<small>cm</small></div>`;
+      } else if(ex.medball){
+        // medball: um botão com o peso de hoje (8 ou 12 lb), igual ao da barra; guarda "8 lb" em cargaParcial e o total em kg
+        const mb=(String(r.cargaParcial||"").match(/^(\d+) lb$/)||[])[1]||"";
+        cargaBox=`<div class="cbox" data-tipo="medball"><div class="grp"><span>Medball</span><button type="button" class="impb barb medb" value="${attrEsc(mb)}" aria-haspopup="dialog" title="Peso da medball: toque para escolher (${ex.medball.join(" ou ")} lb)">${mb?he(mb):"—"}</button><small>lb</small></div></div>`;
       } else if(!isCarga && impBtn){
         cargaBox=`<div class="cbox" data-tipo="pc">${impBtn}${ex.auxilioSB?`<div class="grp"><span>Auxílio SB</span><div class="seg auxchips">`+NIVEIS_ELASTICO.map(n=>`<button class="elch aux ${r.cargaParcial===AUX_SB+n?'on':''}" data-nivel="${attrEsc(n)}">${he(n)}</button>`).join("")+`</div></div>`:""}</div>`; // peso corporal: só o botão (as reps ficam ao lado)
       } else if(!isCarga){
@@ -1820,6 +1824,7 @@ function wirePanel(c){
       const pesoInp=line.querySelector('.cbox .cin[data-c="peso"]'); if(pesoInp) pesoInp.classList.toggle("faltou", falta.includes("carga"));
       const chips=line.querySelector('.elchips'); if(chips) chips.classList.toggle("faltou", falta.includes("nivel"));
       line.querySelectorAll('.cxchips').forEach(x=>x.classList.toggle("faltou", falta.includes("altura")));
+      const mbx=line.querySelector('.medb'); if(mbx) mbx.classList.toggle("faltou", falta.includes("medball"));
       if(card){ const n=card.querySelectorAll(".exline.pend").length; const b=card.querySelector(".pendbadge");
         if(b){ b.textContent = n? n+" pendente"+(n>1?"s":"") : "completo"; b.classList.toggle("ok", n===0); } }
     };
@@ -1863,6 +1868,12 @@ function wirePanel(c){
       const bb=line.querySelector(".barb");
       if(bb) bb.onclick=()=>abrirFolha(aluno.nome+" · Barra", BARRAS.map(v=>[v,v,"kg"]), bb.value, v=>{ bb.value=v; bb.textContent=v; recompCarga(); }, bb);
     }
+    const mbb=line.querySelector(".medb");
+    if(mbb) mbb.onclick=()=>abrirFolha(aluno.nome+" · Medball", ex.medball.map(v=>[v,v,"lb"]), mbb.value, v=>{
+      mbb.value=v; mbb.textContent=v;
+      upsert(c,aluno,ex,{montagem:"medball",cargaParcial:v+" lb",cargaTotal:String(Math.round(v*0.45359237*10)/10)});
+      flagReps();
+    }, mbb);
     // implemento de hoje: a lista abre ao tocar, com o de hoje marcado
     const ib=line.querySelector(".impb:not(.barb)");
     if(ib) ib.onclick=()=>abrirFolha(aluno.nome+" · "+ex.nome, IMPLEMENTOS.map(([v,s,n])=>[v,s,n]), ex.montHoje, v=>trocaImpl(c,aluno,ex,v), ib);
